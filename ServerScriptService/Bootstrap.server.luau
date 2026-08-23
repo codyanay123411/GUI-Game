@@ -11,4 +11,5 @@
 	Keep it an orchestrator so systems stay in their own modules.
 ]]
 
--- Future: require Services and call their start/init functions here.
+local PoliticalHierarchyService = require(script.Parent.Services.PoliticalHierarchyService)
+PoliticalHierarchyService.Start()

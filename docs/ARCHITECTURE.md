@@ -7,20 +7,22 @@ This project is a GUI-first Roblox game. Source-controlled Luau lives on disk an
 | Path | Purpose |
 | --- | --- |
 | `ServerScriptService/` | Authoritative server scripts. Contains the server entry point and server-only systems. |
-| `ServerScriptService/Services/` | Reserved for authoritative server-side systems (one concern per module). Contains `_Placeholder.luau` only — no real services yet. |
+| `ServerScriptService/Services/` | Authoritative server-side systems. Currently `PoliticalHierarchyService.luau`. |
 | `ReplicatedStorage/Shared/` | Modules that are safe and appropriate for both client and server. |
-| `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Contains `_Placeholder.luau` only until real config exists. |
-| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Contains `_Placeholder.luau` only until real types exist. |
-| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Not a miscellaneous dump. Contains `_Placeholder.luau` only until real utilities exist. |
-| `ReplicatedStorage/Remotes/` | Reserved for RemoteEvents and RemoteFunctions used for client/server communication. Remote instances themselves are created in Studio, not as Luau files. Folder currently materialized with `_Placeholder.luau` only. |
+| `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Currently `PoliticalHierarchyConfig.luau` (V0.1 vassalage request lifetime). |
+| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Currently `PoliticalTypes.luau`. |
+| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (rank names and vassalage rank rule). |
+| `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. V0.1: `HierarchyClientEvent`, `HierarchyServerEvent`. Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
 | `StarterPlayerScripts/` | Client scripts that run for each player. On disk this is a root folder; in Studio it maps to `StarterPlayer.StarterPlayerScripts`. Contains the client entry point and controllers. |
-| `StarterPlayerScripts/Controllers/` | Reserved for client-side behavior and GUI control. Contains `_Placeholder.luau` only — no real controllers yet. |
+| `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau`. |
 | `docs/` | Project documentation, including this architecture note. |
 | `AI/` | Agent tracker: progress, decisions, and changelog. |
 
 GUI instances are **not** stored in this filesystem. They are created and edited in Roblox Studio.
 
-Reserved Script Sync folders use `_Placeholder.luau` ModuleScripts that `return {}` solely so Studio materializes the folder. They contain **no** gameplay, service, or controller implementation. Delete or replace the placeholder when real modules occupy that folder.
+Reserved Script Sync folders that still have no Luau modules keep `_Placeholder.luau` so Studio materializes the folder. Delete or replace the placeholder when real modules occupy that folder. `ReplicatedStorage/Remotes/_Placeholder.luau` is kept because remotes are Studio instances, not synced Luau.
+
+Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesystem source file).
 
 ## Server / client / shared separation
 
@@ -28,7 +30,7 @@ Reserved Script Sync folders use `_Placeholder.luau` ModuleScripts that `return 
 - **Client** (`StarterPlayerScripts/` on disk → `StarterPlayer.StarterPlayerScripts` in Studio) owns local presentation: GUI control, input handling, and visual feedback.
 - **Shared** (`ReplicatedStorage/Shared`) owns types, config, and utilities that both sides may use without giving the client authority.
 
-`Bootstrap.server.luau` and `Bootstrap.client.luau` are thin entry points. They orchestrate modules; they do not become monolithic game scripts. Do not introduce frameworks or external dependencies unless a later decision records that change.
+`Bootstrap.server.luau` and `Bootstrap.local.luau` are thin entry points. They orchestrate modules; they do not become monolithic game scripts. Do not introduce frameworks or external dependencies unless a later decision records that change. Script Sync maps `Bootstrap.local.luau` to a **LocalScript** in `StarterPlayerScripts`. Do not use `Bootstrap.client.luau` there: a Script with RunContext=Client under `StarterPlayerScripts` runs twice.
 
 ## Tooling roles
 

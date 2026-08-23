@@ -28,7 +28,7 @@ A task must not be marked complete until it has been verified.
 ## Phase 1 status
 
 - [x] **Phase 1 — Foundation & Architecture: COMPLETE** (audit: PASS WITH MINOR CLEANUP; documentation cleanup verified). Ready for the first gameplay prototype **when directors authorize it**.
-- [ ] Implement Political Hierarchy Design V0.1 (specified; **not** implemented; not authorized until directed)
+- [x] Political Hierarchy V0.1 **accepted / complete** (directors confirmed Local Server + 2 Players). Human Independent Lords, voluntary vassalage, rank/cycle validation, tree preservation, 30s request TTL, prototype GUI, temporary disconnect cleanup, dual accept/decline notices. Player-facing term is **Vassalage**. Title progression, map, AI, and other systems **not** included.
 
 ## Project knowledge
 
@@ -36,6 +36,6 @@ A task must not be marked complete until it has been verified.
 - [x] `AI/ROADMAP.md` created (16 phases; current phase 1; verified on disk)
 - [x] `.cursor/rules/project.mdc` created (always-apply operating rule; verified on disk)
 - [x] Initial multiplayer game vision / design bible v0.1 written into `AI/GAME_DESIGN.md` (verified on disk; no gameplay implemented)
-- [x] Political Hierarchy Design V0.1 specified/documented (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`) — **not implemented**
+- [x] Political Hierarchy Design V0.1 specified/documented (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`) — **V0.1 prototype accepted** after two-client accept and decline verification
 - [x] Design checkpoint (maps, title progression, naming, economy, monetization, performance) specified/documented — **not implemented**
 - [ ] Confirm a full 0.1 feature freeze beyond the political-hierarchy prototype priority

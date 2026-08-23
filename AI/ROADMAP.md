@@ -4,9 +4,7 @@ Phases describe **dependency and preferred order**, not a hard ban on touching a
 
 AI agents must **not** prematurely implement major later-phase gameplay systems merely because they appear on this list. If work would skip ahead, stop and ask, or stay within the current phase.
 
-Gameplay implementation has not started. **Phase 1 — Foundation & Architecture: COMPLETE.**
-
-The foundation is ready for the first gameplay prototype **when directors explicitly authorize it**. That prototype is **Political Hierarchy Design V0.1** in `AI/GAME_DESIGN.md` (specified, **not implemented**). Completing Phase 1 does **not** start Phase 2 Character Simulation. Do not treat a deep autonomous character simulation as the first playable loop.
+Gameplay implementation: **Political Hierarchy V0.1 prototype is implemented** (see `AI/PROGRESS.md`). Later phases are not started. Completing this prototype does **not** start Phase 2 Character Simulation.
 
 ## 1. Foundation & Architecture — COMPLETE
 

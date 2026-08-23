@@ -9,6 +9,10 @@
 
 	Controllers own client behavior and GUI control only.
 	Never treat client input or GUI state as authoritative game truth.
+
+	Must be a LocalScript (Script Sync: Bootstrap.local.luau). A Script with
+	RunContext=Client under StarterPlayerScripts runs twice and duplicates GUI.
 ]]
 
--- Future: require Controllers and call their start/init functions here.
+local PoliticalHierarchyController = require(script.Parent.Controllers.PoliticalHierarchyController)
+PoliticalHierarchyController.Start()

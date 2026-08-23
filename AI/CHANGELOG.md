@@ -43,3 +43,27 @@ Documented interactive multi-map geography vs realms, dynamic map-based title qu
 ## 2026-08-23 — Phase 1 closed (audit PASS WITH MINOR CLEANUP)
 
 Corrected stale GitHub publication tracking, architecture-bootstrap tracking, Cursor rule wording for the active design bible, and `_Placeholder.luau` folder documentation. Formally closed Phase 1 — Foundation & Architecture. Political Hierarchy V0.1 remains specified, not implemented. No gameplay implemented.
+
+## 2026-08-23 — Political Hierarchy V0.1 prototype
+
+Implemented server-authoritative human Lord hierarchy, voluntary fealty with 30s request lifetime, rank/cycle validation, subordinate-tree preservation, two remotes, and a temporary Studio prototype GUI. Disconnect removes the runtime ruler (temporary; no AI replacement). No title progression, map, economy, or other gameplay systems.
+
+## 2026-08-23 — Hierarchy V0.1 two-client verification pending
+
+Corrected progress wording: V0.1 is implemented but **not accepted** until a real 1-server + 2-client Studio test passes. MCP `start_stop_play` only launches one play client; `Players:CreateLocalPlayer()` adds a dummy Player without a second client GUI/controller. No Git commit.
+
+## 2026-08-23 — Hierarchy prototype GUI usability
+
+Repositioned the V0.1 prototype panel to the right with CoreUISafeInsets (does not ignore Gui inset). Separated Self / tree / players / incoming sections, made Offer/Accept/Decline obvious, and distinguished “waiting for server” from “(no rulers)”. Gameplay unchanged. Two-client acceptance still pending.
+
+## 2026-08-23 — Hierarchy V0.1 replication/UI bugfix
+
+JSON-encoded hierarchy snapshots plus a client `Ready` handshake so Local Server clients are not stuck on “Waiting for server state...” if the first `FireClient` happens before `OnClientEvent`. Bound a single `HierarchyPrototypeGui`, destroyed extra clones, and converted client bootstrap to `Bootstrap.local.luau` (LocalScript) so Client RunContext no longer starts the controller twice. Player/request row clones force `Visible=true`. Gameplay rules unchanged. Two-client visual acceptance still pending.
+
+## 2026-08-23 — Hierarchy V0.1 vassalage wording and dual notices
+
+Player-facing “Fealty” is now **Vassalage**. Accept and decline notify both the initiator and the receiver from the server. Prototype result messages use a top-left toast. Gameplay rules unchanged. Two-client acceptance still pending.
+
+## 2026-08-23 — Political Hierarchy V0.1 accepted
+
+Directors confirmed Local Server + 2 Players: accept and decline both succeeded on both clients; hierarchy state matched; initiator and receiver both received the correct notifications; decline did not mutate hierarchy. V0.1 is **accepted / complete**. No gameplay code changed in this tracker update.

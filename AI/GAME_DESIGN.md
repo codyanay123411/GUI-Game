@@ -165,6 +165,8 @@ Robert is Aldric’s **direct vassal**. William and Henry are in Aldric’s **gr
 
 An approved political action: a ruler may voluntarily become another ruler’s vassal when **both parties agree**, subject to title rank.
 
+**Player-facing term:** this action is **Vassalage** (Offer Vassalage / Incoming vassalage requests). Do not use “Fealty” in player-facing UI.
+
 **Allowed:** become the vassal of a ruler whose title rank is **equal to or higher** than one’s own.  
 **Never allowed:** become the vassal of a ruler with a **lower** title rank.
 
