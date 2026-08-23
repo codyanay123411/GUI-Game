@@ -14,6 +14,7 @@
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
 
 local Config = require(ReplicatedStorage.Shared.Config.PoliticalHierarchyConfig)
 local RankRules = require(ReplicatedStorage.Shared.Util.PoliticalRankRules)
@@ -45,10 +46,17 @@ local rulersById: { [string]: Ruler } = {}
 local rulerIdByUserId: { [number]: string } = {}
 local requestsById: { [string]: FealtyRequest } = {}
 
+local remotesFolder: Folder
+local clientIntent: RemoteEvent
+local serverPush: RemoteEvent
+local debugSnapshot: StringValue?
+
 local rulerCreatedBindable = Instance.new("BindableEvent")
 local rulerRemovingBindable = Instance.new("BindableEvent")
+local stateChangedBindable = Instance.new("BindableEvent")
 PoliticalHierarchyService.RulerCreated = rulerCreatedBindable.Event
 PoliticalHierarchyService.RulerRemoving = rulerRemovingBindable.Event
+PoliticalHierarchyService.StateChanged = stateChangedBindable.Event
 
 local function now(): number
 	return os.clock()
@@ -161,6 +169,9 @@ end
 local function pushState(toPlayer: Player?)
 	local payload = buildSnapshot()
 	local encoded = HttpService:JSONEncode(payload)
+	if debugSnapshot then
+		debugSnapshot.Value = encoded
+	end
 	local n = #payload.rulers
 	if toPlayer then
 		print("[Hierarchy] push State to", toPlayer.Name, "rulers=", n, "requests=", #payload.requests)
@@ -169,6 +180,7 @@ local function pushState(toPlayer: Player?)
 		print("[Hierarchy] push State all clients rulers=", n, "requests=", #payload.requests)
 		serverPush:FireAllClients("State", encoded)
 	end
+	stateChangedBindable:Fire()
 end
 
 local function notice(player: Player, message: string)
@@ -403,6 +415,25 @@ function PoliticalHierarchyService.GetRulerIdForUserId(userId: number): string?
 	return rulerIdByUserId[userId]
 end
 
+-- Production rank mutation used by Title Progression after server revalidation.
+-- Does not change liege/vassal links or territory.
+function PoliticalHierarchyService.SetTitleRank(rulerId: string, titleRank: number): (boolean, string)
+	if not RankRules.IsValidRank(titleRank) then
+		return false, "Invalid rank."
+	end
+	local ruler = rulersById[rulerId]
+	if not ruler then
+		return false, "Ruler no longer exists."
+	end
+	if ruler.titleRank == titleRank then
+		return true, "Rank unchanged."
+	end
+	ruler.titleRank = titleRank
+	print("[Hierarchy] rank set", ruler.displayName, RankRules.Name(titleRank))
+	pushState()
+	return true, "Rank updated."
+end
+
 function PoliticalHierarchyService.DebugCreateMockRuler(displayName: string, titleRank: number): string
 	assert(RankRules.IsValidRank(titleRank), "Invalid rank")
 	local ruler = createRuler({
@@ -416,11 +447,8 @@ function PoliticalHierarchyService.DebugCreateMockRuler(displayName: string, tit
 end
 
 function PoliticalHierarchyService.DebugSetRank(rulerId: string, titleRank: number)
-	assert(RankRules.IsValidRank(titleRank), "Invalid rank")
-	local ruler = rulersById[rulerId]
-	assert(ruler, "Missing ruler")
-	ruler.titleRank = titleRank
-	pushState()
+	local ok, err = PoliticalHierarchyService.SetTitleRank(rulerId, titleRank)
+	assert(ok, err)
 end
 
 function PoliticalHierarchyService.DebugRemoveRuler(rulerId: string)
@@ -523,6 +551,51 @@ function PoliticalHierarchyService.Start()
 	for _, player in Players:GetPlayers() do
 		onPlayerAdded(player)
 	end
+
+	-- Prototype/debug: running instance for Command Bar / MCP. Not a client remote.
+	_G.__PoliticalHierarchyV01 = PoliticalHierarchyService
+
+	local debugFolder = ServerScriptService:FindFirstChild("PoliticalHierarchyDebug")
+	if debugFolder then
+		debugFolder:Destroy()
+	end
+	debugFolder = Instance.new("Folder")
+	debugFolder.Name = "PoliticalHierarchyDebug"
+	debugFolder.Parent = ServerScriptService
+	debugSnapshot = Instance.new("StringValue")
+	debugSnapshot.Name = "LastSnapshot"
+	debugSnapshot.Parent = debugFolder
+	debugFolder:GetAttributeChangedSignal("CreateMock"):Connect(function()
+		local raw = debugFolder:GetAttribute("CreateMock")
+		if typeof(raw) ~= "string" then
+			return
+		end
+		local name, rankStr = string.match(raw, "^(.-)=(%d+)$")
+		local rank = tonumber(rankStr)
+		if name and rank then
+			PoliticalHierarchyService.DebugCreateMockRuler(name, rank)
+		end
+	end)
+	debugFolder:GetAttributeChangedSignal("Offer"):Connect(function()
+		local raw = debugFolder:GetAttribute("Offer")
+		if typeof(raw) ~= "string" then
+			return
+		end
+		local fromId, toId = string.match(raw, "^(.-)=(.+)$")
+		if fromId and toId then
+			local ok, err = PoliticalHierarchyService.OfferFealty(fromId, toId)
+			print("[Hierarchy] debug Offer", ok, err)
+		end
+	end)
+	debugFolder:GetAttributeChangedSignal("Accept"):Connect(function()
+		local raw = debugFolder:GetAttribute("Accept")
+		if typeof(raw) ~= "string" then
+			return
+		end
+		local ok, err = PoliticalHierarchyService.AcceptFealty(raw)
+		print("[Hierarchy] debug Accept", ok, err)
+	end)
+	pushState()
 end
 
 return PoliticalHierarchyService

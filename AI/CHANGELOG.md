@@ -87,3 +87,19 @@ Selection no longer overwrites the direct-holder rim with yellow. Fill stays gre
 ## 2026-08-23 — Territory / Map Foundation V0.1 accepted
 
 Directors confirmed two real Studio clients: unique starting territories, Unclaimed remainder, select/info, pan/zoom, vassalage greater-realm vs holder visualization, additive gold selection, and disconnect Unclaimed/hierarchy cleanup. V0.1 is **accepted / complete**. Unused leftover `MapWorld` ImageLabel removed. Deferred systems unchanged. No Git commit.
+
+## 2026-08-23 — Title Progression V0.1 prototype
+
+Implemented sequential Lord → Duke → King → Emperor from map-configured Vale test thresholds, greater-realm control (hierarchy descendants + ownership), temporary server-side test Prestige (not spent), Ready/Establish remotes, TitlePanel, and `SetTitleRank` without rewriting liege/vassals/land. Server revalidation rejects insufficient land/Prestige and does not skip ranks. Debug Prestige is server-only. **Not director-accepted;** two-real-client Establish Duchy still required. No Git commit.
+
+## 2026-08-23 — Incoming vassalage overlay (layout)
+
+Incoming Accept/Decline no longer live in the clipped bottom of the hierarchy panel. They use a map-centered `VassalageOfferOverlay` so the offer stays actionable beside Title Progression. Result toast remains a non-interactive outcome notice. Gameplay rules unchanged. Two-real-client retest still required. No Git commit.
+
+## 2026-08-23 — Future UI shell / keybind architecture (docs only)
+
+Recorded long-term GUI direction: full-canvas map; major systems as contextual panels/overlays with centralized (unassigned) keybinds and/or nav buttons; coherent panel state; priority action overlays vs toasts. Standing click-through / input-layering rule: higher-priority GUI consumes pointer events within its bounds; map is the lowest input layer. No Luau, Studio GUI, keybinds, or gameplay changes. Title V0.1 acceptance continues on the current prototype. No Git commit.
+
+## 2026-08-23 — Title Progression V0.1 accepted
+
+Directors confirmed Local Server + 2 Players: both clients started as Lords; Political Hierarchy and Territory / Map V0.1 still worked; vassalage between the two real players; greater-realm count included subordinate land (2 / 2); server-side test Prestige set to 100 and not spent; Title panel Eligible + Establish Duchy; director clicked Establish Duchy; Player1 became Duke; Player2 saw the updated rank; liege/vassals/ownership/hierarchy/territory info/map visualization remained correct; pan/zoom/select regression pass; no blocking runtime issue. Incoming Vassalage overlay already in place. V0.1 is **accepted / complete**. Deferred systems unchanged. No Git commit.

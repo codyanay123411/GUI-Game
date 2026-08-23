@@ -111,7 +111,7 @@ There are **four** primary landed political levels (intentionally few, for ~30-m
 
 This **supersedes** earlier conceptual ranks that used Count. Do not add extra landed title tiers.
 
-Title **establishment** is specified under Titles & Territory (dynamic map-based realm-control plus a minimum Prestige threshold; player action; server revalidation). Exact numerical thresholds and the scaling formula remain unresolved. Gold and Influence are **not** title-establishment requirements. Promotion is **not** automatic.
+Title **establishment** is specified under Titles & Territory as **Title Progression V0.1** (accepted / complete). Progression is sequential Lord → Duke → King → Emperor. Vale prototype test thresholds exist for that map only. Gold and Influence are **not** title-establishment requirements. Promotion is **not** automatic. Prestige is a threshold, **not spent**.
 
 ### Match start
 
@@ -201,7 +201,7 @@ Emperor → Lord     NOT ALLOWED
 
 **Equal-rank vassalage is intentionally allowed**, so organizations can form before higher titles exist.
 
-Example at match start: Bob, Henry, and Robert swear to Cody (all Lords). Cody’s greater realm then conceptually controls four territories if each holds one, which can contribute toward later **eligibility** to establish a Duchy (see Titles & Territory). Exact thresholds remain unresolved.
+Example at match start: Bob, Henry, and Robert swear to Cody (all Lords). Cody’s greater realm then conceptually controls four territories if each holds one, which can contribute toward later **eligibility** to establish a Duchy (see Title Progression V0.1). On the Vale V0.1 test map, Duke requires **2** greater-realm territories and **100** test Prestige; those numbers are not universal.
 
 ```text
 Lord Cody
@@ -267,7 +267,7 @@ Clients may **request** political actions and **display** state. The **server** 
 
 ### Unresolved (do not invent)
 
-- Exact title-scaling formula and numerical realm-control / Prestige thresholds
+- Title-scaling formula and numerical thresholds for maps **other than** the Vale V0.1 test numbers (see Title Progression V0.1)
 - Title-loss systems (revoke, usurp, surrender, destroy, war, succession, and similar)
 - Vassal obligations (tax, military contribution, contracts, percentages, penalties, formulas)
 - Independence **gameplay methods** (the hierarchy must support becoming independent later; methods are unspecified)
@@ -335,7 +335,7 @@ The primary world representation is a **GUI-first 2D interactive political map**
 
 The long-term map should be capable of supporting concepts such as panning, zooming, territory selection, highlighting, political ownership visualization, realm visualization, contextual information, and different informational/map modes where appropriate. Players should eventually interact with individual territories and navigate political information through the map.
 
-**Territory / Map Foundation V0.1** (below) now specifies the first map foundation: data-driven `MapConfiguration`, 16-territory test map, irregular polygons (not hexes), desktop pan/zoom/click, adjacency, unclaimed land, realm colors, and greater-realm vs direct-owner visualization. It is **accepted / complete**. Touch/controller support should remain architecturally possible but is **not** required for V0.1. Title-establishment numbers, lobby/map voting, and additional maps remain unresolved.
+**Territory / Map Foundation V0.1** (below) is **accepted / complete**. **Title Progression V0.1** (below) specifies sequential landed-rank establishment with Vale test thresholds; it is **accepted / complete**. Lobby/map voting and additional maps remain unresolved.
 
 There is no requirement for a traditional explorable 3D Roblox world.
 
@@ -387,38 +387,52 @@ Authority: server owns ownership, starting assignment, territory-to-ruler links,
 
 The renderer must be **map-agnostic**: drive from the currently selected `MapConfiguration`, not “the 16-territory map.” Future maps must change counts/geometry without rewriting political systems. This preserves `TitleRequirements = f(MapConfiguration)`.
 
-### Title qualification and establishment
+### Title Progression V0.1
 
-Higher-title qualification **adapts to the selected map**. Do **not** permanently hardcode universal territory counts (Duke always X, King always Y, Emperor always Z). Conceptually: `TitleRequirements = f(MapConfiguration)`. Human player count is **not** part of this calculation. The calculation should be **deterministic and configuration-driven**, not randomly different between otherwise identical matches. Exact formula, percentages, minimums, rounding, and per-map tuning remain **unresolved**.
+Specified design checkpoint, now **implemented as a baseline prototype** and **accepted / complete** after director Local Server + 2 Players verification. Do not reopen Political Hierarchy V0.1 or Territory / Map Foundation V0.1 to invent title-loss, auto-promotion, or rank skipping.
 
-Qualification uses the ruler’s **greater realm**, not only personally held land. Territory controlled through the subordinate hierarchy counts. Voluntary vassalage can therefore contribute toward title progression alongside direct acquisition.
+Purpose: prove a ruler can qualify for the **next** landed rank from greater-realm control plus a Prestige threshold, **manually establish** that title, receive the new rank **server-authoritatively**, and have hierarchy/map UI reflect it. Baseline prototype only. Not title-law, succession, claims, ceremonies, revocation, or realm administration.
 
-**Eligibility and establishment are separate.** Meeting requirements does **not** automatically grant the title:
+**Sequential only:** Lord → Duke → King → Emperor. A ruler may establish only the next rank above their current rank. A Lord may not skip to King or Emperor even if debug values exceed those requirements. Emperor has no higher landed rank in V0.1.
 
-```text
-Meet requirements
-→ Become eligible
-→ Player chooses to establish title
-→ Server revalidates eligibility
-→ Title is formally established
-```
+**Vale prototype test thresholds** (for the 16-territory Vale map only; **not** universal final balance; **not** “all maps always use 2 / 5 / 10”):
 
-A Lord who meets Duchy requirements becomes **eligible to establish a Duchy** and remains a Lord until they deliberately establish it. Then they become a Duke. The same principle applies: **Lord → Duke → King → Emperor**.
+| Next rank | Greater-realm territory control | Prestige threshold |
+| --- | --- | --- |
+| Lord | Starting/default; no establishment | — |
+| Duke | 2 | 100 |
+| King | 5 | 250 |
+| Emperor | 10 | 500 |
 
-Establishing a higher title requires two conceptual conditions:
+`TitleRequirements = f(MapConfiguration)`. Future maps may use different territory and Prestige numbers. Human player count is not part of the calculation. Deterministic per selected map, not random per match.
 
-1. **Dynamically scaled realm-control** for that title on the selected map.
-2. **Minimum Prestige** for that title (reputation/legitimacy). **Prestige is not spent** on establishment.
+**Greater-realm control** counts every territory **directly owned** by rulers in that ruler’s subordinate hierarchy/tree (the ruler plus descendants). The qualifying ruler need not personally own all counted land. Example: King Bob with Duke Cody (Lords A and B) and Lord C, each holding one territory → Bob’s greater realm controls **5**. Derive this from authoritative Political Hierarchy + Territory ownership. Do **not** duplicate hierarchy trees inside a title system. Unclaimed land does not count. Establishing a title does **not** consume, unclaim, or reassign territory.
 
-Gold is **not** an approved title-establishment requirement. Influence is **not** an approved title-establishment requirement. Exact Prestige amounts are **not** approved.
+**Eligibility ≠ grant.** Qualification does not auto-promote. Flow: requirements met → eligible → GUI may show Establish Duchy / Kingdom / Empire → player chooses Establish → **server revalidates** (ruler exists, current rank, requested rank is the valid next rank, sequential rule, current greater-realm count, current Prestige, map requirement table, other already-approved V0.1 validity) → grant if still valid. Do not auto-promote because territory count, vassalage, or debug Prestige changed. Eligibility display may update; establishment requires the ruler’s action.
 
-Title establishment is **authoritative game state**. The client may display eligibility and request establishment. The client must **not** grant Duke, King, or Emperor. The server must determine whether the player still satisfies approved requirements. Exact implementation is deferred.
+**Prestige in V0.1:** the real Prestige resource system is **not** part of this checkpoint. Title Progression V0.1 uses **temporary server-side test Prestige** only, to test qualification. Prestige is **checked** against the threshold and **not spent**. Example: 250 Prestige, King threshold 250, establish King → Prestige remains 250. Do not implement Prestige income, decay, spending, purchases, economy UI, rewards, or persistence here. Later server-only debug may set test Prestige; do not expose client Prestige mutation.
 
-Once a title is legitimately established, falling below the original creation requirements does **not** automatically demote the ruler. Creation thresholds govern **creation**, not continuous holding. Future systems may allow titles to be revoked, usurped, surrendered, destroyed, or lost through warfare, succession, or other politics; **those systems are not designed**. Do not invent them.
+Gold and Influence are **not** establishment requirements.
+
+**Server authority.** The client may show current/next title, realm control X / required, Prestige X / required, Eligible / Not eligible, and a disabled or unavailable Establish control when ineligible. The client must not be trusted to claim qualification, control count, Prestige, or “make me Emperor.”
+
+**Established titles persist.** Dropping below the creation threshold does **not** auto-demote. A King established at 5 territories who later holds 3 remains King unless a **future explicitly designed** mechanic removes the title. V0.1 has **no** automatic demotion.
+
+**Title loss remains unresolved — do not invent:** forced demotion, revocation, usurpation, destruction, conquest/rebellion/surrender loss, loss of all land, deposition, claimants.
+
+**Rank vs realm name.** Landed rank is Lord / Duke / King / Emperor. A future political entity name (e.g. Duchy of Westmere) is separate. V0.1 proves rank progression. Full naming is not this checkpoint: default/deterministic display name is enough for UI/testing; custom names stay optional and must never block establishment; geography name ≠ political title. Do not build procedural naming as a separate system here.
+
+**Hierarchy integration.** Use existing Political Hierarchy V0.1. Rank change does **not** automatically rewrite liege/vassal links or flatten trees. Existing vassals remain attached. An existing liege remains unless a **separately designed** future rule handles an impossible rank state. Do not invent automatic hierarchy restructuring. After a rank change, future vassalage validation should use the **new current rank**. Player-facing actions: Establish Duchy / Establish Kingdom / Establish Empire (or equivalent clear wording).
+
+**Map integration.** Read greater-realm control from existing map/ownership state. Title progression must not own, create, reassign, or conquer territory, or alter adjacency/geometry. Map/hierarchy UI may later show the updated rank.
+
+Do not implement a full Prestige economy, Gold, Influence, warfare, claims, AI, religion, succession, aging, dynasties, persistence, title laws, de jure, coronations, or extra rank tiers from this checkpoint.
+
+### Title qualification and establishment (long-term)
+
+Higher-title qualification **adapts to the selected map**. Do **not** permanently hardcode universal territory counts for every future map. Conceptually: `TitleRequirements = f(MapConfiguration)`. Vale V0.1 test numbers are locked for that prototype map only. Exact formula, percentages, rounding, and per-map tuning for **other** maps remain **unresolved**.
 
 Formal rank and current practical power may **diverge** (a weakened Duke may hold less land or military strength than a powerful Lord). This is intentional.
-
-Conceptual progression (thresholds unresolved): Independent Lord → eligible for Duchy (dynamic realm-control + min Prestige) → player establishes → Duke → eligible for Kingdom (larger dynamic realm-control + larger min Prestige) → player establishes → King → eligible for Empire (largest dynamic realm-control + highest min Prestige) → player establishes → Emperor.
 
 ### Realm naming
 
@@ -526,7 +540,7 @@ Do not design them as interchangeable currencies with different icons. Each shou
 
 **Gold** — economic and material power. May eventually interact with military expenses, territorial investment, economic development, political transactions, and other tangible expenditures.
 
-**Prestige** — reputation, status, renown, and political legitimacy. May eventually be gained through significant accomplishments (successful rule, warfare, political advancement, dynastic achievements, diplomacy, or other approved systems). May be used as a **requirement** for political actions. For title establishment: a **minimum Prestige threshold is required; that Prestige is not consumed**.
+**Prestige** — reputation, status, renown, and political legitimacy. May eventually be gained through significant accomplishments (successful rule, warfare, political advancement, dynastic achievements, diplomacy, or other approved systems). May be used as a **requirement** for political actions. For title establishment: a **minimum Prestige threshold is required; that Prestige is not consumed**. Vale Title Progression V0.1 **test** thresholds are 100 / 250 / 500 for Duke / King / Emperor; those are not the full Prestige economy. Title Progression V0.1 uses temporary server-side test Prestige only. Income, decay, spending, caps, and persistence remain unresolved.
 
 **Influence** — political leverage and political capital. May eventually interact with political organization, factions, political demands, support for political objectives, and other political actions.
 
@@ -655,7 +669,9 @@ A full numbered 0.1 feature freeze beyond the following is **not** specified.
 
 **Territory / Map Foundation V0.1** is specified under Titles & Territory. The prototype is **accepted / complete**. Do not expand it into deferred systems.
 
-**Title progression, naming formulas, economy, and monetization** remain specified only at the earlier checkpoint level. Exact formulas, additional map assets, currencies implementation, and monetization products remain unresolved.
+**Title Progression V0.1** is specified under Titles & Territory. The prototype is **accepted / complete**. Sequential Lord → Duke → King → Emperor, Vale test thresholds, greater-realm control, manual establish, server revalidation, test Prestige not spent, no auto-demotion.
+
+**Naming formulas, economy, and monetization** remain specified only at the earlier checkpoint level except where Title Progression V0.1 already locks Vale test Prestige thresholds. Additional map assets, real Prestige/Gold/Influence gameplay, and monetization products remain unresolved.
 
 Political Hierarchy V0.1 remains a foundational dependency for later warfare, rebellion, title progression, diplomacy, and victory conditions. Territory ownership is a separate concept from hierarchy membership.
 
@@ -679,7 +695,8 @@ Part of the long-term vision, **not** authorized for immediate implementation me
 - Complex character events
 - Final victory-condition calculations
 - Polished production UI
-- Exact title-scaling formula and numerical Duke/King/Emperor realm-control and Prestige thresholds
+- Title-scaling formula and numerical thresholds for maps **other than** Vale Title Progression V0.1 test numbers (Duke 2/100, King 5/250, Emperor 10/500)
+- Real Prestige resource system (income, decay, spending, UI economy, persistence); V0.1 titles use temporary server-side test Prestige only
 - Title-loss systems
 - Vassal obligations (tax, military contribution, contracts, formulas)
 - Independence gameplay methods

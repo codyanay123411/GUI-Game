@@ -4,7 +4,7 @@ Phases describe **dependency and preferred order**, not a hard ban on touching a
 
 AI agents must **not** prematurely implement major later-phase gameplay systems merely because they appear on this list. If work would skip ahead, stop and ask, or stay within the current phase.
 
-Gameplay implementation: **Political Hierarchy V0.1 is accepted / complete** (see `AI/PROGRESS.md`). **Territory / Map Foundation V0.1 is accepted / complete.** Later phases are not started. Completing the map foundation does **not** start Phase 2 Character Simulation. Do not implement aging, family simulation, or succession as currently approved core design.
+Gameplay implementation: **Political Hierarchy V0.1 is accepted / complete** (see `AI/PROGRESS.md`). **Territory / Map Foundation V0.1 is accepted / complete.** **Title Progression V0.1 is accepted / complete.** Later phases are not started. Completing titles does **not** start Phase 2 Character Simulation. Do not implement aging, family simulation, or succession as currently approved core design. Do not implement a real Prestige economy or title-loss from this prototype.
 
 ## 1. Foundation & Architecture — COMPLETE
 
@@ -30,7 +30,7 @@ Inheritance of status and titles when characters die or are displaced.
 
 GUI political map as the primary board; multiple selectable fictional maps with stable geography distinct from political realm names; holdings and title establishment (dynamic map-configured greater-realm control + Prestige threshold; manual establish; server revalidation).
 
-**Territory / Map Foundation V0.1** (data-driven `MapConfiguration`, 16-territory irregular-polygon test map, random unique human starts, Unclaimed remainder, pan/zoom/select, adjacency, greater-realm vs owner visualization) is **accepted / complete**. Do not mark Phase 6 complete. Title-scaling numerical thresholds, additional maps, lobby voting, warfare, and conquest remain unresolved / deferred.
+**Territory / Map Foundation V0.1** (data-driven `MapConfiguration`, 16-territory irregular-polygon test map, random unique human starts, Unclaimed remainder, pan/zoom/select, adjacency, greater-realm vs owner visualization) is **accepted / complete**. **Title Progression V0.1** (sequential ranks, Vale test thresholds, greater-realm control, manual establish, server revalidation, test Prestige not spent) is **accepted / complete**. Do not mark this phase complete. Additional maps, lobby voting, warfare, conquest, real Prestige economy, and title-loss remain unresolved / deferred.
 
 ## 7. Relationships
 

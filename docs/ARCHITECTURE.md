@@ -7,14 +7,14 @@ This project is a GUI-first Roblox game. Source-controlled Luau lives on disk an
 | Path | Purpose |
 | --- | --- |
 | `ServerScriptService/` | Authoritative server scripts. Contains the server entry point and server-only systems. |
-| `ServerScriptService/Services/` | Authoritative server-side systems. Currently `PoliticalHierarchyService.luau` and `TerritoryMapService.luau`. |
+| `ServerScriptService/Services/` | Authoritative server-side systems. Currently `PoliticalHierarchyService.luau`, `TerritoryMapService.luau`, and `TitleProgressionService.luau`. |
 | `ReplicatedStorage/Shared/` | Modules that are safe and appropriate for both client and server. |
 | `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Currently `PoliticalHierarchyConfig.luau`, `MapCatalog.luau`, `ValePrototypeMap.luau`, `RealmColors.luau`. |
-| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Currently `PoliticalTypes.luau` and `TerritoryTypes.luau`. |
-| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`. |
-| `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. Hierarchy: `HierarchyClientEvent`, `HierarchyServerEvent`. Territory: `TerritoryClientEvent`, `TerritoryServerEvent`. Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
+| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Currently `PoliticalTypes.luau`, `TerritoryTypes.luau`, and `TitleTypes.luau`. |
+| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (`NextRank` / `Name`), `TitleRequirements.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`. |
+| `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. Hierarchy: `HierarchyClientEvent`, `HierarchyServerEvent`. Territory: `TerritoryClientEvent`, `TerritoryServerEvent`. Title: `TitleClientEvent`, `TitleServerEvent`. Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
 | `StarterPlayerScripts/` | Client scripts that run for each player. On disk this is a root folder; in Studio it maps to `StarterPlayer.StarterPlayerScripts`. Contains the client entry point and controllers. |
-| `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau` and `TerritoryMapController.luau`. |
+| `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau`, `TerritoryMapController.luau`, and `TitleProgressionController.luau`. |
 | `docs/` | Project documentation, including this architecture note. |
 | `AI/` | Agent tracker: progress, decisions, and changelog. |
 
@@ -22,7 +22,7 @@ GUI instances are **not** stored in this filesystem. They are created and edited
 
 Reserved Script Sync folders that still have no Luau modules keep `_Placeholder.luau` so Studio materializes the folder. Delete or replace the placeholder when real modules occupy that folder. `ReplicatedStorage/Remotes/_Placeholder.luau` is kept because remotes are Studio instances, not synced Luau.
 
-Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesystem source file). V0.1 layout: central `MapStage`, right `Main` hierarchy panel, bottom `TerritoryInfo`, top-left `ResultToast`.
+Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesystem source file). V0.1 layout: central `MapStage`, right `Main` hierarchy panel, bottom-right `TitlePanel`, bottom `TerritoryInfo`, top-left `ResultToast`. Incoming vassalage is a map-centered `VassalageOfferOverlay` (not clipped inside `Main`).
 
 ## Server / client / shared separation
 
@@ -44,7 +44,7 @@ GUI behavior is driven by client **Controllers**. Authoritative game state and v
 
 The client must never be trusted for authoritative game decisions. Treat client requests as untrusted input: the server validates, the client reflects the result.
 
-That includes **title establishment**: the client may show eligibility and request a title; only the server may grant Duke, King, or Emperor after revalidation.
+That includes **title establishment**: the client may show eligibility and request a title; only the server may grant Duke, King, or Emperor after revalidation. Title Progression V0.1 is **accepted / complete**.
 
 ## Coherent prototype UI
 
@@ -60,9 +60,33 @@ The game is GUI-first. Future GUI work must extend **one** evolving strategy-gam
 
 This is a standing layout/integration principle, not a mandate to redesign existing GUI until a feature needs the space.
 
+## Future UI shell (specified, not implemented)
+
+Long-term GUI architecture. **Do not implement from this section.** The current prototype layout remains in use (right-side hierarchy + title, map-centered vassalage overlay, result toast). Do not assign keyboard keys yet.
+
+- The interactive political map is the persistent primary workspace and should eventually occupy essentially the full usable main game canvas.
+- Major systems (hierarchy, titles, diplomacy, economy, religion, and later equivalents) must **not** accumulate as permanently visible stacked panels. They open as contextual panels/overlays over the map.
+- Major panels should be opened by explicit activation: on-screen navigation controls and/or keyboard keybinds. **No keybinds are assigned.** Future work must **centralize** UI navigation/bindings; controllers must not each invent a private key.
+- Opening a major panel uses a coherent UI state model: close or replace another major panel where appropriate; coexist only when useful; avoid permanent clutter.
+- **Priority overlays** (incoming Vassalage Accept/Decline and similar must-act requests) stay visible and actionable no matter which major panel is open. They are not major panels.
+- **Result toasts** stay transient, non-interactive feedback. Do not merge them with major panels or action overlays.
+- Functional clarity first; visual polish later. Not a license to redesign the current accepted/prototype GUI now.
+
+### Input layering / click-through (standing)
+
+Current and future GUI must prevent click-through between overlapping interactive layers.
+
+When a pointer/input event is handled by a visible higher-priority GUI element, lower layers must not react to the same input. The interactive map is the lowest primary gameplay input layer.
+
+Examples: Accept/Decline on a Vassalage overlay must not also select a territory underneath; clicking or dragging inside a major panel must not pan/select the map beneath it; scrolling inside a panel must not zoom the map underneath it; clicking non-transparent modal/card space should block map interaction where that UI occupies the screen.
+
+Use Roblox GUI/input mechanisms that **consume/block** input for the visible/interactable bounds of the higher-priority GUI (`Active`, `Interactable`, input sinking as appropriate). Do not rely on ZIndex alone. Do not make the entire screen globally modal if that unnecessarily blocks unrelated map area.
+
+Known current-prototype gap (not fixed in this documentation pass): a Vassalage overlay Accept/Decline click has been observed to also select a map territory. Treat that as an allowed later usability correction, not as Title V0.1 gameplay.
+
 ## Configuration and simulation
 
-- **Map-driven political scaling.** Title-qualification thresholds come from the selected map’s configuration, not from hardcoded universal territory counts and not from human player count. Shared config belongs in `ReplicatedStorage/Shared/Config/` conceptually; the server still applies and validates it.
+- **Map-driven political scaling.** Title-qualification thresholds come from the selected map’s configuration, not from hardcoded universal territory counts and not from human player count. Shared config belongs in `ReplicatedStorage/Shared/Config/` conceptually; the server still applies and validates it. Vale Title Progression V0.1 **test** numbers (Duke 2/100, King 5/250, Emperor 10/500) live on `ValePrototypeMap.titleRequirements` only; they must not become a universal engine constant.
 - **Match vs account state.** Gold, Prestige, and Influence are match resources and reset between matches. Crowns and Lifetime Support are account-level and persist. Do not mix competitive match power into premium currency.
 - **Performance.** Prefer storing authoritative state and recalculating on meaningful changes. Avoid continuous polling and per-frame re-evaluation of unchanged political information or of every NPC action. This is a constraint on future systems, not a mandate to optimize empty modules.
 
@@ -73,3 +97,13 @@ This is a standing layout/integration principle, not a mandate to redesign exist
 - **Client:** `TerritoryMapController` renders polygons in a ViewportFrame (WedgeParts), pan/zoom/select, info panel from replicated territory + hierarchy state. Greater-realm fill vs direct-holder rim; selection is a separate inward gold ring that does not replace those colors. Never treats clicks as granting ownership. `TerritoryClientEvent` accepts only `Ready`.
 
 Political Hierarchy V0.1 remains the source of liege/vassal/root-ruler truth. Map coloring **reads** that state.
+
+## Title progression (V0.1 — accepted / complete)
+
+- **Config:** `TitleRequirements = f(MapConfiguration)` via `Shared/Util/TitleRequirements.luau` reading `mapDef.titleRequirements` (Vale test: Duke 2/100, King 5/250, Emperor 10/500). Sequential next rank only (`PoliticalRankRules.NextRank`).
+- **Server:** `TitleProgressionService` revalidates ruler, current rank, next rank, greater-realm territory count (`CountOwnedByRulers` over ruler + `descendantIds`), and test Prestige (threshold, not spent), then `SetTitleRank`. Temporary server-side test Prestige only (default 0). `TitleClientEvent` accepts Ready / Establish only. Do not trust the client.
+- **Client:** `TitleProgressionController` + `TitlePanel`: eligibility display and Establish request. Hierarchy/map show the new rank from hierarchy snapshots after grant.
+- **Must not:** own or mutate territory; auto-promote; auto-demote; duplicate hierarchy authority; implement a real Prestige economy.
+- **Dependencies:** Title → Hierarchy + Territory. Hierarchy and Territory do not require Title. Change events: `StateChanged`, `OwnershipChanged`.
+- **Debug (prototype only):** `_G.__TitleProgressionV01.DebugSetPrestige(rulerId, n)` if the running server VM exposes `_G`; otherwise `ServerScriptService.TitleProgressionDebug:SetAttribute("SetPrestige", "rulerId=number")`. No client Prestige remote.
+- **Accepted / complete** after director Local Server + 2 Players testing (see `AI/PROGRESS.md`). Does not authorize a real Prestige economy, title-loss, or other deferred systems.

@@ -17,6 +17,9 @@ local Hierarchy = require(ServerScriptService.Services.PoliticalHierarchyService
 
 local TerritoryMapService = {}
 
+local ownerChangedBindable = Instance.new("BindableEvent")
+TerritoryMapService.OwnershipChanged = ownerChangedBindable.Event
+
 local started = false
 local mapDef
 local ownerByTerritory: { [string]: string } = {}
@@ -27,6 +30,7 @@ local nextColorIndex = 1
 local remotesFolder: Folder
 local clientIntent: RemoteEvent
 local serverPush: RemoteEvent
+local debugSnapshot: StringValue?
 
 local function definitionById()
 	local byId = {}
@@ -87,6 +91,9 @@ end
 local function pushState(toPlayer: Player?)
 	local payload = buildSnapshot()
 	local encoded = HttpService:JSONEncode(payload)
+	if debugSnapshot then
+		debugSnapshot.Value = encoded
+	end
 	if toPlayer then
 		print("[Territory] push State to", toPlayer.Name)
 		serverPush:FireClient(toPlayer, "State", encoded)
@@ -94,6 +101,7 @@ local function pushState(toPlayer: Player?)
 		print("[Territory] push State all clients")
 		serverPush:FireAllClients("State", encoded)
 	end
+	ownerChangedBindable:Fire()
 end
 
 local function unclaimRuler(rulerId: string)
@@ -137,6 +145,24 @@ end
 
 function TerritoryMapService.GetMapId(): string
 	return mapDef.mapId
+end
+
+function TerritoryMapService.GetMapDefinition()
+	return mapDef
+end
+
+function TerritoryMapService.CountOwnedByRulers(rulerIds: { string }): number
+	local want = {}
+	for _, id in rulerIds do
+		want[id] = true
+	end
+	local n = 0
+	for _, owner in ownerByTerritory do
+		if want[owner] then
+			n += 1
+		end
+	end
+	return n
 end
 
 -- Prototype/debug only. Not a client remote.
@@ -191,6 +217,33 @@ function TerritoryMapService.Start()
 
 	clientIntent.OnServerEvent:Connect(onClientIntent)
 
+	local debugFolder = ServerScriptService:FindFirstChild("TerritoryMapDebug")
+	if debugFolder then
+		debugFolder:Destroy()
+	end
+	debugFolder = Instance.new("Folder")
+	debugFolder.Name = "TerritoryMapDebug"
+	debugFolder.Parent = ServerScriptService
+	debugSnapshot = Instance.new("StringValue")
+	debugSnapshot.Name = "LastSnapshot"
+	debugSnapshot.Parent = debugFolder
+	debugFolder:GetAttributeChangedSignal("SetOwner"):Connect(function()
+		local raw = debugFolder:GetAttribute("SetOwner")
+		if typeof(raw) ~= "string" then
+			return
+		end
+		local territoryId, rulerId = string.match(raw, "^([%w_]+)=([%w_]*)$")
+		if not territoryId then
+			warn("[Territory] debug SetOwner expected territoryId=rulerId")
+			return
+		end
+		if rulerId == nil or rulerId == "" then
+			TerritoryMapService.DebugSetOwner(territoryId, nil)
+		else
+			TerritoryMapService.DebugSetOwner(territoryId, rulerId)
+		end
+	end)
+
 	Hierarchy.RulerCreated:Connect(function(rulerId: string, userId: number?)
 		if typeof(userId) == "number" then
 			assignStartingTerritory(rulerId)
@@ -206,6 +259,9 @@ function TerritoryMapService.Start()
 			assignStartingTerritory(ruler.rulerId)
 		end
 	end
+
+	-- Prototype/debug: running instance for Command Bar / MCP. Not a client remote.
+	_G.__TerritoryMapV01 = TerritoryMapService
 end
 
 return TerritoryMapService

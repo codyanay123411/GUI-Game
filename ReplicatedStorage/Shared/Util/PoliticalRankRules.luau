@@ -19,12 +19,23 @@ local NAMES: { [number]: string } = {
 	[4] = "Emperor",
 }
 
+function PoliticalRankRules.Name(rank: number): string
+	return NAMES[rank] or "Unknown"
+end
+
 function PoliticalRankRules.IsValidRank(rank: number): boolean
 	return rank == 1 or rank == 2 or rank == 3 or rank == 4
 end
 
-function PoliticalRankRules.Name(rank: number): string
-	return NAMES[rank] or "Unknown"
+function PoliticalRankRules.NextRank(rank: number): number?
+	if rank == PoliticalRankRules.Lord then
+		return PoliticalRankRules.Duke
+	elseif rank == PoliticalRankRules.Duke then
+		return PoliticalRankRules.King
+	elseif rank == PoliticalRankRules.King then
+		return PoliticalRankRules.Emperor
+	end
+	return nil
 end
 
 -- vassal becomes the vassal of liege: liege rank must be >= vassal rank

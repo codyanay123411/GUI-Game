@@ -13,10 +13,20 @@ export type TerritoryDefinition = {
 	adjacentIds: { TerritoryId },
 }
 
+export type TitleRequirement = {
+	rank: number,
+	titleName: string,
+	establishLabel: string,
+	establishedNotice: string,
+	territoryCount: number,
+	prestige: number,
+}
+
 export type MapDefinition = {
 	mapId: MapId,
 	displayName: string,
 	territories: { TerritoryDefinition },
+	titleRequirements: { TitleRequirement }?,
 }
 
 export type TerritoryOwnershipSnapshot = {

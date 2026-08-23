@@ -16,5 +16,7 @@
 
 local PoliticalHierarchyController = require(script.Parent.Controllers.PoliticalHierarchyController)
 local TerritoryMapController = require(script.Parent.Controllers.TerritoryMapController)
+local TitleProgressionController = require(script.Parent.Controllers.TitleProgressionController)
 PoliticalHierarchyController.Start()
 TerritoryMapController.Start()
+TitleProgressionController.Start()

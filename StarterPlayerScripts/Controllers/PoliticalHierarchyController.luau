@@ -82,13 +82,27 @@ function PoliticalHierarchyController.Start()
 	local resultToast = gui:WaitForChild("ResultToast") :: Frame
 	local resultToastLabel = resultToast:WaitForChild("Label") :: TextLabel
 	local playerList = main:WaitForChild("PlayerList") :: ScrollingFrame
-	local incomingList = main:WaitForChild("IncomingList") :: ScrollingFrame
+	local incomingList = main:FindFirstChild("IncomingList")
 	local incomingHeader = main:FindFirstChild("IncomingHeader")
-	if incomingHeader and incomingHeader:IsA("TextLabel") then
-		incomingHeader.Text = "  Incoming vassalage requests"
+	if incomingHeader and incomingHeader:IsA("GuiObject") then
+		incomingHeader.Visible = false
+	end
+	if incomingList and incomingList:IsA("GuiObject") then
+		incomingList.Visible = false
 	end
 	local playerTemplate = gui:WaitForChild("Templates"):WaitForChild("PlayerRow")
-	local requestTemplate = gui:WaitForChild("Templates"):WaitForChild("RequestRow")
+	local offerCardTemplate = gui:WaitForChild("Templates"):WaitForChild("OfferCard")
+	local offerOverlay = gui:WaitForChild("VassalageOfferOverlay") :: Frame
+	offerOverlay.Visible = false
+	local overlayExtra = offerOverlay:WaitForChild("ExtraList") :: Frame
+	local overlayBody = offerOverlay:FindFirstChild("Body")
+	local overlayButtons = offerOverlay:FindFirstChild("Buttons")
+	if overlayBody and overlayBody:IsA("GuiObject") then
+		overlayBody.Visible = false
+	end
+	if overlayButtons and overlayButtons:IsA("GuiObject") then
+		overlayButtons.Visible = false
+	end
 
 	local myRulerId: string? = nil
 	local receivedState = false
@@ -133,8 +147,8 @@ function PoliticalHierarchyController.Start()
 		return nil
 	end
 
-	local function clearChildren(frame: ScrollingFrame)
-		for _, child in frame:GetChildren() do
+	local function clearFrameChildren(container: Instance)
+		for _, child in container:GetChildren() do
 			if child:IsA("Frame") then
 				child:Destroy()
 			end
@@ -200,7 +214,7 @@ function PoliticalHierarchyController.Start()
 		end
 		treeView.Text = formatTree()
 
-		clearChildren(playerList)
+		clearFrameChildren(playerList)
 		local layoutOrder = 0
 		local otherRows = 0
 		for _, ruler in snapshot.rulers do
@@ -230,7 +244,7 @@ function PoliticalHierarchyController.Start()
 			end
 		end
 
-		clearChildren(incomingList)
+		clearFrameChildren(overlayExtra)
 		layoutOrder = 0
 		local incomingCount = 0
 		local meId = if me then me.rulerId else nil
@@ -239,19 +253,16 @@ function PoliticalHierarchyController.Start()
 				layoutOrder += 1
 				incomingCount += 1
 				local from = rulerById(request.fromRulerId)
-				local row = requestTemplate:Clone()
-				row.Name = "RequestRow_" .. tostring(layoutOrder)
-				row.Visible = true
-				row.LayoutOrder = layoutOrder
-				row.Size = UDim2.new(1, -8, 0, 64)
-				row.Parent = incomingList
-				local label = row:WaitForChild("Label") :: TextLabel
-				label.Text = string.format(
-					"%s offers you vassalage.",
-					if from then (from.titleName .. " " .. from.displayName) else request.fromRulerId
-				)
-				local accept = row:FindFirstChild("AcceptButton", true) :: TextButton
-				local decline = row:FindFirstChild("DeclineButton", true) :: TextButton
+				local fromName = if from then (from.titleName .. " " .. from.displayName) else request.fromRulerId
+				local card = offerCardTemplate:Clone()
+				card.Name = "OfferCard_" .. tostring(layoutOrder)
+				card.Visible = true
+				card.LayoutOrder = layoutOrder
+				card.Parent = overlayExtra
+				local label = card:WaitForChild("Label") :: TextLabel
+				label.Text = string.format("%s offers to become your vassal.", fromName)
+				local accept = card:FindFirstChild("AcceptButton", true) :: TextButton
+				local decline = card:FindFirstChild("DeclineButton", true) :: TextButton
 				accept.Visible = true
 				accept.Active = true
 				decline.Visible = true
@@ -264,6 +275,7 @@ function PoliticalHierarchyController.Start()
 				end)
 			end
 		end
+		offerOverlay.Visible = incomingCount > 0
 		print(
 			"[Hierarchy] render",
 			player.Name,
