@@ -6,13 +6,15 @@ AI agents must **not** prematurely implement major later-phase gameplay systems 
 
 Gameplay implementation has not started. **Current phase: 1 — Foundation & Architecture.**
 
+**First foundational gameplay prototype** (after architecture, **when directors authorize implementation**): **Political Hierarchy Design V0.1** in `AI/GAME_DESIGN.md`. That design is specified and **not implemented**. Do not treat a deep autonomous character simulation as the first playable loop.
+
 ## 1. Foundation & Architecture
 
-Source layout, Script Sync, Studio MCP workflow, shared types/config/util conventions, remotes reservation, thin bootstraps, GUI-first client/server split. No major gameplay systems.
+Source layout, Script Sync, Studio MCP workflow, shared types/config/util conventions, remotes reservation, thin bootstraps, GUI-first client/server split. Performance philosophy: store authoritative state and recalculate on meaningful change (do not prematurely optimize nonexistent systems). No major gameplay systems.
 
 ## 2. Character Simulation
 
-Authoritative character model and the first playable character loop. Later systems depend on this.
+Authoritative character model as needed for later systems. **Not** the first gameplay prototype; political hierarchy comes first when implementation is authorized.
 
 ## 3. Family & Dynasty
 
@@ -28,7 +30,7 @@ Inheritance of status and titles when characters die or are displaced.
 
 ## 6. Titles & Territory
 
-Holdings, titles, and map/territory representation (GUI-first).
+GUI political map as the primary board; multiple selectable fictional maps with stable geography distinct from political realm names; holdings and title establishment (dynamic map-configured greater-realm control + Prestige threshold; manual establish; server revalidation). Renderer, layouts, and numerical thresholds unresolved.
 
 ## 7. Relationships
 
@@ -56,11 +58,11 @@ Event content and emergent storytelling on top of simulation state.
 
 ## 13. Economy & Development
 
-Economy, holdings development, and related resources.
+Match resources Gold / Prestige / Influence (reset per match, distinct roles). Buildings and detailed formulas later. Account-level Crowns and Lifetime Support are not match-power currencies.
 
 ## 14. Persistence
 
-Saving and loading authoritative state.
+Account-level Crowns and Lifetime Support persist across matches. Match save/load of political state remains later unless directors specify it.
 
 ## 15. UI/UX Refinement
 

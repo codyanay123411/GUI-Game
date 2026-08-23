@@ -18,6 +18,29 @@ Substantial architectural decisions belong in this file. Do not silently reverse
 - Previous **single-player-oriented** development assumptions are **superseded**. The first meaningful gameplay prototype (when authorized) is **multiplayer political hierarchy**, not a deep autonomous character simulation. Do not implement that prototype until directed.
 - Victory conditions are conceptual only. Do not implement victory math until those systems are formally designed.
 
+## Political hierarchy (Design V0.1 — specified, not implemented)
+
+- Foundational system. Nested ruler-to-ruler trees. Server-authoritative. Clients may request and display; the server validates.
+- **Ranks:** Lord → Duke → King → Emperor (four primary landed levels). This supersedes earlier Count-tier wording.
+- **Normal start:** every participating player is an **Independent Lord** with **one** starting territory. No player Dukes/Kings/Emperors at match start.
+- **Independence** is a status, not a rank. Rank and independence are separate.
+- Distinguish **direct liege**, **direct vassals**, **indirect subjects**, independent rulers, top ruler, and greater-realm membership.
+- **Voluntary vassalage** (both agree): allowed to equal or higher rank; **never** to lower rank. Equal-rank vassalage is allowed so blocs can form at Lord before higher titles exist.
+- When a ruler’s liege changes (join or leave a greater realm), **existing subordinate trees stay attached**. Do not flatten internal hierarchy.
+- Humans and NPCs may eventually share the same conceptual rules; detailed NPC political AI is unspecified.
+- **No cycles.** Reject becoming subordinate to someone already in your subordinate tree.
+- Title **establishment** (when designed for play): eligibility from map-configured greater-realm control **plus** a minimum Prestige threshold (Prestige **not** spent); player action; server revalidates. Not automatic. Gold/Influence are not establishment requirements. Established titles are **not** auto-demoted for falling below creation thresholds. Exact numbers and title-loss systems remain unresolved.
+- **Unresolved (do not invent):** exact scaling formula and numerical thresholds; title-loss; vassal obligations; independence methods; disconnect/reconnect; join-in-progress. War may later change hierarchy without eliminating players; war outcomes are not designed.
+
+## Maps, title scaling, economy, monetization (checkpoint — specified, not implemented)
+
+- Primary board: large interactive GUI political map. Multiple fictional maps; territory counts may differ; geography is stable per map and separate from political realm names. Map size and title scaling do **not** depend on human player count.
+- `TitleRequirements = f(MapConfiguration)` — deterministic, configuration-driven. Greater-realm control counts. Do not hardcode universal X/Y/Z territory counts.
+- Match resources reset each match: **Gold** (economic), **Prestige** (legitimacy), **Influence** (political leverage) — conceptually distinct.
+- Account-level persist: **Crowns** (premium/cosmetic working name; not competitive match power) and **Lifetime Support** (non-spendable statistic; spending Crowns does not reduce it).
+- Prefer procedural/curated naming, not external generative AI. Default realm names on title establishment; custom names optional and must be filterable. Never block establishment for lack of a custom name.
+- Simulation performance: store state; calculate on meaningful change; do not poll/recalculate unchanged political info every frame.
+
 ## Source layout
 
 - **Server** lives under `ServerScriptService`. `Services/` is reserved for authoritative server-side systems. `Bootstrap.server.luau` is a thin orchestrator only.

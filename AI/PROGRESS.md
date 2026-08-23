@@ -31,4 +31,7 @@ A task must not be marked complete until it has been verified.
 - [x] `AI/ROADMAP.md` created (16 phases; current phase 1; verified on disk)
 - [x] `.cursor/rules/project.mdc` created (always-apply operating rule; verified on disk)
 - [x] Initial multiplayer game vision / design bible v0.1 written into `AI/GAME_DESIGN.md` (verified on disk; no gameplay implemented)
+- [x] Political Hierarchy Design V0.1 specified/documented (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`) — **not implemented**
+- [x] Design checkpoint (maps, title progression, naming, economy, monetization, performance) specified/documented — **not implemented**
 - [ ] Confirm a full 0.1 feature freeze beyond the political-hierarchy prototype priority
+- [ ] Implement Political Hierarchy Design V0.1 (not authorized until directed)

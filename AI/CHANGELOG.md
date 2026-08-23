@@ -31,3 +31,11 @@ Added `AI/GAME_DESIGN.md` (authoritative vision placeholders), `AI/ROADMAP.md` (
 ## 2026-08-23 — Design bible v0.1
 
 Replaced design placeholders with the director-authored multiplayer feudal strategy bible: ~30-minute matches, ~50 players, GUI-first shared political world, subordination as gameplay not elimination. No gameplay implemented.
+
+## 2026-08-23 — Political Hierarchy Design V0.1
+
+Documented four landed ranks (Lord → Duke → King → Emperor), independent-Lord start with one territory, independence vs rank, direct/indirect vassals, voluntary vassalage rank rules, preserved subordinate trees, no cycles, server authority. Higher titles, obligations, independence methods, disconnect, and join-in-progress remain unspecified. No gameplay implemented.
+
+## 2026-08-23 — Maps, titles, economy & performance checkpoint
+
+Documented interactive multi-map geography vs realms, dynamic map-based title qualification, manual establishment with Prestige (not spent) and server revalidation, persistent titles below creation thresholds, Gold/Prestige/Influence vs Crowns/Lifetime Support, non-pay-to-win Crowns, and calculate-on-change performance philosophy. Numerical formulas, map assets, and products remain unresolved. No gameplay implemented.

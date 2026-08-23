@@ -39,3 +39,11 @@ GUI instances are **not** stored in this filesystem. They are created and edited
 GUI behavior is driven by client **Controllers**. Authoritative game state and validation remain **server-side** in **Services**.
 
 The client must never be trusted for authoritative game decisions. Treat client requests as untrusted input: the server validates, the client reflects the result.
+
+That includes **title establishment**: the client may show eligibility and request a title; only the server may grant Duke, King, or Emperor after revalidation.
+
+## Configuration and simulation
+
+- **Map-driven political scaling.** Title-qualification thresholds come from the selected map’s configuration, not from hardcoded universal territory counts and not from human player count. Shared config belongs in `ReplicatedStorage/Shared/Config/` conceptually; the server still applies and validates it.
+- **Match vs account state.** Gold, Prestige, and Influence are match resources and reset between matches. Crowns and Lifetime Support are account-level and persist. Do not mix competitive match power into premium currency.
+- **Performance.** Prefer storing authoritative state and recalculating on meaningful changes. Avoid continuous polling and per-frame re-evaluation of unchanged political information or of every NPC action. This is a constraint on future systems, not a mandate to optimize empty modules.
