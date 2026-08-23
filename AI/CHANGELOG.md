@@ -23,3 +23,11 @@ Moved client files from nested `StarterPlayer/StarterPlayerScripts/` into root `
 ## 2026-08-23 — Studio architecture verification
 
 Added `_Placeholder.luau` ModuleScripts so reserved Script Sync folders appear in Studio. Verified `ServerScriptService.Services`, `ReplicatedStorage.Shared` (`Config`/`Types`/`Util`), `ReplicatedStorage.Remotes`, and `StarterPlayer.StarterPlayerScripts.Controllers`. Bootstraps still match disk.
+
+## 2026-08-23 — Project knowledge system
+
+Added `AI/GAME_DESIGN.md` (authoritative vision placeholders), `AI/ROADMAP.md` (16 ordered phases; current phase 1), and `.cursor/rules/project.mdc` (always-apply agent workflow). No gameplay implemented.
+
+## 2026-08-23 — Design bible v0.1
+
+Replaced design placeholders with the director-authored multiplayer feudal strategy bible: ~30-minute matches, ~50 players, GUI-first shared political world, subordination as gameplay not elimination. No gameplay implemented.

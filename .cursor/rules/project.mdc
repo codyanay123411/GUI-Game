@@ -1,0 +1,28 @@
+---
+description: Persistent operating rules for this Roblox GUI-first game — read AI knowledge files, preserve design, verify before complete
+alwaysApply: true
+---
+
+# Project operating rules
+
+Before substantial work, read `AI/GAME_DESIGN.md`, `AI/ROADMAP.md`, `AI/PROGRESS.md`, and `AI/DECISIONS.md`.
+
+1. Understand the current game vision before implementing features. `AI/GAME_DESIGN.md` is authoritative; most of it is still placeholder until the user fills it in.
+2. Determine the current roadmap phase from `AI/ROADMAP.md`. Phases are dependency order, not an excuse to skip ahead.
+3. Preserve established architectural and game-design decisions in `AI/DECISIONS.md` and `docs/ARCHITECTURE.md`.
+4. Do not silently change the game’s design.
+5. Do not implement unrelated future features or major later-phase gameplay just because it is on the roadmap.
+6. Keep server-authoritative gameplay logic on the server (`ServerScriptService` / `Services`).
+7. Never trust the Roblox client for authoritative decisions.
+8. Keep systems modular. Avoid monolithic scripts. Thin bootstraps only.
+9. Use Script Sync for source-controlled Luau. Disk `StarterPlayerScripts/` maps to Studio `StarterPlayer.StarterPlayerScripts`.
+10. Use Roblox Studio MCP for live DataModel work, inspection, GUI instances, and playtesting. Do not put GUI instances in the filesystem.
+11. Inspect and verify the implementation before declaring completion.
+12. Check Roblox Studio errors/output when appropriate.
+13. Diagnose and correct your own implementation errors.
+14. Never mark a task complete merely because code was written. Verify first.
+15. After verified substantial work, update `AI/PROGRESS.md`.
+16. Append meaningful completed changes to `AI/CHANGELOG.md`.
+17. Record significant new architectural decisions in `AI/DECISIONS.md`.
+18. Never modify `AI/GAME_DESIGN.md` to make implementation easier or to retroactively justify a coding choice. Change it only when the user explicitly requests a design change.
+19. If design docs do not answer an important product question, ask the user instead of inventing a major decision.
