@@ -60,6 +60,20 @@ The game is GUI-first. Future GUI work must extend **one** evolving strategy-gam
 
 This is a standing layout/integration principle, not a mandate to redesign existing GUI until a feature needs the space.
 
+### Prototype panel geometry (standing)
+
+Current prototype screen regions are **deterministic**. Gameplay-state changes update **content and visual state** inside those regions (text, button enablement, tree/player rows). They must not arbitrarily reflow primary panel Size/Position.
+
+Dynamic lists (hierarchy tree, other players) **scroll inside** their assigned regions. They do not grow the parent `Main` or `TitlePanel`.
+
+`Main` (hierarchy) and `TitlePanel` form one right-side column with a small fixed gap: hierarchy fills remaining height above a **fixed-height** title footer. The Establish control keeps a reserved slot (enable/disable/label; “No further title” when there is no next rank) so hiding a next title does not shrink the panel.
+
+Explicit future player actions (open/collapse/keybind panels) may change geometry on purpose. That is not this V0.1 prototype.
+
+### Prototype visual theme (standing)
+
+Current prototype surfaces share one dark grand-strategy **theme system** (`PrototypeGuiTheme`): panel tone, stroke, corners, type hierarchy, and button states. Gameplay-state updates still change content and enablement, not primary geometry. The Vassalage overlay keeps stronger gold emphasis as a priority action. Result toasts stay related but visually distinct as transient feedback. Token values are prototype styling, not permanent art direction.
+
 ## Future UI shell (specified, not implemented)
 
 Long-term GUI architecture. **Do not implement from this section.** The current prototype layout remains in use (right-side hierarchy + title, map-centered vassalage overlay, result toast). Do not assign keyboard keys yet.
@@ -80,9 +94,9 @@ When a pointer/input event is handled by a visible higher-priority GUI element, 
 
 Examples: Accept/Decline on a Vassalage overlay must not also select a territory underneath; clicking or dragging inside a major panel must not pan/select the map beneath it; scrolling inside a panel must not zoom the map underneath it; clicking non-transparent modal/card space should block map interaction where that UI occupies the screen.
 
-Use Roblox GUI/input mechanisms that **consume/block** input for the visible/interactable bounds of the higher-priority GUI (`Active`, `Interactable`, input sinking as appropriate). Do not rely on ZIndex alone. Do not make the entire screen globally modal if that unnecessarily blocks unrelated map area.
+Use Roblox GUI/input mechanisms that **consume/block** input for the visible/interactable bounds of the higher-priority GUI. Do not rely on ZIndex alone. Do not make the entire screen globally modal if that unnecessarily blocks unrelated map area.
 
-Known current-prototype gap (not fixed in this documentation pass): a Vassalage overlay Accept/Decline click has been observed to also select a map territory. Treat that as an allowed later usability correction, not as Title V0.1 gameplay.
+**Implemented (map input):** `TerritoryMapController` ignores pan/select/zoom when `PlayerGui:GetGuiObjectsAtPosition` finds `VassalageOfferOverlay`, `TitlePanel`, `Main`, or `TerritoryInfo` at the pointer. Map press must start on the map itself. Result toasts are not blocking layers. Check runs only on pointer events, not per frame. Mouse wheel over the map still zooms when Roblox marks it `gameProcessed` because `MapStage` is an Active GUI surface; `gameProcessed` is not treated as higher-GUI blocking.
 
 ## Configuration and simulation
 

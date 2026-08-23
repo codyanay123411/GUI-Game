@@ -9,6 +9,8 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 
+local PrototypeGuiTheme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Util"):WaitForChild("PrototypeGuiTheme"))
+
 local player = Players.LocalPlayer
 local TitleProgressionController = {}
 
@@ -71,41 +73,40 @@ function TitleProgressionController.Start()
 
 	local function applyRow(row: any?)
 		myRow = row
+		-- Keep the Establish slot reserved so TitlePanel geometry does not reflow.
+		establish.Visible = true
 		if not row then
-			body.Text = "Waiting for server state..."
-			establish.Visible = false
+			body.Text = "Current title: —\nNext title: —\nRealm control: —\nTest Prestige: —\nStatus: Waiting for server state..."
+			establish.Text = "Establish"
 			establish.Active = false
+			PrototypeGuiTheme.applyPrimaryButton(establish, false)
 			return
 		end
-		if row.hasNext ~= true then
-			body.Text = string.format(
-				"Current title: %s\nNext title: —\nRealm control: %d\nTest Prestige: %d\nStatus: %s",
-				row.currentTitleName,
-				row.realmControl,
-				row.prestige,
-				row.statusText
-			)
-			establish.Visible = false
-			establish.Active = false
-			return
-		end
+		local nextLabel = if row.hasNext == true and row.nextTitleName ~= "" then row.nextTitleName else "—"
+		local realm = if row.hasNext == true
+			then string.format("%d / %d", row.realmControl, row.realmRequired)
+			else string.format("%d", row.realmControl)
+		local prestige = if row.hasNext == true
+			then string.format("%d / %d", row.prestige, row.prestigeRequired)
+			else string.format("%d", row.prestige)
 		body.Text = string.format(
-			"Current title: %s\nNext title: %s\nRealm control: %d / %d\nTest Prestige: %d / %d\nStatus: %s",
+			"Current title: %s\nNext title: %s\nRealm control: %s\nTest Prestige: %s\nStatus: %s",
 			row.currentTitleName,
-			row.nextTitleName,
-			row.realmControl,
-			row.realmRequired,
-			row.prestige,
-			row.prestigeRequired,
+			nextLabel,
+			realm,
+			prestige,
 			row.statusText
 		)
-		establish.Text = row.establishLabel
-		local can = row.eligible == true
-		establish.Visible = true
-		establish.Active = can
-		establish.AutoButtonColor = can
-		establish.BackgroundColor3 = if can then Color3.fromRGB(46, 120, 72) else Color3.fromRGB(48, 52, 58)
-		establish.TextColor3 = if can then Color3.fromRGB(235, 240, 235) else Color3.fromRGB(140, 144, 150)
+		if row.hasNext == true then
+			establish.Text = row.establishLabel
+			local can = row.eligible == true
+			establish.Active = can
+			PrototypeGuiTheme.applyPrimaryButton(establish, can)
+		else
+			establish.Text = "No further title"
+			establish.Active = false
+			PrototypeGuiTheme.applyPrimaryButton(establish, false)
+		end
 	end
 
 	titlePush.OnClientEvent:Connect(function(kind: any, payload: any)

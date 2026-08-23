@@ -80,11 +80,13 @@ function TerritoryMapController.Start()
 		viewport.BorderSizePixel = 0
 		viewport.Size = UDim2.fromScale(1, 1)
 		viewport.ZIndex = 1
+		viewport.Active = false
 		viewport.Ambient = Color3.fromRGB(210, 210, 210)
 		viewport.LightColor = Color3.fromRGB(255, 255, 255)
 		viewport.LightDirection = Vector3.new(0, -1, 0)
 		viewport.Parent = mapStage
 	end
+	viewport.Active = false
 	local info = gui:WaitForChild("TerritoryInfo") :: Frame
 	local infoBody = info:WaitForChild("Body") :: TextLabel
 
@@ -359,24 +361,80 @@ function TerritoryMapController.Start()
 		end
 	end)
 
+	local function pointerScreen(): Vector2
+		return UserInputService:GetMouseLocation() - GuiService:GetGuiInset()
+	end
+
 	local function mouseOverMap(screen: Vector2): boolean
 		local abs = mapStage.AbsolutePosition
 		local size = mapStage.AbsoluteSize
 		return screen.X >= abs.X and screen.Y >= abs.Y and screen.X <= abs.X + size.X and screen.Y <= abs.Y + size.Y
 	end
 
-	mapStage.InputBegan:Connect(function(input)
-		if input.UserInputType == Enum.UserInputType.MouseButton1 then
-			dragging = true
-			dragMoved = false
-			dragStart = Vector2.new(input.Position.X, input.Position.Y)
-			lookStart = Vector2.new(lookX, lookZ)
+	-- Map is the lowest input layer. Higher project GUI at this point owns the pointer.
+	-- ResultToast is informational and is not treated as a blocking layer.
+	local function isMapDescendant(obj: Instance): boolean
+		local current: Instance? = obj
+		while current and current ~= gui do
+			if current == mapStage then
+				return true
+			end
+			current = current.Parent
 		end
-	end)
+		return false
+	end
 
-	UserInputService.InputChanged:Connect(function(input)
-		if dragging and input.UserInputType == Enum.UserInputType.MouseMovement and dragStart then
-			local now = Vector2.new(input.Position.X, input.Position.Y)
+	local function blockingPanelOf(obj: Instance): GuiObject?
+		local current: Instance? = obj
+		while current and current ~= gui do
+			if current:IsA("GuiObject") and current.Parent == gui then
+				local name = current.Name
+				if name == "VassalageOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" then
+					return current
+				end
+			end
+			current = current.Parent
+		end
+		return nil
+	end
+
+	local function pointerOnHigherGui(screen: Vector2): boolean
+		local objects = player.PlayerGui:GetGuiObjectsAtPosition(screen.X, screen.Y)
+		for _, obj in objects do
+			if obj:IsA("GuiObject") and obj.Visible and not isMapDescendant(obj) then
+				local panel = blockingPanelOf(obj)
+				if panel and panel.Visible then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local mapPress = false
+
+	-- Press must start on the map surface (MapStage / MapView), not on higher panels.
+	-- Drag uses inset-corrected cursor position so GuiObject vs UIS coordinates cannot cancel pan.
+	local function beginMapPress(input: InputObject)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+			return
+		end
+		if pointerOnHigherGui(pointerScreen()) then
+			return
+		end
+		mapPress = true
+		dragging = true
+		dragMoved = false
+		dragStart = pointerScreen()
+		lookStart = Vector2.new(lookX, lookZ)
+	end
+
+	mapStage.InputBegan:Connect(beginMapPress)
+	viewport.InputBegan:Connect(beginMapPress)
+
+	UserInputService.InputChanged:Connect(function(input, _gameProcessed)
+		if dragging and mapPress and input.UserInputType == Enum.UserInputType.MouseMovement and dragStart then
+			local now = pointerScreen()
 			if (now - dragStart).Magnitude > 6 then
 				dragMoved = true
 			end
@@ -395,9 +453,9 @@ function TerritoryMapController.Start()
 				applyCamera()
 			end
 		elseif input.UserInputType == Enum.UserInputType.MouseWheel then
-			local inset = GuiService:GetGuiInset()
-			local pos = UserInputService:GetMouseLocation() - inset
-			if not mouseOverMap(pos) then
+			-- Active MapStage marks wheel as gameProcessed. That is the map surface, not a higher panel.
+			local pos = pointerScreen()
+			if not mouseOverMap(pos) or pointerOnHigherGui(pos) then
 				return
 			end
 			if input.Position.Z > 0 then
@@ -413,13 +471,19 @@ function TerritoryMapController.Start()
 		if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 			return
 		end
+		local wasMapPress = mapPress
 		local wasDrag = dragMoved
+		mapPress = false
 		dragging = false
 		dragMoved = false
-		if wasDrag then
+		if not wasMapPress or wasDrag then
 			return
 		end
-		local mx, my = screenToMap(Vector2.new(input.Position.X, input.Position.Y))
+		local pos = pointerScreen()
+		if pointerOnHigherGui(pos) then
+			return
+		end
+		local mx, my = screenToMap(pos)
 		if not mx or not my then
 			return
 		end

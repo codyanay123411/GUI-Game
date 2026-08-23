@@ -10,6 +10,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 
+local PrototypeGuiTheme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Util"):WaitForChild("PrototypeGuiTheme"))
+
 local player = Players.LocalPlayer
 local PoliticalHierarchyController = {}
 
@@ -61,6 +63,7 @@ function PoliticalHierarchyController.Start()
 		return
 	end
 	gui.Enabled = true
+	PrototypeGuiTheme.ApplyScreen(gui)
 	print("[Hierarchy] controller started listening", player.Name)
 
 	local playerGui = player:WaitForChild("PlayerGui")
@@ -238,6 +241,8 @@ function PoliticalHierarchyController.Start()
 				offer.Active = true
 				offer.LayoutOrder = 2
 				offer.Text = "Offer Vassalage"
+				PrototypeGuiTheme.applyPrimaryButton(offer, true)
+				offer.TextSize = 13
 				offer.MouseButton1Click:Connect(function()
 					clientIntent:FireServer("Offer", uid)
 				end)
@@ -267,6 +272,10 @@ function PoliticalHierarchyController.Start()
 				accept.Active = true
 				decline.Visible = true
 				decline.Active = true
+				PrototypeGuiTheme.applyPrimaryButton(accept, true)
+				accept.TextSize = 14
+				PrototypeGuiTheme.applyDangerButton(decline)
+				decline.TextSize = 14
 				accept.MouseButton1Click:Connect(function()
 					clientIntent:FireServer("Accept", request.requestId)
 				end)

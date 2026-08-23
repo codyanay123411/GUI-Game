@@ -103,3 +103,19 @@ Recorded long-term GUI direction: full-canvas map; major systems as contextual p
 ## 2026-08-23 — Title Progression V0.1 accepted
 
 Directors confirmed Local Server + 2 Players: both clients started as Lords; Political Hierarchy and Territory / Map V0.1 still worked; vassalage between the two real players; greater-realm count included subordinate land (2 / 2); server-side test Prestige set to 100 and not spent; Title panel Eligible + Establish Duchy; director clicked Establish Duchy; Player1 became Duke; Player2 saw the updated rank; liege/vassals/ownership/hierarchy/territory info/map visualization remained correct; pan/zoom/select regression pass; no blocking runtime issue. Incoming Vassalage overlay already in place. V0.1 is **accepted / complete**. Deferred systems unchanged. No Git commit.
+
+## 2026-08-23 — Map input layering (click-through)
+
+Map pan/select/zoom now ignore pointer events that sit over `VassalageOfferOverlay`, `TitlePanel`, hierarchy `Main`, or `TerritoryInfo` (`GetGuiObjectsAtPosition` on the event, not per frame). Clicks on unobstructed map still select. Result toast is not a blocking layer. Gameplay rules unchanged. No Git commit.
+
+## 2026-08-23 — Prototype GUI layout stability
+
+Right-side hierarchy now fills down to a fixed-height Title panel (small gap) instead of a shortened 500px box with dead space. Title content/button state no longer hides the Establish slot. Gameplay-state updates stay inside assigned regions. No Git commit.
+
+## 2026-08-23 — Map pan/zoom after theme (input correction)
+
+Mouse-wheel zoom was dropped because Active `MapStage` marks wheel as `gameProcessed`. That blocked zoom, and default-zoom camera clamp made pan appear dead. Zoom now uses map-vs-higher-GUI hit tests, not a blanket `gameProcessed` reject. Theme/layout unchanged. No Git commit.
+
+## 2026-08-23 — Prototype GUI theme consistency
+
+Hierarchy, Title, TerritoryInfo, Vassalage overlay, and ResultToast now share one prototype theme (`PrototypeGuiTheme`): panel tone, stroke, corners, type hierarchy, and button states. Overlay keeps stronger gold emphasis; toast stays distinct transient feedback. Primary panel geometry and gameplay unchanged. No Git commit.
