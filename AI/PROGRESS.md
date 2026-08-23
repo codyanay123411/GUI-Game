@@ -18,6 +18,9 @@ A task must not be marked complete until it has been verified.
 
 ## Game architecture
 
-- [ ] Define GUI-first game architecture
+- [x] Define GUI-first game architecture (`docs/ARCHITECTURE.md`)
+- [x] Source-controlled folder layout created and verified on disk
+- [x] Client disk path corrected to root `StarterPlayerScripts/` (duplicate `StarterPlayer/` removed; verified on disk)
+- [x] Verify Script Sync folders appear in Studio (placeholder modules materialize reserved folders; bootstraps still match disk)
 - [ ] Plan core screens, flows, and data ownership
-- [ ] Implement initial architecture in synced Luau source
+- [ ] Implement initial architecture in synced Luau source (bootstraps and reserved folders verified in Studio; placeholders only)
