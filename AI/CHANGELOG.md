@@ -39,3 +39,7 @@ Documented four landed ranks (Lord → Duke → King → Emperor), independent-L
 ## 2026-08-23 — Maps, titles, economy & performance checkpoint
 
 Documented interactive multi-map geography vs realms, dynamic map-based title qualification, manual establishment with Prestige (not spent) and server revalidation, persistent titles below creation thresholds, Gold/Prestige/Influence vs Crowns/Lifetime Support, non-pay-to-win Crowns, and calculate-on-change performance philosophy. Numerical formulas, map assets, and products remain unresolved. No gameplay implemented.
+
+## 2026-08-23 — Phase 1 closed (audit PASS WITH MINOR CLEANUP)
+
+Corrected stale GitHub publication tracking, architecture-bootstrap tracking, Cursor rule wording for the active design bible, and `_Placeholder.luau` folder documentation. Formally closed Phase 1 — Foundation & Architecture. Political Hierarchy V0.1 remains specified, not implemented. No gameplay implemented.

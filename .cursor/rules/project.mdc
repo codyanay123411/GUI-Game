@@ -7,7 +7,7 @@ alwaysApply: true
 
 Before substantial work, read `AI/GAME_DESIGN.md`, `AI/ROADMAP.md`, `AI/PROGRESS.md`, and `AI/DECISIONS.md`.
 
-1. Understand the current game vision before implementing features. `AI/GAME_DESIGN.md` is authoritative; most of it is still placeholder until the user fills it in.
+1. Understand the current game vision before implementing features. `AI/GAME_DESIGN.md` is the authoritative **active design bible**. It already contains approved director decisions. Preserve those decisions. Leave unresolved portions unresolved unless directors explicitly decide them. Do not independently alter game design.
 2. Determine the current roadmap phase from `AI/ROADMAP.md`. Phases are dependency order, not an excuse to skip ahead.
 3. Preserve established architectural and game-design decisions in `AI/DECISIONS.md` and `docs/ARCHITECTURE.md`.
 4. Do not silently change the game’s design.

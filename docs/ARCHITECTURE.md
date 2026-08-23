@@ -7,18 +7,20 @@ This project is a GUI-first Roblox game. Source-controlled Luau lives on disk an
 | Path | Purpose |
 | --- | --- |
 | `ServerScriptService/` | Authoritative server scripts. Contains the server entry point and server-only systems. |
-| `ServerScriptService/Services/` | Reserved for authoritative server-side systems (one concern per module). Empty until a real service is needed. |
+| `ServerScriptService/Services/` | Reserved for authoritative server-side systems (one concern per module). Contains `_Placeholder.luau` only — no real services yet. |
 | `ReplicatedStorage/Shared/` | Modules that are safe and appropriate for both client and server. |
-| `ReplicatedStorage/Shared/Config/` | Centralized configuration data. |
-| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. |
-| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Not a miscellaneous dump. |
-| `ReplicatedStorage/Remotes/` | Reserved for RemoteEvents and RemoteFunctions used for client/server communication. Remote instances themselves are created in Studio, not as Luau files. |
+| `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Contains `_Placeholder.luau` only until real config exists. |
+| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Contains `_Placeholder.luau` only until real types exist. |
+| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Not a miscellaneous dump. Contains `_Placeholder.luau` only until real utilities exist. |
+| `ReplicatedStorage/Remotes/` | Reserved for RemoteEvents and RemoteFunctions used for client/server communication. Remote instances themselves are created in Studio, not as Luau files. Folder currently materialized with `_Placeholder.luau` only. |
 | `StarterPlayerScripts/` | Client scripts that run for each player. On disk this is a root folder; in Studio it maps to `StarterPlayer.StarterPlayerScripts`. Contains the client entry point and controllers. |
-| `StarterPlayerScripts/Controllers/` | Reserved for client-side behavior and GUI control. Empty until a real controller is needed. |
+| `StarterPlayerScripts/Controllers/` | Reserved for client-side behavior and GUI control. Contains `_Placeholder.luau` only — no real controllers yet. |
 | `docs/` | Project documentation, including this architecture note. |
 | `AI/` | Agent tracker: progress, decisions, and changelog. |
 
 GUI instances are **not** stored in this filesystem. They are created and edited in Roblox Studio.
+
+Reserved Script Sync folders use `_Placeholder.luau` ModuleScripts that `return {}` solely so Studio materializes the folder. They contain **no** gameplay, service, or controller implementation. Delete or replace the placeholder when real modules occupy that folder.
 
 ## Server / client / shared separation
 

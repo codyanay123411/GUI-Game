@@ -279,6 +279,8 @@ A formerly independent ruler may continue as a subordinate ruler.
 
 Example: King Robert loses a war to Emperor Aldric. Robert may become Duke Robert, subject to Aldric’s realm. Robert remains an active player with territory, resources, political influence, relationships, military capability, potential subjects, and political goals.
 
+This example illustrates **subordination remaining playable**. It does **not** define title-loss, demotion, revocation, usurpation, surrender, or war-outcome mechanics. Those remain unresolved.
+
 A subordinate player may:
 
 - Remain loyal and support their ruler

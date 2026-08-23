@@ -14,7 +14,7 @@ A task must not be marked complete until it has been verified.
 - [x] Git repository initialized
 - [x] `.gitignore` added
 - [x] Temporary Script Sync test removed (`ServerScriptService/VibeCodingSyncTest.luau`)
-- [ ] Private GitHub repository published
+- [x] Private GitHub repository published
 
 ## Game architecture
 
@@ -23,7 +23,12 @@ A task must not be marked complete until it has been verified.
 - [x] Client disk path corrected to root `StarterPlayerScripts/` (duplicate `StarterPlayer/` removed; verified on disk)
 - [x] Verify Script Sync folders appear in Studio (placeholder modules materialize reserved folders; bootstraps still match disk)
 - [ ] Plan core screens, flows, and data ownership
-- [ ] Implement initial architecture in synced Luau source (bootstraps and reserved folders verified in Studio; placeholders only)
+- [x] Implement initial architecture in synced Luau source (Phase 1 bootstrap: thin bootstraps, reserved folders, `_Placeholder.luau` only; verified on disk and in Studio). This is **not** gameplay implementation.
+
+## Phase 1 status
+
+- [x] **Phase 1 — Foundation & Architecture: COMPLETE** (audit: PASS WITH MINOR CLEANUP; documentation cleanup verified). Ready for the first gameplay prototype **when directors authorize it**.
+- [ ] Implement Political Hierarchy Design V0.1 (specified; **not** implemented; not authorized until directed)
 
 ## Project knowledge
 
@@ -34,4 +39,3 @@ A task must not be marked complete until it has been verified.
 - [x] Political Hierarchy Design V0.1 specified/documented (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`) — **not implemented**
 - [x] Design checkpoint (maps, title progression, naming, economy, monetization, performance) specified/documented — **not implemented**
 - [ ] Confirm a full 0.1 feature freeze beyond the political-hierarchy prototype priority
-- [ ] Implement Political Hierarchy Design V0.1 (not authorized until directed)
