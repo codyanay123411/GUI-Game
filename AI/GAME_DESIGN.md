@@ -50,6 +50,9 @@ Further pillars specified by directors:
 - **Accelerated political history.** A ~30-minute match may represent many years or generations.
 - **Multiple paths to victory.** Victory must not require eliminating every other player.
 - **Incremental implementation.** Directors define mechanics; agents implement them. Do not build the entire design at once.
+- **Useful grand-strategy concepts, not unnecessary grand-strategy complexity.** Complex political outcomes should eventually emerge from relatively simple player-facing systems. This is **not** intended to become a deep historical character/family simulator.
+
+**Currently approved core identity:** for playable prototypes, the human player is effectively their **ruler identity for the match**. Aging, generational succession, family simulation, and natural character death are **not** part of the currently approved core design. Do not implement those systems. Long-term character/dynasty ideas elsewhere in this bible remain long-term / deferred unless directors later approve them.
 
 ## Match Structure
 
@@ -92,9 +95,11 @@ A character may possess:
 
 A player’s political situation can change **without** removing them from the match.
 
+For currently approved core play, treat the player as their match ruler. Do not implement aging, family simulation, generational succession, or natural character death unless directors later authorize those systems.
+
 ## Political Hierarchy
 
-Political Hierarchy Design **V0.1** is specified below. It is **foundational**. It is **not** authorization to implement gameplay in a documentation task.
+Political Hierarchy Design **V0.1** is specified below. The V0.1 prototype is **accepted / complete**. Do not reopen or redesign it. Territory / Map Foundation V0.1 (specified separately) must integrate with it, not replace it.
 
 Players exist in a shared political world as **independent rulers** or **subordinate rulers**. Relationships must support **nested** hierarchies.
 
@@ -318,7 +323,7 @@ NPC characters may support the simulation where humans cannot reasonably fill ev
 
 Detailed large-dynasty simulation and advanced AI rulers are not authorized for immediate implementation (see Explicitly Deferred Features).
 
-The first meaningful **gameplay prototype** must **not** be a deep autonomous character simulation. It should focus on **multiplayer political hierarchy** (see Version 0.1 Scope). Do not implement that prototype as part of documentation work.
+The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**.
 
 ## Character Traits & Attributes
 
@@ -330,7 +335,7 @@ The primary world representation is a **GUI-first 2D interactive political map**
 
 The long-term map should be capable of supporting concepts such as panning, zooming, territory selection, highlighting, political ownership visualization, realm visualization, contextual information, and different informational/map modes where appropriate. Players should eventually interact with individual territories and navigate political information through the map.
 
-Exact rendering technology, territory hit detection, map geometry format, input implementation, mobile controls, and visual design are **not approved**. Do not choose or implement them from this document.
+**Territory / Map Foundation V0.1** (below) now specifies the first map foundation: data-driven `MapConfiguration`, 16-territory test map, irregular polygons (not hexes), desktop pan/zoom/click, adjacency, unclaimed land, realm colors, and greater-realm vs direct-owner visualization. It is **accepted / complete**. Touch/controller support should remain architecturally possible but is **not** required for V0.1. Title-establishment numbers, lobby/map voting, and additional maps remain unresolved.
 
 There is no requirement for a traditional explorable 3D Roblox world.
 
@@ -348,7 +353,39 @@ Each designed map has recognizable geography. Territories have **stable geograph
 
 **Geography and political realms are separate.** A territory’s geographic name is not the political realm controlling it. Example: the Duchy of Blackmere may comprise Blackmere, Ravenford, Eastvale, and Stormrest. Blackmere stays a geographic territory; “Duchy of Blackmere” is a political entity layered over geography. Multiple duchies may exist inside a kingdom, and multiple kingdom-level structures inside an empire. Political organization must not overwrite geographic identities.
 
-Exact maps, territory counts, layouts, lobby voting, and selection UI remain unresolved.
+Lobby/map voting, additional production maps, and exact layouts of maps other than the V0.1 test map remain unresolved. The V0.1 test map’s territory count (**16**) is locked for that prototype only and is **not** a universal count for future maps.
+
+### Territory / Map Foundation V0.1
+
+Specified design checkpoint. **Accepted / complete** as a limited prototype. Do not expand V0.1 into warfare, claiming, AI, or additional maps without a new authorization.
+
+A **Territory** is the smallest ownable geographic unit. It cannot be subdivided. Each territory has a stable identity from its map: ID, display name, polygon geometry, adjacent territory IDs, and any future static geographic metadata. Geography and names do not change during a match. Ownership is **match state**, not map-definition state. Do not hardcode ownership into geometry or map configuration.
+
+Maps are **hand-authored presets**, not generated each match. The eventual game may offer multiple selectable maps with different territory counts, shapes, names, adjacency, and layouts. The same map can produce different political histories because ownership and realm state are dynamic. Do not add recommended-player-count as a required map concept. AI may later fill political gaps; **AI is not part of Territory / Map V0.1**.
+
+V0.1 uses **exactly one test map** with **16 territories** (prototype/testing only). Visual direction: stylized **irregular polygons** between CK3-style provinces and Civilization hexes. **Do not use a hex grid.** Realistic geography is not required. Exact prototype continent layout and fictional names are implementation/content discretion (illustrative style only: Westmere, Northvale, Greyfen, Highmarch). **The territory name belongs to the territory/map, not its ruler.** Ownership change does not rename the land.
+
+Every human Independent Lord begins with **exactly one** starting territory. V0.1 assignment is **automatic, random, unique**, and based on humans who actually join. There are no permanently designated Player1/Player2 territories (those names are Studio test identities only). Conceptually: player joins → ruler exists → server selects an available starting territory → that ruler owns it. Lobby/map-start location choice is **not** V0.1.
+
+Territories not assigned to a human remain **Unclaimed**. No NPC rulers and no AI occupy unused land. With 16 territories, practical prototype capacity is 16 simultaneous starting human rulers. Behavior when a 17th ruler joins and no starting territory remains is **unresolved — do not invent it**.
+
+If a human leaves and Political Hierarchy V0.1 removes their runtime ruler, **their directly owned territory becomes Unclaimed**. No AI replacement, reconnection restoration, or succession in this checkpoint.
+
+Unclaimed territories use a **neutral gray** prototype look. They stay fully selectable; Unclaimed does not mean disabled. Owned realms use an automatic curated distinguishable palette; humans do not pick colors in V0.1. Do not design monetization around realm colors here.
+
+**Ownership is not hierarchy membership.** A vassal keeps direct ownership of their territory while visually belonging to the greater independent realm (root ruler). Dominant fill = greater realm; a secondary indicator (for example a thinner internal border) may keep the direct holder’s color. Exact rendering technique is implementation discretion. Map visuals **derive from** authoritative hierarchy state; do not change Political Hierarchy rules to fake this.
+
+Every territory is selectable, including unclaimed. Selection opens a simple information panel only: territory name, territory ID, owner, owner rank, independent/subject status, greater realm/root ruler. Unclaimed must read as Unclaimed. Do **not** add economy, gold, military, religion, development, claims, war actions, buildings, or population. Architect the panel so later systems can extend it. There is **no Claim/Conquer** action in V0.1.
+
+Desktop V0.1 navigation: click-and-drag pan, mouse-wheel zoom, click to select. Bounded strategy-map camera: no infinite pan away from the map; reasonable min/max zoom; pan constrained to map bounds; initial view frames the entire 16-territory test map. “Focus my realm” is **not** V0.1.
+
+**Adjacency** is static map definition from the start (each territory lists bordering IDs) and must match the visual polygons. It is **not** used for warfare in V0.1; it exists so later movement/expansion/war do not retrofit the data model.
+
+V0.1 includes **no** conquest, war, armies, claims, occupation, annexation, claiming unclaimed land, trading, gifting, or purchase of territory. Ownership changes beyond initial assignment and disconnect may use **server-only debug helpers** for verification, not player gameplay.
+
+Authority: server owns ownership, starting assignment, territory-to-ruler links, and mutable match map state. Client renders, pans/zooms, selects, displays authoritative info, and may later send intents. Prefer calculate-on-change. Do not recompute political state every frame without reason.
+
+The renderer must be **map-agnostic**: drive from the currently selected `MapConfiguration`, not “the 16-territory map.” Future maps must change counts/geometry without rewriting political systems. This preserves `TitleRequirements = f(MapConfiguration)`.
 
 ### Title qualification and establishment
 
@@ -614,30 +651,13 @@ Do not attempt to implement the entire design simultaneously. Systems should be 
 
 A full numbered 0.1 feature freeze beyond the following is **not** specified.
 
-**Political Hierarchy Design V0.1 is specified in this document and is not implemented.**
+**Political Hierarchy V0.1** is specified in this document and the prototype is **accepted / complete**. Do not reopen it.
 
-**Current prototype priority (not to be implemented in documentation tasks):** the first meaningful gameplay prototype should focus on that **multiplayer political hierarchy**, not a deep autonomous character simulation.
+**Territory / Map Foundation V0.1** is specified under Titles & Territory. The prototype is **accepted / complete**. Do not expand it into deferred systems.
 
-That prototype must eventually prove the game can represent relationships such as:
+**Title progression, naming formulas, economy, and monetization** remain specified only at the earlier checkpoint level. Exact formulas, additional map assets, currencies implementation, and monetization products remain unresolved.
 
-- Player B → ruler of Player A
-- Player B → Player A → Player C
-
-The simulation must be capable of determining:
-
-- Immediate ruler (direct liege)
-- Direct vassals / direct subjects
-- Indirect subjects
-- Higher political authority
-- Realm membership
-- Political independence
-- Top ruler of a hierarchy
-
-It should eventually support changing these relationships through gameplay (including voluntary vassalage under the approved rank rules, preserving subordinate trees, and rejecting cycles), with the **server** validating results.
-
-This hierarchy is a foundational dependency for later vassalage, realm formation, warfare, rebellion, territory, diplomacy, and victory conditions.
-
-**Maps, title progression, naming, economy, and performance checkpoint** is specified in Titles & Territory, Economy, and Performance Philosophy. It is **documented, not implemented**. Exact formulas, map assets, currencies implementation, and monetization products remain unresolved.
+Political Hierarchy V0.1 remains a foundational dependency for later warfare, rebellion, title progression, diplomacy, and victory conditions. Territory ownership is a separate concept from hierarchy membership.
 
 ## Explicitly Deferred Features
 
@@ -663,9 +683,12 @@ Part of the long-term vision, **not** authorized for immediate implementation me
 - Title-loss systems
 - Vassal obligations (tax, military contribution, contracts, formulas)
 - Independence gameplay methods
-- Disconnect / reconnect behavior
+- Disconnect / reconnect beyond the temporary V0.1 hierarchy cleanup and the specified Unclaimed-on-leave map rule
 - Join-in-progress mechanics
-- Map artwork, geometry, renderer, interaction implementation, lobby/voting
+- Starting-territory player choice / lobby map voting
+- Behavior when more humans join than the selected map has territories
+- Additional production maps beyond the 16-territory V0.1 test map
+- Touch / controller map input (architecturally possible; not required for V0.1)
 - Gold / Prestige / Influence starting amounts, rates, caps, and formulas
 - Crown prices, packages, earning methods, and exact cosmetics
 - Lifetime Support calculations and monetization implementation

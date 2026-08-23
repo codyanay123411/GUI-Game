@@ -45,9 +45,10 @@ local rulersById: { [string]: Ruler } = {}
 local rulerIdByUserId: { [number]: string } = {}
 local requestsById: { [string]: FealtyRequest } = {}
 
-local remotesFolder: Folder
-local clientIntent: RemoteEvent
-local serverPush: RemoteEvent
+local rulerCreatedBindable = Instance.new("BindableEvent")
+local rulerRemovingBindable = Instance.new("BindableEvent")
+PoliticalHierarchyService.RulerCreated = rulerCreatedBindable.Event
+PoliticalHierarchyService.RulerRemoving = rulerRemovingBindable.Event
 
 local function now(): number
 	return os.clock()
@@ -232,6 +233,7 @@ local function removeRulerInternal(rulerId: string)
 	if not ruler then
 		return
 	end
+	rulerRemovingBindable:Fire(ruler.rulerId)
 	detachFromLiege(ruler)
 	for vassalId in ruler.vassalIds do
 		local vassal = rulersById[vassalId]
@@ -273,6 +275,7 @@ local function createRuler(props: {
 		rulerIdByUserId[ruler.userId] = ruler.rulerId
 	end
 	print("[Hierarchy] ruler created", ruler.displayName, "userId=", tostring(ruler.userId), "id=", ruler.rulerId)
+	rulerCreatedBindable:Fire(ruler.rulerId, ruler.userId)
 	return ruler
 end
 
@@ -394,6 +397,10 @@ end
 
 function PoliticalHierarchyService.GetSnapshot()
 	return buildSnapshot()
+end
+
+function PoliticalHierarchyService.GetRulerIdForUserId(userId: number): string?
+	return rulerIdByUserId[userId]
 end
 
 function PoliticalHierarchyService.DebugCreateMockRuler(displayName: string, titleRank: number): string

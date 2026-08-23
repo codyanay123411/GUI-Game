@@ -67,3 +67,23 @@ Player-facing “Fealty” is now **Vassalage**. Accept and decline notify both 
 ## 2026-08-23 — Political Hierarchy V0.1 accepted
 
 Directors confirmed Local Server + 2 Players: accept and decline both succeeded on both clients; hierarchy state matched; initiator and receiver both received the correct notifications; decline did not mutate hierarchy. V0.1 is **accepted / complete**. No gameplay code changed in this tracker update.
+
+## 2026-08-23 — Territory / Map Foundation V0.1 design checkpoint
+
+Documented Territory / Map Foundation V0.1 (16-territory test map, Unclaimed remainder, random unique human starts, irregular polygons, adjacency, bounded pan/zoom, greater-realm vs owner visualization, server-owned match map state). Specified only; no map implementation, Studio map GUI, or gameplay systems added.
+
+## 2026-08-23 — GUI-first prototype consistency rule
+
+Recorded a standing implementation rule: future GUI must join one coherent strategy-game interface (inspect live Studio UI first; central map when present; supporting panels/overlays; Play-mode verification; no isolated debug windows or cloned third-party UI). Documentation/rules only; no gameplay or Studio GUI changes.
+
+## 2026-08-23 — Territory / Map Foundation V0.1 prototype
+
+Implemented data-driven `MapConfiguration` (`vale_prototype_16`, 16 irregular quads), server-authoritative unique random human starts with Unclaimed remainder, ViewportFrame map with pan/zoom/select, greater-realm fill vs direct-holder rim, territory info panel, and hierarchy lifecycle unclaim. No warfare/claiming/AI. **Director acceptance and two-real-client tests pending.** No Git commit.
+
+## 2026-08-23 — Territory selection additive gold ring
+
+Selection no longer overwrites the direct-holder rim with yellow. Fill stays greater-realm color, holder rim stays the direct owner’s color, and selection is a separate inward gold WedgePart ring. Ownership and hierarchy logic unchanged. No Git commit.
+
+## 2026-08-23 — Territory / Map Foundation V0.1 accepted
+
+Directors confirmed two real Studio clients: unique starting territories, Unclaimed remainder, select/info, pan/zoom, vassalage greater-realm vs holder visualization, additive gold selection, and disconnect Unclaimed/hierarchy cleanup. V0.1 is **accepted / complete**. Unused leftover `MapWorld` ImageLabel removed. Deferred systems unchanged. No Git commit.
