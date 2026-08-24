@@ -4,7 +4,11 @@ Phases describe **dependency and preferred order**, not a hard ban on touching a
 
 AI agents must **not** prematurely implement major later-phase gameplay systems merely because they appear on this list. If work would skip ahead, stop and ask, or stay within the current phase.
 
-Gameplay implementation: **Political Hierarchy V0.1 is accepted / complete** (see `AI/PROGRESS.md`). **Territory / Map Foundation V0.1 is accepted / complete.** **Title Progression V0.1 is accepted / complete.** **Diplomacy V0.1 is accepted / complete.** **Warfare / Conquest V0.1 is implemented — partially director-verified — acceptance testing in progress — not director-accepted.** Later phases are not started. Completing warfare V0.1 does **not** start Phase 2 Character Simulation. Do not implement aging, family simulation, or succession as currently approved core design. Do not implement a real Prestige economy, title-loss, armies/battles, opinion, or vassal diplomatic autonomy unless directors authorize that work.
+Gameplay implementation: **Political Hierarchy V0.1 is accepted / complete** (see `AI/PROGRESS.md`). **Territory / Map Foundation V0.1 is accepted / complete.** **Title Progression V0.1 is accepted / complete.** **Diplomacy V0.1 is accepted / complete.** **Warfare / Conquest V0.1 is IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Later phases are not started. Completing warfare V0.1 does **not** start Phase 2 Character Simulation.
+
+Studio Play / Local Server / MCP / Director acceptance sessions are **development verification**, not the **first real playtest** (published Roblox server, one complete map, friends/humans, ~30-minute coherent match, determinable winner). See `AI/GAME_DESIGN.md`.
+
+Do not implement aging, family simulation, or succession as currently approved core design. Do not implement a real Prestige economy, title-loss, armies/battles, opinion, or vassal diplomatic autonomy unless directors authorize that work. Do not implement pre-playtest polish (map orientation, admin copy/reuse dashboard) unless the Director authorizes it.
 
 ## 1. Foundation & Architecture — COMPLETE
 
@@ -32,7 +36,7 @@ Inheritance of status and titles when characters die or are displaced.
 
 GUI political map as the primary board; multiple selectable fictional maps with stable geography distinct from political realm names; holdings and title establishment (dynamic map-configured greater-realm control + Prestige threshold; manual establish; server revalidation).
 
-**Territory / Map Foundation V0.1** (data-driven `MapConfiguration`, 16-territory irregular-polygon test map, random unique human starts, Unclaimed remainder, pan/zoom/select, adjacency, greater-realm vs owner visualization) is **accepted / complete**. **Title Progression V0.1** (sequential ranks, Vale test thresholds, greater-realm control, manual establish, server revalidation, test Prestige not spent) is **accepted / complete**. Do not mark this phase complete. Additional maps, lobby voting, real Prestige economy, and title-loss remain unresolved / deferred. **Warfare / Conquest V0.1** is specified separately and is **implemented — not director-accepted** (acceptance testing in progress; Attacker and Defender Victory director-verified).
+**Territory / Map Foundation V0.1** (data-driven `MapConfiguration`, 16-territory irregular-polygon test map, random unique human starts, Unclaimed remainder, pan/zoom/select, adjacency, greater-realm vs owner visualization) is **accepted / complete**. **Title Progression V0.1** (sequential ranks, Vale test thresholds, greater-realm control, manual establish, server revalidation, test Prestige not spent) is **accepted / complete**. Do not mark this phase complete. Additional maps, lobby voting, real Prestige economy, and title-loss remain unresolved / deferred. Player/map orientation (center-on / show-my-realm) is **required before the first published playtest**, not part of Territory V0.1. **Warfare / Conquest V0.1** is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 only; not a complete military game).
 
 ## 7. Relationships
 
@@ -46,7 +50,7 @@ Liege/vassal structure and realm administration.
 
 Negotiated relations between independent greater realms.
 
-**Diplomacy V0.1** (Alliance + Non-Aggression Pact between root rulers; pending requests; consume hierarchy; dissolve on loss of independence) is **accepted / complete**. Do not implement Warfare / Conquest V0.1, opinion, or vassal diplomatic autonomy from this Diplomacy checkpoint. Political Hierarchy, Territory / Map, and Title Progression V0.1 remain **accepted / complete**.
+**Diplomacy V0.1** (Alliance + Non-Aggression Pact between root rulers; pending requests; consume hierarchy; dissolve on loss of independence) is **accepted / complete**. Do not implement deferred military systems, opinion, or vassal diplomatic autonomy from this Diplomacy checkpoint. Political Hierarchy, Territory / Map, and Title Progression V0.1 remain **accepted / complete**.
 
 ## 10. Politics, Factions & Schemes
 
@@ -56,7 +60,7 @@ Internal politics, factions, and covert schemes.
 
 Conflict resolution once realm and diplomatic context exist.
 
-**Warfare / Conquest V0.1** (independent-root external wars for one enemy-controlled bordering territory; NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars; server-only debug resolution; attacker victory grants the target to the attacking root after revalidation; stale wars do not transfer) is **implemented — partially director-verified — acceptance testing in progress — not director-accepted**. Next director test: competing same-target wars / stale-war resolution. Do not start armies, battles, claims, peace, or other deferred military systems from this checkpoint. Hierarchy, Territory / Map, Title Progression, and Diplomacy V0.1 remain **accepted / complete**.
+**Warfare / Conquest V0.1** (independent-root external wars for one enemy-controlled bordering **territory**; NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars including same target; server-only debug resolution; attacker victory grants the target to the attacking root after revalidation; stale wars do not transfer) is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. This accepts **V0.1 only**. Future armies, battles, war score, peace, claims/casus belli if adopted, occupation/sieges if adopted, and presentation polish must **build on** this authority. Do not start those systems unless the Director authorizes them. Hierarchy, Territory / Map, Title Progression, and Diplomacy V0.1 remain **accepted / complete**.
 
 ## 12. Dynamic Events
 
@@ -73,6 +77,8 @@ Account-level Crowns and Lifetime Support persist across matches. Match save/loa
 ## 15. UI/UX Refinement
 
 Presentation pass on existing systems; not a license to add skipped gameplay.
+
+**Required usability before the first published playtest** (schedule here or immediately before that playtest; do not treat as optional decoration): player/map orientation; useful ownership identification; player-relevant information visibility; coherent GUI layout; admin copy/reuse UX for Director testing; major interaction clarity. Exact keybinds/art are not locked. Do not implement these unless the Director authorizes it.
 
 ## 16. Expansion & Advanced Systems
 

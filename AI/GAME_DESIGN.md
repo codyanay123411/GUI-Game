@@ -51,6 +51,7 @@ Further pillars specified by directors:
 - **Multiple paths to victory.** Victory must not require eliminating every other player.
 - **Incremental implementation.** Directors define mechanics; agents implement them. Do not build the entire design at once.
 - **Useful grand-strategy concepts, not unnecessary grand-strategy complexity.** Complex political outcomes should eventually emerge from relatively simple player-facing systems. This is **not** intended to become a deep historical character/family simulator.
+- **Player-relevant information.** Ordinary player-facing UI must use player/realm-relevant views of authoritative server state. Global server state is not automatically player-visible. Admin/debug inspection is exempt. Systems that intentionally expose global/public information must explicitly define that visibility. Subjects inherit their greater realm’s relevant view.
 
 **Currently approved core identity:** for playable prototypes, the human player is effectively their **ruler identity for the match**. Aging, generational succession, family simulation, and natural character death are **not** part of the currently approved core design. Do not implement those systems. Long-term character/dynasty ideas elsewhere in this bible remain long-term / deferred unless directors later approve them.
 
@@ -323,7 +324,27 @@ NPC characters may support the simulation where humans cannot reasonably fill ev
 
 Detailed large-dynasty simulation and advanced AI rulers are not authorized for immediate implementation (see Explicitly Deferred Features).
 
-The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**. Warfare / Conquest V0.1 is **implemented — partially director-verified — acceptance testing in progress — not director-accepted**.
+The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**. Warfare / Conquest V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. This accepts **Warfare V0.1 only**; it is not a complete military simulation.
+
+### Development verification vs first real playtest
+
+Studio Play Solo, Local Server synthetic-client sessions, MCP sessions, isolated regression testing, and Director acceptance checks are **development verification / acceptance testing**. They are **not** this project’s first real playtest.
+
+The **first real playtest** is: a **published Roblox server**; the Director plus friends / actual human players joining normally; **one completed map** (multiple maps are not required); GUI sufficiently polished and intentionally laid out; core backend systems implemented and integrated; a coherent playable match loop of about **30 minutes** from beginning through conclusion; a winner that can actually be determined. The build should feel like a playable game rather than a collection of development/debug prototypes.
+
+Do not call Studio verification “the playtest.”
+
+### Required before first published playtest (not current work)
+
+These are **locked requirements**, not authorization to implement them now unless the Director says otherwise. They are **required usability**, not optional decoration.
+
+**Player/map orientation.** A player should never have to guess where they are on the political map. Provide persistent but restrained identification of the player’s own land; a clear relationship between the player/ruler and their realm color; explicit holder/owner information in TerritoryInfo; a convenient center-on / show-my-realm action or equivalent; likely a temporary highlight of the player’s realm. Greater-realm visualization should eventually distinguish personally held **territory** from subject/vassal-held **territory** while still making the total greater realm understandable. Exact keybind and art treatment are **not locked**. Do not assign a key arbitrarily.
+
+**Admin copy/reuse UX.** Make the administrator’s job as easy as practically possible. When admin/debug UI exposes identifiers an administrator may reasonably reuse (war IDs, request IDs, ruler IDs, territory IDs, session IDs, coordinates, debug values), provide a convenient in-game copy/reuse action when technically possible. Example future presentation: Copy War ID / Attacker Victory / Defender Victory. The Kohl command interface remains available. A polished admin dashboard is **not** part of accepted Warfare V0.1; do not build it unless the Director authorizes pre-playtest admin UX.
+
+**Player-relevant information** is already a standing rule (Warfare ordinary GUI implemented). Coherent GUI layout and major-interaction clarity also belong in this pre-playtest bucket.
+
+**Terminology.** **Territory** means land / province / map holding. **Title** means political rank (Lord, Duke, King, Emperor). Do not interchange them.
 
 ## Admin / Testing Infrastructure V0.1
 
@@ -333,7 +354,7 @@ Custom testing commands must go: Kohl (or Studio debug) → project **Admin Brid
 
 **GameTester** is a distinct high-trust UserId allowlist (server-enforced). Ordinary Kohl moderator roles must **not** automatically receive game-state mutation. Never trust client-supplied admin status, ruler identity, or mutations. Do not expose arbitrary code execution or generic “set anything” remotes.
 
-**V0.1 status:** architecture recorded. Official Kohl's Admin (@Scripth, asset 172732271) is installed under `ServerScriptService`. Live GameTester commands (`adminhelp`, `inspectwars`, `inspectterritory`, `inspectruler`, `setowner`, `setprestige`, `resolvewar`) go through `AdminKohlAddon` → `AdminBridge`. Command feedback uses project ResultToast / compact inspect overlay; Kohl chrome is restyled from PrototypeGuiTheme after load. Kohl rank is not enough. Studio `AdminDebug.Invoke` and per-system `*Debug` folders remain. Do not treat this tooling as a complete gameplay system.
+**V0.1 status:** architecture recorded. Official Kohl's Admin (@Scripth, asset 172732271) is installed under `ServerScriptService`. Live GameTester commands (`adminhelp`, `inspectwars`, `inspectterritory`, `inspectruler`, `setowner`, `setprestige`, `resolvewar`) go through `AdminKohlAddon` → `AdminBridge`. Command feedback uses project ResultToast / compact inspect overlay; Kohl chrome is restyled from PrototypeGuiTheme after load. Kohl rank is not enough. Studio `AdminDebug.Invoke` and per-system `*Debug` folders remain. **Studio-only:** synthetic Local Server UserIds `< 0` may pass `AdminConfig.IsGameTester` while `RunService:IsStudio()` is true; they are not production allowlist entries. Do not treat this tooling as a complete/polished admin product.
 
 **Future systems:** when a new server-authoritative gameplay system is implemented, consider exposing Director/testing operations through the Admin Bridge after the system's own APIs exist. Do not implement deferred gameplay (economy, armies, etc.) as fake admin commands.
 
@@ -387,15 +408,15 @@ Unclaimed territories use a **neutral gray** prototype look. They stay fully sel
 
 **Ownership is not hierarchy membership.** A vassal keeps direct ownership of their territory while visually belonging to the greater independent realm (root ruler). Dominant fill = greater realm; a secondary indicator (for example a thinner internal border) may keep the direct holder’s color. Exact rendering technique is implementation discretion. Map visuals **derive from** authoritative hierarchy state; do not change Political Hierarchy rules to fake this.
 
-Every territory is selectable, including unclaimed. Selection opens a simple information panel only: territory name, territory ID, owner, owner rank, independent/subject status, greater realm/root ruler. Unclaimed must read as Unclaimed. Do **not** add economy, gold, military, religion, development, claims, war actions, buildings, or population. Architect the panel so later systems can extend it. There is **no Claim/Conquer** action in Territory / Map Foundation V0.1. Player conquest, when authorized, belongs to **Warfare / Conquest V0.1** (specified — not implemented), not this map checkpoint.
+Every territory is selectable, including unclaimed. Selection opens a simple information panel only: territory name, territory ID, owner, owner rank, independent/subject status, greater realm/root ruler. Unclaimed must read as Unclaimed. Do **not** add economy, gold, military, religion, development, claims, war actions, buildings, or population. Architect the panel so later systems can extend it. There is **no Claim/Conquer** action in Territory / Map Foundation V0.1. Player conquest of enemy-held **territory**, when using Warfare / Conquest V0.1, uses this map’s existing authoritative ownership path.
 
-Desktop V0.1 navigation: click-and-drag pan, mouse-wheel zoom, click to select. Bounded strategy-map camera: no infinite pan away from the map; reasonable min/max zoom; pan constrained to map bounds; initial view frames the entire 16-territory test map. “Focus my realm” is **not** V0.1.
+Desktop V0.1 navigation: click-and-drag pan, mouse-wheel zoom, click to select. Bounded strategy-map camera: no infinite pan away from the map; reasonable min/max zoom; pan constrained to map bounds; initial view frames the entire 16-territory test map. **“Focus my realm” is not Territory / Map Foundation V0.1.** Player/map orientation (center-on / show-my-realm or equivalent) is **required before the first published playtest**; do not implement or bind a key unless the Director authorizes it.
 
 **Adjacency** is static map definition from the start (each territory lists neighboring IDs) and is **MapConfiguration truth**, not runtime distance. Territory / Map Foundation V0.1 stores adjacency; it does not itself declare or resolve wars. **Warfare / Conquest V0.1** queries that adjacency plus greater-realm membership for declaration validation.
 
 **Vale prototype adjacency (director-corrected, later director-verified).** On the current 4×4 Vale lattice, a territory is adjacent to every **immediate** neighboring cell that shares an **edge or a corner** (8-neighbor). Interior cells may have up to 8 neighbors; edge non-corners up to 5; corners up to 3. Two cells away is not adjacent. Other maps author their own graphs; do not assume every future map is 8-neighbor. Do not infer adjacency from visual proximity.
 
-Territory / Map Foundation V0.1 includes **no** conquest, war, armies, claims, occupation, annexation, claiming unclaimed land, trading, gifting, or purchase of territory. Ownership changes beyond initial assignment and disconnect may use **server-only debug helpers** for verification, not player gameplay. Successful attacker victory under Warfare / Conquest V0.1, when later implemented, must use this map’s existing authoritative ownership path.
+Territory / Map Foundation V0.1 includes **no** conquest, war, armies, claims, occupation, annexation, claiming unclaimed land, trading, gifting, or purchase of territory. Ownership changes beyond initial assignment and disconnect may use **server-only debug helpers** for verification, not player gameplay. Successful attacker victory under Warfare / Conquest V0.1 uses this map’s existing authoritative ownership path.
 
 Authority: server owns ownership, starting assignment, territory-to-ruler links, and mutable match map state. Client renders, pans/zooms, selects, displays authoritative info, and may later send intents. Prefer calculate-on-change. Do not recompute political state every frame without reason.
 
@@ -476,7 +497,7 @@ Long-term design may later include marriage diplomacy, guarantees, tributaries, 
 
 ### Diplomacy V0.1
 
-Specified design checkpoint. **Accepted / complete** after director Local Server multiplayer verification. Do not reopen Political Hierarchy V0.1, Territory / Map Foundation V0.1, Title Progression V0.1, or Diplomacy V0.1. Do not implement Warfare / Conquest V0.1, economy, AI, relationships/opinion, or vassal diplomatic autonomy from this Diplomacy section.
+Specified design checkpoint. **Accepted / complete** after director Local Server multiplayer verification. Do not reopen Political Hierarchy V0.1, Territory / Map Foundation V0.1, Title Progression V0.1, or Diplomacy V0.1. Do not implement deferred military systems, economy, AI, relationships/opinion, or vassal diplomatic autonomy from this Diplomacy section.
 
 **Purpose.** Authoritative political relationships **between independent greater realms**. It answers: which independent realms currently have formal diplomatic agreements with each other? Baseline infrastructure only. Not a complete diplomatic simulation.
 
@@ -491,9 +512,9 @@ Example: independent King Bob may diplomatically engage independent Emperor Stev
 
 Do not add guarantees, tributaries, trade agreements, marriages, defensive pacts, coalitions, federations, truces, favors/hooks, opinion, trust, diplomatic reputation, embassies, subject-negotiated diplomacy, or war participation.
 
-**Alliance V0.1.** Mutual formal relationship between two independent greater realms. Flow: root A offers Alliance to root B → server pending request → B Accept or Decline → only successful server Accept creates the Alliance. Either root may later **unilaterally Break Alliance** (no consent). V0.1 meaning only: these two greater realms are formally allied. Diplomacy must **not** implement automatic military assistance, call to arms, shared wars, troop access, joint victory, defensive/offensive obligations, or Prestige/economic effects. **Warfare / Conquest V0.1** (specified — not implemented) **queries** Alliance state and does **not** auto-join allies to wars.
+**Alliance V0.1.** Mutual formal relationship between two independent greater realms. Flow: root A offers Alliance to root B → server pending request → B Accept or Decline → only successful server Accept creates the Alliance. Either root may later **unilaterally Break Alliance** (no consent). V0.1 meaning only: these two greater realms are formally allied. Diplomacy must **not** implement automatic military assistance, call to arms, shared wars, troop access, joint victory, defensive/offensive obligations, or Prestige/economic effects. **Warfare / Conquest V0.1** (implemented) **queries** Alliance state and does **not** auto-join allies to wars.
 
-**Non-Aggression Pact V0.1.** Mutual formal relationship between two independent greater realms. Same offer → pending → Accept/Decline / expire flow. Either root may unilaterally **Break NAP**. V0.1 meaning only: these two greater realms currently have a formal non-aggression agreement. Diplomacy must **not** auto-break the pact, apply violation penalties, create truces, or alter reputation/Prestige. **Warfare / Conquest V0.1** (specified — not implemented) **queries** NAP via Diplomacy and **rejects war declaration** while the pact exists. The player must no longer have the blocking NAP before a valid declaration.
+**Non-Aggression Pact V0.1.** Mutual formal relationship between two independent greater realms. Same offer → pending → Accept/Decline / expire flow. Either root may unilaterally **Break NAP**. V0.1 meaning only: these two greater realms currently have a formal non-aggression agreement. Diplomacy must **not** auto-break the pact, apply violation penalties, create truces, or alter reputation/Prestige. **Warfare / Conquest V0.1** (implemented) **queries** NAP via Diplomacy and **rejects war declaration** while the pact exists. The player must no longer have the blocking NAP before a valid declaration.
 
 **Coexistence.** Alliance and NAP are **separate**. Two realms **may** have both at once. Do not make them mutually exclusive. Do not auto-create NAP on Alliance accept. Do not auto-remove NAP when an Alliance is created. Whether Alliance later implies non-aggression is unresolved.
 
@@ -517,7 +538,7 @@ Example: Cody ↔ Steve Alliance; Cody later becomes Bob’s vassal → Cody ↔
 
 **Identity.** Agreements belong to the two participating independent greater-realm actors. They are not territory relationships, title objects, player-friendship, or account-level relationships. For the current baseline, player = match ruler; independent roots are the diplomatic actors.
 
-**Queryability.** Authoritative systems may ask equivalents of `AreAllied(rulerA, rulerB)` and `HasNonAggressionPact(rulerA, rulerB)` (exact names are implementation detail). **Warfare / Conquest V0.1** (specified — not implemented) **consumes** that diplomatic state. Diplomacy V0.1 must **not** implement warfare.
+**Queryability.** Authoritative systems may ask equivalents of `AreAllied(rulerA, rulerB)` and `HasNonAggressionPact(rulerA, rulerB)` (exact names are implementation detail). **Warfare / Conquest V0.1** (implemented) **consumes** that diplomatic state. Diplomacy V0.1 must **not** implement warfare.
 
 **No map effect.** Diplomacy does not change ownership, realm colors, holder colors, adjacency, starting territories, or map geometry. Do not recolor allied realms the same color. Diplomatic map modes are deferred.
 
@@ -560,7 +581,7 @@ War should have clear political objectives. Losing a war does **not** necessaril
 
 ### Warfare / Conquest V0.1
 
-Specified design checkpoint. **Implemented — partially director-verified — acceptance testing in progress — not director-accepted.** Director-verified resolution: **Attacker Victory PASS**, **Defender Victory PASS**. Next remaining director test: competing same-target wars / stale-war resolution. Do not reopen Political Hierarchy V0.1, Territory / Map Foundation V0.1, Title Progression V0.1, or Diplomacy V0.1. Do not begin armies, battles, sieges, claims, casus belli, peace negotiations, war score, or other deferred military systems from this checkpoint.
+Specified design checkpoint. **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** This accepts **Warfare V0.1 only** (independent-root external wars, one enemy-controlled **territory**, debug resolution, player-relevant ordinary GUI). It does **not** mean warfare is feature-complete for the final game. Multiple simultaneous wars on the same **territory** remain allowed; do **not** add a one-war-per-territory restriction. Do not reopen Political Hierarchy V0.1, Territory / Map Foundation V0.1, Title Progression V0.1, or Diplomacy V0.1. Future military systems (armies, battles, war score, peace, claims/casus belli if adopted, occupation/sieges if adopted, improved presentation) must **build on** this V0.1 authority, not replace or duplicate it without an explicit architecture decision.
 
 **Purpose.** Minimum server-authoritative warfare primitive to prove that independent greater realms can declare external wars, target one enemy-controlled territory, validate borders through existing greater-realm territory, coexist in multiple simultaneous wars, resolve wars through a **server-only debug** mechanism, and transfer territory after a valid attacker victory. Infrastructure testing only. Not a military simulation.
 
@@ -574,7 +595,7 @@ Example: independent King Bob; Duke Cody is Bob’s subject and owns a border te
 
 Example: Bob personally owns Westmere; vassal Cody owns Northvale; Northvale borders Steve’s Greyfen. Bob’s greater realm borders Greyfen; Bob may declare war for Greyfen; Cody may not independently declare it.
 
-**Declaration.** War declarations are **not** requests. There is no Accept / Decline flow. If the server validates the declaration, the war begins immediately. The defender does not consent. The server owns all authoritative war state. Client input, when later implemented, is intent only.
+**Declaration.** War declarations are **not** requests. There is no Accept / Decline flow. If the server validates the declaration, the war begins immediately. The defender does not consent. The server owns all authoritative war state. The client sends `DeclareWar` **intent** only.
 
 **NAP.** An active Non-Aggression Pact between attacking and defending greater realms **blocks declaration**. The server rejects the declaration while the NAP exists. Warfare V0.1 does **not** automatically break the NAP, apply a violation penalty, create a truce, or alter reputation/Prestige. Diplomacy remains the source of truth for NAP state.
 
@@ -594,9 +615,9 @@ Example: Player1, Player3, and Player4 may all have active wars against Player2 
 
 **Defender Victory.** The war ends; target ownership remains unchanged. No V0.1 reparations, Prestige, penalties, truces, cooldowns, claims, opinion, or economic effects.
 
-**Disconnect.** If a participating **root ruler** disconnects, affected active wars involving that ruler are cancelled / terminated. No automatic victory. No territory transfer because of disconnect. No persistence, reconnect restoration, AI takeover, or succession handoff.
+**Disconnect.** If a participating **root ruler** disconnects, affected active wars involving that ruler are cancelled / terminated. No automatic victory. No territory transfer because of disconnect. No persistence, reconnect restoration, AI takeover, or succession handoff. **Director-verified** for both attacker-root and defender-root disconnect; remaining client sees cancellation; ordinary Territory UI shows no active wars; no stale active war remains.
 
-**Loss of independence.** If a participating root loses independence and becomes somebody else’s subject during an active external war, affected wars involving that former root terminate. The war does **not** transfer to the new liege. The new liege does **not** inherit the war. No automatic territorial result merely because independence was lost. Same baseline philosophy as external Diplomacy V0.1. Advanced realm-war inheritance is deferred.
+**Loss of independence.** If a participating root loses independence and becomes somebody else’s subject during an active external war, affected wars involving that former root terminate. The war does **not** transfer to the new liege. The new liege does **not** inherit the war. No automatic territorial result merely because independence was lost. Same baseline philosophy as external Diplomacy V0.1. Advanced realm-war inheritance is deferred. **Director-verified.**
 
 **Territory integration.** Warfare does **not** maintain a duplicate ownership model. Territory / Map remains authoritative. Successful conquest uses the existing ownership path.
 
@@ -606,7 +627,9 @@ Example: Player1, Player3, and Player4 may all have active wars against Player2 
 
 **Title integration.** Warfare does **not** directly grant rank, Prestige, promotion, or demotion. Successful conquest changes ownership; Title Progression may observe the new control counts through existing architecture. Warfare itself does not promote the ruler.
 
-**GUI.** Respect current prototype UI: `PrototypeGuiTheme`; map as primary workspace; no uncontrolled permanent stacking; stable assigned regions; higher GUI blocks map input beneath it; toasts for results; no state-driven primary-panel geometry. Do **not** assign warfare keybinds. Declare War lives in `TerritoryInfo`. Future UI shell remains specified, not implemented.
+**GUI.** Respect current prototype UI: `PrototypeGuiTheme`; map as primary workspace; no uncontrolled permanent stacking; stable assigned regions; higher GUI blocks map input beneath it; toasts for results; no state-driven primary-panel geometry. Do **not** assign warfare keybinds. Declare War lives in `TerritoryInfo`. Ordinary player-facing war lists show only wars involving the local player’s **greater realm** (subjects inherit the root’s view). Unrelated third-party wars stay out of TerritoryInfo. Global war lists remain admin/debug (`;inspectwars`, WarfareDebug). Future UI shell remains specified, not implemented.
+
+**Director acceptance (2026-08-24).** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Recorded PASS: valid adjacent declaration; non-adjacent rejection; duplicate/matching active-war rejection; attacker victory with target **territory** transfer; defender victory with ownership unchanged; simultaneous competing wars on the same target **territory**; stale-war cleanup after another attacker captures the target; loss of independence during an active war terminates the war and the new liege does not inherit it; defender-root disconnect terminates the war without conquest; attacker-root disconnect terminates the war without conquest (most recent: Player1 attacker vs Player3 defender for frostfield; remaining client “War cancelled (left the match).”; ordinary Territory UI no active wars; no transfer); disconnect cleanup leaves no active stale war; ordinary Warfare GUI is player/realm-relevant; admin InspectWars remains global; AdminBridge ResolveWar uses `WarfareService.DebugResolveWar`.
 
 **Explicitly deferred from Warfare / Conquest V0.1:** armies, units, troop counts, troop movement, battles, combat simulation, sieges, occupations, casualties, military economy, recruitment, reinforcement, supply, logistics, commanders, generals, army AI, claims, casus belli, war goals beyond the single target territory, war score, peace negotiations, peace treaties, surrender, reparations, truces, cooldowns, Prestige rewards/penalties, opinion/reputation, aggressive expansion, coalitions, call to arms, alliance war participation, military access, guarantees, tributaries, contested occupation, multi-party peace, automatic continuation against a new territory owner, vassal independent warfare, vassal war autonomy, conquered-territory redistribution, unclaimed-territory warfare, persistence, reconnect restoration, succession/inheritance of wars, AI warfare, advanced war GUI, warfare keybinds.
 
@@ -777,9 +800,9 @@ A full numbered 0.1 feature freeze beyond the following is **not** specified.
 
 **Diplomacy V0.1** is specified under Relationships & Diplomacy. The prototype is **accepted / complete**. Independent-root Alliance and Non-Aggression Pact only; pending 30s requests; server authority; consume hierarchy; dissolve on loss of independence; no opinion/autonomy. Warfare / Conquest V0.1 **queries** NAP/Alliance; Diplomacy does not implement wars.
 
-**Warfare / Conquest V0.1** is specified under Warfare. **Implemented — partially director-verified — acceptance testing in progress — not director-accepted.** Independent-root external wars; one enemy-controlled territory target; greater-realm adjacency (Vale 8-neighbor lattice **director-verified**); NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars (including same target); server-only debug Attacker/Defender Victory; **attacker victory** and **defender victory** director-verified. Next director test: competing same-target wars / stale-war resolution. Disconnect and loss-of-independence cancellation remain implemented but **not** director-verified. Resolution may be driven from `WarfareDebug` or GameTester `resolvewar` via AdminBridge (same `DebugResolveWar` path).
+**Warfare / Conquest V0.1** is specified under Warfare. **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Independent-root external wars; one enemy-controlled **territory** target; greater-realm adjacency (Vale 8-neighbor lattice **director-verified**); NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars (including same target); server-only debug Attacker/Defender Victory. Director-verified including attacker/defender victory, competing same-target, stale cleanup, disconnect of attacker or defender root, loss of independence without liege inheritance, player-relevant ordinary GUI, and global admin InspectWars. AdminBridge `resolvewar` uses `WarfareService.DebugResolveWar`. This is **V0.1 only**, not a complete military game. Future warfare must build on this authority.
 
-**Admin / Testing Infrastructure V0.1** is specified under Admin / Testing. Architecture recorded; small Admin Bridge foundation for current systems; Kohl loader not in the place until the Director inserts it.
+**Admin / Testing Infrastructure V0.1** is specified under Admin / Testing. Official Kohl loader is in the place; listed AdminBridge commands are live for GameTester UserIds (plus Studio synthetic UserId exception). It is **not** a finished admin product. Convenient copy/reuse of reusable IDs is required before the first published playtest, not implemented now.
 
 **Naming formulas, economy, and monetization** remain specified only at the earlier checkpoint level except where Title Progression V0.1 already locks Vale test Prestige thresholds. Additional map assets, real Prestige/Gold/Influence gameplay, and monetization products remain unresolved.
 

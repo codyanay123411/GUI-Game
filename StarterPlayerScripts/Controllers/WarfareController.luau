@@ -11,6 +11,7 @@ local HttpService = game:GetService("HttpService")
 local PrototypeGuiTheme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Util"):WaitForChild("PrototypeGuiTheme"))
 local MapCatalog = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("MapCatalog"))
 local WarfareAdjacency = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Util"):WaitForChild("WarfareAdjacency"))
+local PlayerRelevantView = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Util"):WaitForChild("PlayerRelevantView"))
 
 local player = Players.LocalPlayer
 local WarfareController = {}
@@ -204,6 +205,14 @@ function WarfareController.Start()
 		)
 	end
 
+	local function localRootId(): string?
+		return PlayerRelevantView.LocalRootRulerId(hierarchy.rulers, player.UserId)
+	end
+
+	local function relevantWars(): { any }
+		return PlayerRelevantView.FilterWarsForLocalRoot(wars, localRootId())
+	end
+
 	local function warsBetween(rootA: string, rootB: string): { any }
 		local matches = {}
 		for _, war in wars do
@@ -226,13 +235,14 @@ function WarfareController.Start()
 			if me.independent ~= true then
 				table.insert(bits, "Subjects cannot independently declare external war.")
 			end
-			if #wars == 0 then
+			local visible = relevantWars()
+			if #visible == 0 then
 				table.insert(bits, "No active wars.")
-			elseif #wars == 1 then
-				table.insert(bits, "Active war: " .. formatWarPair(wars[1]))
+			elseif #visible == 1 then
+				table.insert(bits, "Active war: " .. formatWarPair(visible[1]))
 			else
 				local parts = {}
-				for _, war in wars do
+				for _, war in visible do
 					table.insert(parts, formatWarPair(war))
 				end
 				table.insert(bits, "Active wars: " .. table.concat(parts, "; "))

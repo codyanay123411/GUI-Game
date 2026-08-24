@@ -11,7 +11,7 @@ This project is a GUI-first Roblox game. Source-controlled Luau lives on disk an
 | `ReplicatedStorage/Shared/` | Modules that are safe and appropriate for both client and server. |
 | `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Currently `PoliticalHierarchyConfig.luau`, `MapCatalog.luau`, `ValePrototypeMap.luau`, `RealmColors.luau`, `DiplomacyConfig.luau`, `WarfareConfig.luau`. |
 | `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Currently `PoliticalTypes.luau`, `TerritoryTypes.luau`, `TitleTypes.luau`, `DiplomacyTypes.luau`, and `WarfareTypes.luau`. |
-| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (`NextRank` / `Name`), `TitleRequirements.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`, `PrototypeGuiTheme.luau`, `KohlPrototypeTheme.luau`, `WarfareAdjacency.luau`. |
+| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (`NextRank` / `Name`), `TitleRequirements.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`, `PrototypeGuiTheme.luau`, `KohlPrototypeTheme.luau`, `WarfareAdjacency.luau`, `PlayerRelevantView.luau`. |
 | `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. Hierarchy: `HierarchyClientEvent`, `HierarchyServerEvent`. Territory: `TerritoryClientEvent`, `TerritoryServerEvent`. Title: `TitleClientEvent`, `TitleServerEvent`. Diplomacy: `DiplomacyClientEvent`, `DiplomacyServerEvent`. Warfare: `WarfareClientEvent`, `WarfareServerEvent`. Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
 | `StarterPlayerScripts/` | Client scripts that run for each player. On disk this is a root folder; in Studio it maps to `StarterPlayer.StarterPlayerScripts`. Contains the client entry point and controllers. |
 | `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau`, `TerritoryMapController.luau`, `TitleProgressionController.luau`, `DiplomacyController.luau`, and `WarfareController.luau`. |
@@ -34,7 +34,7 @@ Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesys
 
 ## Tooling roles
 
-- **Roblox Studio MCP** handles live DataModel manipulation, GUI instances, inspection, and playtesting.
+- **Roblox Studio MCP** handles live DataModel manipulation, GUI instances, inspection, and Studio Play / Local Server **development verification**. Those sessions are not the project’s first real playtest (published server; see `AI/GAME_DESIGN.md`).
 - **Script Sync** handles source-controlled Luau files and folders between disk and Studio.
 - **Git / GitHub** provides version history and rollback for the files in this repository.
 
@@ -45,6 +45,20 @@ GUI behavior is driven by client **Controllers**. Authoritative game state and v
 The client must never be trusted for authoritative game decisions. Treat client requests as untrusted input: the server validates, the client reflects the result.
 
 That includes **title establishment**: the client may show eligibility and request a title; only the server may grant Duke, King, or Emperor after revalidation. Title Progression V0.1 is **accepted / complete**.
+
+### Player-relevant information (standing)
+
+Player-facing UI must use player/realm-relevant views of authoritative server state. Global server state is not automatically player-visible. Admin/debug inspection is exempt. Systems that intentionally expose global/public information must explicitly define that visibility.
+
+When implementing a system, decide explicitly:
+
+- **A.** Globally public by design
+- **B.** Relevant only to the local player / ruler / greater realm (subjects inherit the root’s view)
+- **C.** Admin/debug-only
+
+Do not default to rendering the full server snapshot in ordinary GUI. Territory selection may show public province facts (name, owner, rank) while private/active state (wars, pending requests, internal resources) is shown only when the local realm is involved, unless a future system defines public knowledge.
+
+**Warfare V0.1:** ordinary `TerritoryInfo` / `WarfareController` lists wars where `attackerRootId` or `defenderRootId` is the local greater-realm root. `;inspectwars` and WarfareDebug remain global.
 
 ## Coherent prototype UI
 
@@ -82,6 +96,7 @@ Long-term GUI architecture. **Do not implement from this section.** The current 
 - Major systems (hierarchy, titles, diplomacy, economy, religion, and later equivalents) must **not** accumulate as permanently visible stacked panels. They open as contextual panels/overlays over the map.
 - Major panels should be opened by explicit activation: on-screen navigation controls and/or keyboard keybinds. **No keybinds are assigned.** Future work must **centralize** UI navigation/bindings; controllers must not each invent a private key.
 - Opening a major panel uses a coherent UI state model: close or replace another major panel where appropriate; coexist only when useful; avoid permanent clutter.
+- **Player/map orientation** (restrained own-land identification, center-on / show-my-realm or equivalent) is **required before the first published playtest**. Exact keybind/art not locked. Do not implement from this section unless the Director authorizes pre-playtest usability work.
 - **Priority overlays** (incoming Vassalage Accept/Decline and similar must-act requests) stay visible and actionable no matter which major panel is open. They are not major panels.
 - **Result toasts** stay transient, non-interactive feedback. Do not merge them with major panels or action overlays.
 - Functional clarity first; visual polish later. Not a license to redesign the current accepted/prototype GUI now.
@@ -126,20 +141,20 @@ Political Hierarchy V0.1 remains the source of liege/vassal/root-ruler truth. Ma
 
 - **Server:** `DiplomacyService` Alliance/NAP flags on unordered independent-root pairs; 30s pending requests; intents Ready / OfferAlliance / OfferNAP / Accept / Decline / BreakAlliance / BreakNAP. Consumes `PoliticalHierarchyService` for independence/root. Dissolves on `StateChanged` (loss of independence) and `RulerRemoving` (disconnect). Query `AreAllied` / `HasNonAggressionPact` (resolve via root ids). JSON snapshot on `DiplomacyServerEvent`.
 - **Client:** `DiplomacyController` + `DiplomacyPanel` (fixed 380×148 above Title) and `DiplomacyOfferOverlay` (ZIndex 31). Subjects see the root realm’s relations read-only. Toasts for notices.
-- **Must not:** implement wars, map recolor, title/Prestige effects, vassal autonomy, opinion. **Warfare / Conquest V0.1** (specified, not implemented) **queries** this state: NAP blocks declaration; Alliance does not auto-join.
-- **Accepted / complete** after director Local Server multiplayer verification (see `AI/PROGRESS.md`). Hierarchy, map, and title V0.1 stay accepted. Does not authorize implementing Warfare / Conquest V0.1, opinion, vassal diplomatic autonomy, or other deferred systems.
+- **Must not:** implement wars as Diplomacy gameplay, map recolor, title/Prestige effects, vassal autonomy, opinion. **Warfare / Conquest V0.1** (implemented) **queries** this state: NAP blocks declaration; Alliance does not auto-join.
+- **Accepted / complete** after director Local Server multiplayer verification (see `AI/PROGRESS.md`). Hierarchy, map, and title V0.1 stay accepted. Does not authorize deferred military systems, opinion, vassal diplomatic autonomy, or other deferred systems.
 
-## Warfare / Conquest (V0.1 — implemented, partially director-verified, acceptance testing in progress, not director-accepted)
+## Warfare / Conquest (V0.1 — IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED)
 
 - **Server:** `WarfareService` active wars keyed by warId (attacker root, original defender root, target). `WarfareClientEvent` accepts Ready / DeclareWar(territoryId) only. Server derives attacker, defender, adjacency, NAP. Greater-realm adjacency uses `Shared/Util/WarfareAdjacency` against MapConfiguration `adjacentIds` and territories owned by the attacking root plus descendants. Resolution is **not** a client remote: `DebugResolveWar` / `WarfareDebug.Invoke('Resolve', warId, 'Attacker'|'Defender')`. Attacker victory calls `TerritoryMapService.SetOwner(target, attackingRoot)` after ending the resolving war; competing wars on that target go stale via `OwnershipChanged`. Defender victory ends the war with no ownership change. Cancels on `RulerRemoving` and loss of independence (`StateChanged`).
-- **Client:** `WarfareController` drives `TerritoryInfo.DeclareWar` / `WarStatus`; selection via `SelectedTerritoryId` published by `TerritoryMapController`. Declare War is enabled only when the same greater-realm adjacency helper is true (plus independence / owner / NAP checks). Button copy names the selected territory and uses “additional war” when those two roots already have an active territory-specific war. Toasts for notices.
+- **Client:** `WarfareController` drives `TerritoryInfo.DeclareWar` / `WarStatus`; selection via `SelectedTerritoryId` published by `TerritoryMapController`. Declare War is enabled only when the same greater-realm adjacency helper is true (plus independence / owner / NAP checks). Button copy names the selected territory and uses “additional war” when those two roots already have an active territory-specific war. Toasts for notices. **Player-facing war lists** use `PlayerRelevantView` (local greater-realm / root only). The replicated snapshot stays global; admin `;inspectwars` is unfiltered.
 - **Must not:** armies, battles, claims, peace, map recolor for war, title/Prestige grants, client victory authority.
-- **Acceptance:** **in progress.** Director-verified Attacker Victory and Defender Victory. Next test: competing same-target wars / stale cleanup. Not director-accepted. Hierarchy, map, title, diplomacy V0.1, and prototype GUI maintenance stay accepted.
+- **Acceptance:** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 only; not a complete military game). Director-verified PASS includes adjacent/non-adjacent/duplicate declaration, attacker and defender victory, competing same-target wars, stale-war cleanup, loss of independence without liege inheritance, attacker-root and defender-root disconnect without conquest or leftover stale wars, player-relevant ordinary GUI, global admin InspectWars, and AdminBridge ResolveWar → `WarfareService.DebugResolveWar`. Hierarchy, map, title, diplomacy V0.1, and prototype GUI maintenance stay accepted. Future military systems must build on this authority.
 
 ## Admin / testing (V0.1 — Kohl live for current bridge ops)
 
 - **Kohl's Admin** (official @Scripth, Creator Store `172732271`, folder `ServerScriptService.Kohl's Admin`) is command UI/auth only. Custom commands belong in `Config.Addons` (CollectionService tag on the Addons folder). Auto-update loads MainModule asset `1868400649`; local Config/Addons still apply.
-- **AdminBridge** is the only game-state testing façade. Live: Kohl `;adminhelp` / `;inspectwars` / `;inspectterritory` / `;inspectruler` / `;setowner` / `;setprestige` / `;resolvewar` → addon → `AdminBridge.Execute(UserId, …)` with `AdminConfig` GameTester allowlist. Studio: `ServerScriptService.AdminDebug.Invoke(operation, …)` (no UserId).
-- **Presentation (not authority):** `AdminFeedbackEvent` is server-to-client display only. Mutations still cannot be invoked from the client. `AdminFeedbackController` uses ResultToast + `AdminInspectPanel`. `AdminKohlThemeClient` restyles Kohl command chrome from `KohlPrototypeTheme` / `PrototypeGuiTheme` after load (survives MainModule auto-update). Do not fork Kohl MainModule for look.
+- **AdminBridge** is the only game-state testing façade. Live: Kohl `;adminhelp` / `;inspectwars` / `;inspectterritory` / `;inspectruler` / `;setowner` / `;setprestige` / `;resolvewar` → addon → `AdminBridge.Execute(UserId, …)` with `AdminConfig` GameTester allowlist. In Studio only, synthetic Local Server UserIds (`< 0`) also pass that check; published servers do not. Studio: `ServerScriptService.AdminDebug.Invoke(operation, …)` (no UserId).
+- **Presentation (not authority):** `AdminFeedbackEvent` is server-to-client display only. Mutations still cannot be invoked from the client. `AdminFeedbackController` uses ResultToast + `AdminInspectPanel`. `AdminKohlThemeClient` restyles Kohl command chrome from `KohlPrototypeTheme` / `PrototypeGuiTheme` after load (survives MainModule auto-update). Do not fork Kohl MainModule for look. In-game copy/reuse of reusable admin IDs is a **pre-playtest admin UX requirement**, not implemented now.
 - No project Admin remotes that invoke AdminBridge. Per-system `*Debug` folders remain (mock rulers, WarfareDebug Declare/Resolve, etc.).
 - Future gameplay services should expose testing through this bridge, not by scattering Kohl requires.

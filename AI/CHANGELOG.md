@@ -167,3 +167,19 @@ Project-owned admin feedback: `AdminFeedbackEvent` (server → client display on
 ## 2026-08-23 — Kohl admin runtime error fixes
 
 Kohl `Command:run` pcall treats a successful `run` return as an error string (`escapeRichText` → gsub). Project addon `run` callbacks no longer return `true` / `AdminBridge.Execute` results. Stale Kohl `Config.Addons` copies are replaced only when they still contain old `return runOp` wrappers; canonical addon is re-registered after Kohl's async addon load. Theme `Font`/`FontMono` use `Font.fromEnum` so Flux `FontFace` assignment is not an EnumItem. Verified `;adminhelp`, `;setprestige me 100`, `;inspectwars` with no gsub/FontFace errors. No gameplay, permission, or AdminBridge redesign. No Git commit.
+
+## 2026-08-23 — Studio Local Server GameTester exception
+
+`AdminConfig.IsGameTester` allows synthetic UserIds `< 0` only while `RunService:IsStudio()` is true, so Local Server clients (-1/-2/-3) can run Kohl GameTester commands without putting those ids on the production allowlist. Published servers still require `GameTesterUserIds`. Positive unauthorized UserIds stay denied in Studio. Not production authorization. No Git commit.
+
+## 2026-08-23 — Player-relevant UI + warfare TerritoryInfo filter
+
+Standing rule: ordinary player UI shows player/realm-relevant views of server state; global snapshots are not automatically visible; admin/debug is exempt. `WarfareController` / TerritoryInfo war lists use `PlayerRelevantView` (local greater-realm root; subjects inherit). `;inspectwars` / AdminBridge / WarfareDebug remain global. No declaration/resolution/snapshot-shape change. No Git commit.
+
+## 2026-08-23 — Documentation reconciliation checkpoint
+
+Reconciled docs to current locked Director decisions without gameplay or Luau changes. Competing same-target wars and stale-war cleanup are **Director-verified PASS**; remaining Warfare tests are participating-root disconnect then loss-of-independence / no liege inheritance. Recorded first-real-playtest definition (published server; Studio/MCP is development verification). Recorded pre-playtest usability: player/map orientation, admin copy/reuse UX, player-relevant information (Warfare GUI already filtered). Studio GameTester synthetic UserId exception documented as non-production. Corrected stale “Warfare specified/not implemented” and “Kohl loader not inserted” wording. Historical changelog entries left as history. No Git commit.
+
+## 2026-08-24 — Warfare / Conquest V0.1 director-accepted
+
+Director completed the Warfare / Conquest V0.1 acceptance sequence. Status is now **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 only; not a complete military game). Recorded the full Director PASS list, including attacker/defender disconnect without conquest, loss of independence without liege inheritance, player-relevant ordinary GUI, global InspectWars, and AdminBridge ResolveWar → `WarfareService.DebugResolveWar`. Future military systems must build on this authority. Documentation only; no gameplay/Luau. No Git commit.
