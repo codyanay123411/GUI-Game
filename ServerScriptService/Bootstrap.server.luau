@@ -14,6 +14,8 @@
 local PoliticalHierarchyService = require(script.Parent.Services.PoliticalHierarchyService)
 local TerritoryMapService = require(script.Parent.Services.TerritoryMapService)
 local TitleProgressionService = require(script.Parent.Services.TitleProgressionService)
+local DiplomacyService = require(script.Parent.Services.DiplomacyService)
 PoliticalHierarchyService.Start()
 TerritoryMapService.Start()
 TitleProgressionService.Start()
+DiplomacyService.Start()

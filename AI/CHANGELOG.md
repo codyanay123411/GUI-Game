@@ -119,3 +119,11 @@ Mouse-wheel zoom was dropped because Active `MapStage` marks wheel as `gameProce
 ## 2026-08-23 — Prototype GUI theme consistency
 
 Hierarchy, Title, TerritoryInfo, Vassalage overlay, and ResultToast now share one prototype theme (`PrototypeGuiTheme`): panel tone, stroke, corners, type hierarchy, and button states. Overlay keeps stronger gold emphasis; toast stays distinct transient feedback. Primary panel geometry and gameplay unchanged. No Git commit.
+
+## 2026-08-23 — Diplomacy V0.1 prototype
+
+Implemented server-authoritative Alliance and NAP between independent root rulers: 30s pending requests, unordered duplicate rejection, unilateral break, dissolve on loss of independence (no liege transfer), disconnect cleanup, `AreAllied` / `HasNonAggressionPact`. Prototype GUI: `DiplomacyPanel` in the right column above Title, `DiplomacyOfferOverlay` for incoming Accept/Decline, toasts, theme + map input layering. One-client Studio tests with mock rulers passed pending director multiplayer acceptance. No warfare/opinion/autonomy. No Git commit.
+
+## 2026-08-23 — Diplomacy V0.1 accepted
+
+Directors confirmed Local Server multiplayer verification, including independent human rulers and subject behavior: human GUI offer → real second-client overlay; Alliance Accept; NAP Accept; Alliance/NAP Decline; Alliance + NAP coexistence; independent Break; both clients updated after agreement changes; 30s pending expire; subject read-only diplomacy; loss of independence dissolves external diplomacy with no transfer to the new liege; disconnect of an independent ruler with active diplomacy removes that ruler and dissolves the survivor’s agreements; diplomacy remains rooted at the independent greater-realm ruler; no observed regression to hierarchy, territory/map, title progression, GUI layering, pan/zoom/select, or prototype theme/layout. V0.1 is **accepted / complete**. Deferred diplomacy unchanged. No Git commit.

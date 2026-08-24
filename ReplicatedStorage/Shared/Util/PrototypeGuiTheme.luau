@@ -38,6 +38,8 @@ local PRIMARY_PANELS = {
 	MapStage = true,
 	ResultToast = true,
 	VassalageOfferOverlay = true,
+	DiplomacyPanel = true,
+	DiplomacyOfferOverlay = true,
 }
 
 local function ensureCorner(inst: GuiObject, radius: number)
@@ -286,6 +288,29 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 		ensureStroke(mapStage, 1, C.stroke)
 	end
 
+	local diplomacy = gui:FindFirstChild("DiplomacyPanel")
+	if diplomacy and diplomacy:IsA("GuiObject") then
+		diplomacy.BackgroundColor3 = C.panel
+		diplomacy.BorderSizePixel = 0
+		ensureCorner(diplomacy, 8)
+		ensureStroke(diplomacy, 1, C.stroke)
+		ensurePad(diplomacy, 10)
+		local header = diplomacy:FindFirstChild("Header")
+		if header and header:IsA("TextLabel") then
+			stylePanelTitle(header)
+			header.Size = UDim2.new(1, 0, 0, 20)
+		end
+		local status = diplomacy:FindFirstChild("Status")
+		if status and status:IsA("TextLabel") then
+			styleBody(status)
+			status.TextSize = 13
+		end
+		local dipList = diplomacy:FindFirstChild("List")
+		if dipList and dipList:IsA("ScrollingFrame") then
+			styleScroll(dipList)
+		end
+	end
+
 	local overlay = gui:FindFirstChild("VassalageOfferOverlay")
 	if overlay and overlay:IsA("GuiObject") then
 		overlay.BackgroundColor3 = C.overlay
@@ -306,6 +331,31 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 		end
 		local accept = overlay:FindFirstChild("AcceptButton", true)
 		local decline = overlay:FindFirstChild("DeclineButton", true)
+		if accept and accept:IsA("TextButton") then
+			PrototypeGuiTheme.applyPrimaryButton(accept, true)
+			accept.TextSize = 15
+		end
+		if decline and decline:IsA("TextButton") then
+			PrototypeGuiTheme.applyDangerButton(decline)
+			decline.TextSize = 15
+		end
+	end
+
+	local dipOverlay = gui:FindFirstChild("DiplomacyOfferOverlay")
+	if dipOverlay and dipOverlay:IsA("GuiObject") then
+		dipOverlay.BackgroundColor3 = C.overlay
+		dipOverlay.BorderSizePixel = 0
+		ensureCorner(dipOverlay, 8)
+		ensureStroke(dipOverlay, 2, C.accentGold)
+		ensurePad(dipOverlay, 12)
+		local header = dipOverlay:FindFirstChild("Header")
+		if header and header:IsA("TextLabel") then
+			stylePanelTitle(header)
+			header.TextColor3 = C.accentGold
+			header.Text = "Diplomatic offer"
+		end
+		local accept = dipOverlay:FindFirstChild("AcceptButton", true)
+		local decline = dipOverlay:FindFirstChild("DeclineButton", true)
 		if accept and accept:IsA("TextButton") then
 			PrototypeGuiTheme.applyPrimaryButton(accept, true)
 			accept.TextSize = 15
@@ -340,6 +390,33 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 		local offerCard = templates:FindFirstChild("OfferCard")
 		if offerCard and offerCard:IsA("Frame") then
 			styleOfferCard(offerCard)
+		end
+		local dipRow = templates:FindFirstChild("DiplomacyRow")
+		if dipRow and dipRow:IsA("Frame") then
+			dipRow.BackgroundColor3 = C.row
+			dipRow.BorderSizePixel = 0
+			ensureCorner(dipRow, 6)
+			local nameLabel = dipRow:FindFirstChild("NameLabel")
+			if nameLabel and nameLabel:IsA("TextLabel") then
+				styleLabel(nameLabel, 13, C.textPrimary, true)
+			end
+			local relLabel = dipRow:FindFirstChild("RelationLabel")
+			if relLabel and relLabel:IsA("TextLabel") then
+				styleLabel(relLabel, 12, C.textSecondary, false)
+			end
+			local buttonRow = dipRow:FindFirstChild("ButtonRow")
+			if buttonRow then
+				for _, child in buttonRow:GetChildren() do
+					if child:IsA("TextButton") then
+						PrototypeGuiTheme.applyPrimaryButton(child, true)
+						child.TextSize = 11
+					end
+				end
+			end
+		end
+		local dipCard = templates:FindFirstChild("DiplomacyOfferCard")
+		if dipCard and dipCard:IsA("Frame") then
+			styleOfferCard(dipCard)
 		end
 		local requestRow = templates:FindFirstChild("RequestRow")
 		if requestRow and requestRow:IsA("Frame") then

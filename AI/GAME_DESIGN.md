@@ -323,7 +323,7 @@ NPC characters may support the simulation where humans cannot reasonably fill ev
 
 Detailed large-dynasty simulation and advanced AI rulers are not authorized for immediate implementation (see Explicitly Deferred Features).
 
-The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**.
+The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**.
 
 ## Character Traits & Attributes
 
@@ -456,20 +456,62 @@ Detailed succession mechanics are unspecified and are not authorized for immedia
 
 Players should be able to interact politically without warfare. Diplomacy should provide legitimate paths to power.
 
-Long-term design includes concepts such as:
+**Voluntary vassalage** remains a Political Hierarchy V0.1 action (both parties agree; rank rules). It is **not** Diplomacy V0.1. Diplomacy V0.1 is **external** formal agreements between independent greater realms.
 
-- Alliances
-- Political agreements
-- Marriage diplomacy
-- Vassalage
-- Offers of protection
-- Demands
-- Negotiation
-- Claims
-- Independence
-- Political coalitions
+Long-term design may later include marriage diplomacy, guarantees, tributaries, coalitions, opinion, trust, and similar. Those remain unspecified. Do not implement a full diplomacy system from the long-term list.
 
-**Voluntary vassalage** (both parties agree, rank rules in Political Hierarchy) is an approved action. Exact remaining diplomatic mechanics are unspecified. Do not implement a full diplomacy system from this list alone.
+### Diplomacy V0.1
+
+Specified design checkpoint. **Accepted / complete** after director Local Server multiplayer verification. Do not reopen Political Hierarchy V0.1, Territory / Map Foundation V0.1, Title Progression V0.1, or Diplomacy V0.1. Do not begin warfare, economy, AI, relationships/opinion, or vassal diplomatic autonomy from this checkpoint.
+
+**Purpose.** Authoritative political relationships **between independent greater realms**. It answers: which independent realms currently have formal diplomatic agreements with each other? Baseline infrastructure only. Not a complete diplomatic simulation.
+
+**Actors.** External diplomacy is conducted only by **root / independent rulers**. The root represents the entire greater realm. Subjects **cannot** independently offer, accept, decline, or break those external agreements. A subject’s external diplomatic alignment follows their greater-realm root. **Vassal diplomatic autonomy is not V0.1.**
+
+Example: independent King Bob may diplomatically engage independent Emperor Steve. Duke Cody, vassal of Bob, may not offer Alliance or NAP to Steve, accept or decline Steve’s external requests, or break Bob’s external agreements.
+
+**Agreement types (exactly two):**
+
+1. **Alliance**
+2. **Non-Aggression Pact (NAP)**
+
+Do not add guarantees, tributaries, trade agreements, marriages, defensive pacts, coalitions, federations, truces, favors/hooks, opinion, trust, diplomatic reputation, embassies, subject-negotiated diplomacy, or war participation.
+
+**Alliance V0.1.** Mutual formal relationship between two independent greater realms. Flow: root A offers Alliance to root B → server pending request → B Accept or Decline → only successful server Accept creates the Alliance. Either root may later **unilaterally Break Alliance** (no consent). V0.1 meaning only: these two greater realms are formally allied. Do **not** implement automatic military assistance, call to arms, shared wars, troop access, joint victory, defensive/offensive obligations, or Prestige/economic effects. Future warfare may **query** Alliance state.
+
+**Non-Aggression Pact V0.1.** Mutual formal relationship between two independent greater realms. Same offer → pending → Accept/Decline / expire flow. Either root may unilaterally **Break NAP**. V0.1 meaning only: these two greater realms currently have a formal non-aggression agreement. Do **not** implement war-declaration blocking, pact violation, Prestige/opinion penalties, truces, cooldowns, casus belli, or diplomatic-reputation effects. Future warfare may query NAP state and define consequences.
+
+**Coexistence.** Alliance and NAP are **separate**. Two realms **may** have both at once. Do not make them mutually exclusive. Do not auto-create NAP on Alliance accept. Do not auto-remove NAP when an Alliance is created. Whether Alliance later implies non-aggression is unresolved.
+
+**Server authority.** Diplomacy is server-authoritative. Clients submit intentions only (conceptually: OfferAlliance, OfferNAP, Accept, Decline, BreakAlliance, BreakNAP). The client must not submit authoritative relationship state, root status, agreement validity, hierarchy membership, or expiration truth. The server revalidates.
+
+**Root validation.** Actions succeed only if the relevant actors are currently independent/root. Hierarchy remains authoritative for liege, vassals, root, and greater-realm membership. Diplomacy **consumes** that truth. Diplomacy must **not** duplicate or independently maintain the hierarchy tree.
+
+**Requests.** Creation uses a pending-request model in the same spirit as Vassalage: Offer → Pending → Accept / Decline / Expire. Only successful server Accept creates the agreement. A pending request identifies at least: request ID, agreement type, sender root, receiver root, expiration. Exact structures are implementation detail.
+
+**Lifetime.** Pending diplomatic requests last **30 seconds** (existing prototype convention). After expiration the request is invalid; Accept cannot establish; Decline cannot act on a nonexistent request. No configurable diplomacy clocks in V0.1.
+
+**Duplicates.** Reject self-diplomacy; duplicate active Alliance; duplicate active NAP; duplicate **pending** request of the **same** agreement type between the same two realms. The pair is **unordered** for duplicates (A→B Alliance pending blocks B→A Alliance pending). Alliance pending does **not** block NAP pending. No rate limits or cooldowns in V0.1.
+
+**Breaking.** Break Alliance removes Alliance only. Break NAP removes NAP only. Breaking one does not remove the other. No consent. Both sides receive authoritative feedback. **No V0.1 penalty.**
+
+**Loss of independence (locked).** If an independent ruler who holds external agreements later becomes a vassal/subject, **that ruler’s independent external agreements are dissolved**. They are **not** transferred to the new liege. Pending external requests involving the ruler who loses independence become invalid. No vassal diplomatic inheritance.
+
+Example: Cody ↔ Steve Alliance; Cody later becomes Bob’s vassal → Cody ↔ Steve Alliance dissolves; Bob does **not** inherit an Alliance with Steve (Bob never agreed).
+
+**Disconnect.** Temporary match state. If a ruler is removed: their active agreements and pending requests are removed/invalidated; remaining rulers receive updated state. No reconnect restoration, AI takeover, persistence, succession, or diplomatic inheritance.
+
+**Identity.** Agreements belong to the two participating independent greater-realm actors. They are not territory relationships, title objects, player-friendship, or account-level relationships. For the current baseline, player = match ruler; independent roots are the diplomatic actors.
+
+**Queryability.** Future authoritative systems should be able to ask equivalents of `AreAllied(rulerA, rulerB)` and `HasNonAggressionPact(rulerA, rulerB)` (exact names are implementation detail). Warfare should eventually **consume** diplomatic state. Diplomacy V0.1 must **not** implement warfare.
+
+**No map effect.** Diplomacy does not change ownership, realm colors, holder colors, adjacency, starting territories, or map geometry. Do not recolor allied realms the same color. Diplomatic map modes are deferred.
+
+**No title effect.** Diplomacy does not change rank, title eligibility, greater-realm territory count, Prestige, or Establish requirements.
+
+**GUI.** Respect current prototype UI: `PrototypeGuiTheme`; map as primary workspace; no uncontrolled permanent stacking; stable assigned regions; higher GUI blocks map input beneath it; priority requests use an overlay/action surface; results use toasts; no state-driven primary-panel geometry. Do **not** assign keybinds. Future UI shell remains specified, not implemented. Exact player-facing copy is not locked; both participants should get clear feedback for offer/accept/decline/break/expire and dissolution on loss of independence.
+
+**Explicitly deferred from Diplomacy V0.1:** warfare and war participation; call to arms; military access; peace/truces/casus belli/claims; coalitions; guarantees; tributaries; trade/economy/diplomatic currency; opinion/trust/favors/hooks/reputation; vassal diplomatic autonomy; diplomatic inheritance; AI diplomacy; marriages/dynasties/succession; persistence/reconnect; diplomatic map modes.
 
 ## Realm & Vassal Management
 
@@ -671,6 +713,8 @@ A full numbered 0.1 feature freeze beyond the following is **not** specified.
 
 **Title Progression V0.1** is specified under Titles & Territory. The prototype is **accepted / complete**. Sequential Lord → Duke → King → Emperor, Vale test thresholds, greater-realm control, manual establish, server revalidation, test Prestige not spent, no auto-demotion.
 
+**Diplomacy V0.1** is specified under Relationships & Diplomacy. The prototype is **accepted / complete**. Independent-root Alliance and Non-Aggression Pact only; pending 30s requests; server authority; consume hierarchy; dissolve on loss of independence; no warfare/opinion/autonomy.
+
 **Naming formulas, economy, and monetization** remain specified only at the earlier checkpoint level except where Title Progression V0.1 already locks Vale test Prestige thresholds. Additional map assets, real Prestige/Gold/Influence gameplay, and monetization products remain unresolved.
 
 Political Hierarchy V0.1 remains a foundational dependency for later warfare, rebellion, title progression, diplomacy, and victory conditions. Territory ownership is a separate concept from hierarchy membership.
@@ -711,6 +755,7 @@ Part of the long-term vision, **not** authorized for immediate implementation me
 - Lifetime Support calculations and monetization implementation
 - Procedural naming algorithm and final geographic/political names
 - Player replacement of AI rulers and detailed AI political behavior
+- Diplomacy beyond V0.1 (warfare-hook consequences, opinion, vassal diplomatic autonomy, inheritance, map modes, extra agreement types)
 
 ## Long-Term Vision
 

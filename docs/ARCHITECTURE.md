@@ -7,14 +7,14 @@ This project is a GUI-first Roblox game. Source-controlled Luau lives on disk an
 | Path | Purpose |
 | --- | --- |
 | `ServerScriptService/` | Authoritative server scripts. Contains the server entry point and server-only systems. |
-| `ServerScriptService/Services/` | Authoritative server-side systems. Currently `PoliticalHierarchyService.luau`, `TerritoryMapService.luau`, and `TitleProgressionService.luau`. |
+| `ServerScriptService/Services/` | Authoritative server-side systems. Currently `PoliticalHierarchyService.luau`, `TerritoryMapService.luau`, `TitleProgressionService.luau`, and `DiplomacyService.luau`. |
 | `ReplicatedStorage/Shared/` | Modules that are safe and appropriate for both client and server. |
-| `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Currently `PoliticalHierarchyConfig.luau`, `MapCatalog.luau`, `ValePrototypeMap.luau`, `RealmColors.luau`. |
-| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Currently `PoliticalTypes.luau`, `TerritoryTypes.luau`, and `TitleTypes.luau`. |
-| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (`NextRank` / `Name`), `TitleRequirements.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`. |
-| `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. Hierarchy: `HierarchyClientEvent`, `HierarchyServerEvent`. Territory: `TerritoryClientEvent`, `TerritoryServerEvent`. Title: `TitleClientEvent`, `TitleServerEvent`. Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
+| `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Currently `PoliticalHierarchyConfig.luau`, `MapCatalog.luau`, `ValePrototypeMap.luau`, `RealmColors.luau`, `DiplomacyConfig.luau`. |
+| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Currently `PoliticalTypes.luau`, `TerritoryTypes.luau`, `TitleTypes.luau`, and `DiplomacyTypes.luau`. |
+| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (`NextRank` / `Name`), `TitleRequirements.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`, `PrototypeGuiTheme.luau`. |
+| `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. Hierarchy: `HierarchyClientEvent`, `HierarchyServerEvent`. Territory: `TerritoryClientEvent`, `TerritoryServerEvent`. Title: `TitleClientEvent`, `TitleServerEvent`. Diplomacy: `DiplomacyClientEvent`, `DiplomacyServerEvent`. Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
 | `StarterPlayerScripts/` | Client scripts that run for each player. On disk this is a root folder; in Studio it maps to `StarterPlayer.StarterPlayerScripts`. Contains the client entry point and controllers. |
-| `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau`, `TerritoryMapController.luau`, and `TitleProgressionController.luau`. |
+| `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau`, `TerritoryMapController.luau`, `TitleProgressionController.luau`, and `DiplomacyController.luau`. |
 | `docs/` | Project documentation, including this architecture note. |
 | `AI/` | Agent tracker: progress, decisions, and changelog. |
 
@@ -22,7 +22,7 @@ GUI instances are **not** stored in this filesystem. They are created and edited
 
 Reserved Script Sync folders that still have no Luau modules keep `_Placeholder.luau` so Studio materializes the folder. Delete or replace the placeholder when real modules occupy that folder. `ReplicatedStorage/Remotes/_Placeholder.luau` is kept because remotes are Studio instances, not synced Luau.
 
-Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesystem source file). V0.1 layout: central `MapStage`, right `Main` hierarchy panel, bottom-right `TitlePanel`, bottom `TerritoryInfo`, top-left `ResultToast`. Incoming vassalage is a map-centered `VassalageOfferOverlay` (not clipped inside `Main`).
+Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesystem source file). V0.1 layout: central `MapStage`, right `Main` hierarchy panel, right `DiplomacyPanel` above a bottom-right `TitlePanel`, bottom `TerritoryInfo`, top-left `ResultToast`. Incoming vassalage is `VassalageOfferOverlay`; incoming diplomacy is `DiplomacyOfferOverlay` (offset so both can coexist).
 
 ## Server / client / shared separation
 
@@ -96,7 +96,7 @@ Examples: Accept/Decline on a Vassalage overlay must not also select a territory
 
 Use Roblox GUI/input mechanisms that **consume/block** input for the visible/interactable bounds of the higher-priority GUI. Do not rely on ZIndex alone. Do not make the entire screen globally modal if that unnecessarily blocks unrelated map area.
 
-**Implemented (map input):** `TerritoryMapController` ignores pan/select/zoom when `PlayerGui:GetGuiObjectsAtPosition` finds `VassalageOfferOverlay`, `TitlePanel`, `Main`, or `TerritoryInfo` at the pointer. Map press must start on the map itself. Result toasts are not blocking layers. Check runs only on pointer events, not per frame. Mouse wheel over the map still zooms when Roblox marks it `gameProcessed` because `MapStage` is an Active GUI surface; `gameProcessed` is not treated as higher-GUI blocking.
+**Implemented (map input):** `TerritoryMapController` ignores pan/select/zoom when `PlayerGui:GetGuiObjectsAtPosition` finds `VassalageOfferOverlay`, `DiplomacyOfferOverlay`, `TitlePanel`, `Main`, `TerritoryInfo`, or `DiplomacyPanel` at the pointer. Map press must start on the map itself. Result toasts are not blocking layers. Check runs only on pointer events, not per frame. Mouse wheel over the map still zooms when Roblox marks it `gameProcessed` because `MapStage` is an Active GUI surface; `gameProcessed` is not treated as higher-GUI blocking.
 
 ## Configuration and simulation
 
@@ -121,3 +121,10 @@ Political Hierarchy V0.1 remains the source of liege/vassal/root-ruler truth. Ma
 - **Dependencies:** Title → Hierarchy + Territory. Hierarchy and Territory do not require Title. Change events: `StateChanged`, `OwnershipChanged`.
 - **Debug (prototype only):** `_G.__TitleProgressionV01.DebugSetPrestige(rulerId, n)` if the running server VM exposes `_G`; otherwise `ServerScriptService.TitleProgressionDebug:SetAttribute("SetPrestige", "rulerId=number")`. No client Prestige remote.
 - **Accepted / complete** after director Local Server + 2 Players testing (see `AI/PROGRESS.md`). Does not authorize a real Prestige economy, title-loss, or other deferred systems.
+
+## Diplomacy (V0.1 — accepted / complete)
+
+- **Server:** `DiplomacyService` Alliance/NAP flags on unordered independent-root pairs; 30s pending requests; intents Ready / OfferAlliance / OfferNAP / Accept / Decline / BreakAlliance / BreakNAP. Consumes `PoliticalHierarchyService` for independence/root. Dissolves on `StateChanged` (loss of independence) and `RulerRemoving` (disconnect). Query `AreAllied` / `HasNonAggressionPact` (resolve via root ids). JSON snapshot on `DiplomacyServerEvent`.
+- **Client:** `DiplomacyController` + `DiplomacyPanel` (fixed 380×148 above Title) and `DiplomacyOfferOverlay` (ZIndex 31). Subjects see the root realm’s relations read-only. Toasts for notices.
+- **Must not:** warfare, map recolor, title/Prestige effects, vassal autonomy, opinion.
+- **Accepted / complete** after director Local Server multiplayer verification (see `AI/PROGRESS.md`). Hierarchy, map, and title V0.1 stay accepted. Does not authorize warfare, opinion, vassal diplomatic autonomy, or other deferred systems.

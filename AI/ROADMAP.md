@@ -4,7 +4,7 @@ Phases describe **dependency and preferred order**, not a hard ban on touching a
 
 AI agents must **not** prematurely implement major later-phase gameplay systems merely because they appear on this list. If work would skip ahead, stop and ask, or stay within the current phase.
 
-Gameplay implementation: **Political Hierarchy V0.1 is accepted / complete** (see `AI/PROGRESS.md`). **Territory / Map Foundation V0.1 is accepted / complete.** **Title Progression V0.1 is accepted / complete.** Later phases are not started. Completing titles does **not** start Phase 2 Character Simulation. Do not implement aging, family simulation, or succession as currently approved core design. Do not implement a real Prestige economy or title-loss from this prototype.
+Gameplay implementation: **Political Hierarchy V0.1 is accepted / complete** (see `AI/PROGRESS.md`). **Territory / Map Foundation V0.1 is accepted / complete.** **Title Progression V0.1 is accepted / complete.** **Diplomacy V0.1 is accepted / complete.** Later phases are not started. Completing diplomacy does **not** start Phase 2 Character Simulation. Do not implement aging, family simulation, or succession as currently approved core design. Do not implement a real Prestige economy, title-loss, warfare, opinion, or vassal diplomatic autonomy unless directors authorize that work.
 
 ## 1. Foundation & Architecture — COMPLETE
 
@@ -42,7 +42,9 @@ Liege/vassal structure and realm administration.
 
 ## 9. Diplomacy
 
-Negotiated relations between realms or rulers.
+Negotiated relations between independent greater realms.
+
+**Diplomacy V0.1** (Alliance + Non-Aggression Pact between root rulers; pending requests; consume hierarchy; dissolve on loss of independence) is **accepted / complete**. Do not start warfare, opinion, or vassal diplomatic autonomy from this checkpoint. Political Hierarchy, Territory / Map, and Title Progression V0.1 remain **accepted / complete**.
 
 ## 10. Politics, Factions & Schemes
 

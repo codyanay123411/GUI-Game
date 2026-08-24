@@ -389,7 +389,7 @@ function TerritoryMapController.Start()
 		while current and current ~= gui do
 			if current:IsA("GuiObject") and current.Parent == gui then
 				local name = current.Name
-				if name == "VassalageOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" then
+				if name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" then
 					return current
 				end
 			end
