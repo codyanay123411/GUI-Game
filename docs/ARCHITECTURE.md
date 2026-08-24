@@ -7,14 +7,14 @@ This project is a GUI-first Roblox game. Source-controlled Luau lives on disk an
 | Path | Purpose |
 | --- | --- |
 | `ServerScriptService/` | Authoritative server scripts. Contains the server entry point and server-only systems. |
-| `ServerScriptService/Services/` | Authoritative server-side systems. Currently `PoliticalHierarchyService.luau`, `TerritoryMapService.luau`, `TitleProgressionService.luau`, and `DiplomacyService.luau`. |
+| `ServerScriptService/Services/` | Authoritative server-side systems. Currently `PoliticalHierarchyService.luau`, `TerritoryMapService.luau`, `TitleProgressionService.luau`, `DiplomacyService.luau`, `WarfareService.luau`, plus Admin Bridge (`AdminConfig`, `AdminBridge`, `AdminService`, `AdminKohlAddon`). |
 | `ReplicatedStorage/Shared/` | Modules that are safe and appropriate for both client and server. |
-| `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Currently `PoliticalHierarchyConfig.luau`, `MapCatalog.luau`, `ValePrototypeMap.luau`, `RealmColors.luau`, `DiplomacyConfig.luau`. |
-| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Currently `PoliticalTypes.luau`, `TerritoryTypes.luau`, `TitleTypes.luau`, and `DiplomacyTypes.luau`. |
-| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (`NextRank` / `Name`), `TitleRequirements.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`, `PrototypeGuiTheme.luau`. |
-| `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. Hierarchy: `HierarchyClientEvent`, `HierarchyServerEvent`. Territory: `TerritoryClientEvent`, `TerritoryServerEvent`. Title: `TitleClientEvent`, `TitleServerEvent`. Diplomacy: `DiplomacyClientEvent`, `DiplomacyServerEvent`. Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
+| `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Currently `PoliticalHierarchyConfig.luau`, `MapCatalog.luau`, `ValePrototypeMap.luau`, `RealmColors.luau`, `DiplomacyConfig.luau`, `WarfareConfig.luau`. |
+| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Currently `PoliticalTypes.luau`, `TerritoryTypes.luau`, `TitleTypes.luau`, `DiplomacyTypes.luau`, and `WarfareTypes.luau`. |
+| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (`NextRank` / `Name`), `TitleRequirements.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`, `PrototypeGuiTheme.luau`, `WarfareAdjacency.luau`. |
+| `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. Hierarchy: `HierarchyClientEvent`, `HierarchyServerEvent`. Territory: `TerritoryClientEvent`, `TerritoryServerEvent`. Title: `TitleClientEvent`, `TitleServerEvent`. Diplomacy: `DiplomacyClientEvent`, `DiplomacyServerEvent`. Warfare: `WarfareClientEvent`, `WarfareServerEvent`. Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
 | `StarterPlayerScripts/` | Client scripts that run for each player. On disk this is a root folder; in Studio it maps to `StarterPlayer.StarterPlayerScripts`. Contains the client entry point and controllers. |
-| `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau`, `TerritoryMapController.luau`, `TitleProgressionController.luau`, and `DiplomacyController.luau`. |
+| `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau`, `TerritoryMapController.luau`, `TitleProgressionController.luau`, `DiplomacyController.luau`, and `WarfareController.luau`. |
 | `docs/` | Project documentation, including this architecture note. |
 | `AI/` | Agent tracker: progress, decisions, and changelog. |
 
@@ -22,7 +22,7 @@ GUI instances are **not** stored in this filesystem. They are created and edited
 
 Reserved Script Sync folders that still have no Luau modules keep `_Placeholder.luau` so Studio materializes the folder. Delete or replace the placeholder when real modules occupy that folder. `ReplicatedStorage/Remotes/_Placeholder.luau` is kept because remotes are Studio instances, not synced Luau.
 
-Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesystem source file). V0.1 layout: central `MapStage`, right `Main` hierarchy panel, right `DiplomacyPanel` above a bottom-right `TitlePanel`, bottom `TerritoryInfo`, top-left `ResultToast`. Incoming vassalage is `VassalageOfferOverlay`; incoming diplomacy is `DiplomacyOfferOverlay` (offset so both can coexist).
+Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesystem source file). V0.1 layout: central `MapStage` (`{1,-404},{1,-184}`), right `Main` hierarchy panel, right `DiplomacyPanel` above a bottom-right `TitlePanel`, bottom `TerritoryInfo` (`{1,-404},{0,160}` including Declare War + war status), top-left `ResultToast`. Incoming vassalage is `VassalageOfferOverlay`; incoming diplomacy is `DiplomacyOfferOverlay` (offset so both can coexist).
 
 ## Server / client / shared separation
 
@@ -106,8 +106,8 @@ Use Roblox GUI/input mechanisms that **consume/block** input for the visible/int
 
 ## Territory / map foundation (V0.1 — accepted / complete)
 
-- **Map definition / `MapConfiguration` (static per preset):** territory IDs, display names, polygon geometry, adjacency IDs. Hand-authored presets via `MapCatalog`. V0.1 default is `vale_prototype_16` (16 territories). The renderer uses the selected catalog map; 16 is not a universal constant.
-- **Match map state (server-authoritative):** `TerritoryMapService` assigns one unique random territory to each human ruler, leaves the rest Unclaimed, and unclaims on hierarchy `RulerRemoving`. Snapshot JSON over `TerritoryServerEvent`; client `Ready` handshake. `DebugSetOwner` is server-only and is not a remote.
+- **Map definition / `MapConfiguration` (static per preset):** territory IDs, display names, polygon geometry, adjacency IDs. Hand-authored presets via `MapCatalog`. V0.1 default is `vale_prototype_16` (16 territories). Vale lattice adjacency is **8-neighbor** (edge or corner). The renderer uses the selected catalog map; 16 is not a universal constant.
+- **Match map state (server-authoritative):** `TerritoryMapService` assigns one unique random territory to each human ruler, leaves the rest Unclaimed, and unclaims on hierarchy `RulerRemoving`. Snapshot JSON over `TerritoryServerEvent`; client `Ready` handshake. `SetOwner` / `DebugSetOwner` are server-only and are not client remotes. Query helpers: `GetOwnerRulerId`, `GetOwnedTerritoryIds`, `AreAdjacent`.
 - **Client:** `TerritoryMapController` renders polygons in a ViewportFrame (WedgeParts), pan/zoom/select, info panel from replicated territory + hierarchy state. Greater-realm fill vs direct-holder rim; selection is a separate inward gold ring that does not replace those colors. Never treats clicks as granting ownership. `TerritoryClientEvent` accepts only `Ready`.
 
 Political Hierarchy V0.1 remains the source of liege/vassal/root-ruler truth. Map coloring **reads** that state.
@@ -126,5 +126,19 @@ Political Hierarchy V0.1 remains the source of liege/vassal/root-ruler truth. Ma
 
 - **Server:** `DiplomacyService` Alliance/NAP flags on unordered independent-root pairs; 30s pending requests; intents Ready / OfferAlliance / OfferNAP / Accept / Decline / BreakAlliance / BreakNAP. Consumes `PoliticalHierarchyService` for independence/root. Dissolves on `StateChanged` (loss of independence) and `RulerRemoving` (disconnect). Query `AreAllied` / `HasNonAggressionPact` (resolve via root ids). JSON snapshot on `DiplomacyServerEvent`.
 - **Client:** `DiplomacyController` + `DiplomacyPanel` (fixed 380×148 above Title) and `DiplomacyOfferOverlay` (ZIndex 31). Subjects see the root realm’s relations read-only. Toasts for notices.
-- **Must not:** warfare, map recolor, title/Prestige effects, vassal autonomy, opinion.
-- **Accepted / complete** after director Local Server multiplayer verification (see `AI/PROGRESS.md`). Hierarchy, map, and title V0.1 stay accepted. Does not authorize warfare, opinion, vassal diplomatic autonomy, or other deferred systems.
+- **Must not:** implement wars, map recolor, title/Prestige effects, vassal autonomy, opinion. **Warfare / Conquest V0.1** (specified, not implemented) **queries** this state: NAP blocks declaration; Alliance does not auto-join.
+- **Accepted / complete** after director Local Server multiplayer verification (see `AI/PROGRESS.md`). Hierarchy, map, and title V0.1 stay accepted. Does not authorize implementing Warfare / Conquest V0.1, opinion, vassal diplomatic autonomy, or other deferred systems.
+
+## Warfare / Conquest (V0.1 — implemented, partially director-verified, acceptance paused, not director-accepted)
+
+- **Server:** `WarfareService` active wars keyed by warId (attacker root, original defender root, target). `WarfareClientEvent` accepts Ready / DeclareWar(territoryId) only. Server derives attacker, defender, adjacency, NAP. Greater-realm adjacency uses `Shared/Util/WarfareAdjacency` against MapConfiguration `adjacentIds` and territories owned by the attacking root plus descendants. Resolution is **not** a client remote: `DebugResolveWar` / `WarfareDebug.Invoke('Resolve', warId, 'Attacker'|'Defender')`. Attacker victory calls `TerritoryMapService.SetOwner(target, attackingRoot)` after ending the resolving war; competing wars on that target go stale via `OwnershipChanged`. Defender victory ends the war with no ownership change. Cancels on `RulerRemoving` and loss of independence (`StateChanged`).
+- **Client:** `WarfareController` drives `TerritoryInfo.DeclareWar` / `WarStatus`; selection via `SelectedTerritoryId` published by `TerritoryMapController`. Declare War is enabled only when the same greater-realm adjacency helper is true (plus independence / owner / NAP checks). Button copy names the selected territory and uses “additional war” when those two roots already have an active territory-specific war. Toasts for notices.
+- **Must not:** armies, battles, claims, peace, map recolor for war, title/Prestige grants, client victory authority.
+- **Acceptance:** **paused.** Director-verified items and remaining tests are in `AI/PROGRESS.md` / `AI/DECISIONS.md`. Next test is **Defender Victory**. Not director-accepted. Hierarchy, map, title, diplomacy V0.1, and prototype GUI maintenance stay accepted.
+
+## Admin / testing (V0.1 — architecture recorded; Kohl not installed)
+
+- **Kohl's Admin** (official @Scripth loader, not yet in this place) is command UI/auth only.
+- **AdminBridge** is the only game-state testing façade. Studio: `ServerScriptService.AdminDebug.Invoke(operation, ...)`. Live Kohl commands must pass `AdminConfig` GameTester UserIds even if Kohl grants a role.
+- No Admin RemoteEvents. Per-system `*Debug` folders remain.
+- Future gameplay services should expose testing through this bridge, not by scattering Kohl requires.

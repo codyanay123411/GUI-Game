@@ -89,6 +89,7 @@ function TerritoryMapController.Start()
 	viewport.Active = false
 	local info = gui:WaitForChild("TerritoryInfo") :: Frame
 	local infoBody = info:WaitForChild("Body") :: TextLabel
+	local selectedValue = info:FindFirstChild("SelectedTerritoryId")
 
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	local territoryIntent = remotes:WaitForChild("TerritoryClientEvent") :: RemoteEvent
@@ -306,6 +307,9 @@ function TerritoryMapController.Start()
 		end
 		updateInfo()
 		applyCamera()
+		if selectedValue and selectedValue:IsA("StringValue") then
+			selectedValue.Value = selectedId or ""
+		end
 	end
 
 	local function applyTerritoryState(data: any)

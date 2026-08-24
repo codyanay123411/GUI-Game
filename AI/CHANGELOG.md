@@ -127,3 +127,31 @@ Implemented server-authoritative Alliance and NAP between independent root ruler
 ## 2026-08-23 — Diplomacy V0.1 accepted
 
 Directors confirmed Local Server multiplayer verification, including independent human rulers and subject behavior: human GUI offer → real second-client overlay; Alliance Accept; NAP Accept; Alliance/NAP Decline; Alliance + NAP coexistence; independent Break; both clients updated after agreement changes; 30s pending expire; subject read-only diplomacy; loss of independence dissolves external diplomacy with no transfer to the new liege; disconnect of an independent ruler with active diplomacy removes that ruler and dissolves the survivor’s agreements; diplomacy remains rooted at the independent greater-realm ruler; no observed regression to hierarchy, territory/map, title progression, GUI layering, pan/zoom/select, or prototype theme/layout. V0.1 is **accepted / complete**. Deferred diplomacy unchanged. No Git commit.
+
+## 2026-08-23 — Warfare / Conquest V0.1 design checkpoint (docs only)
+
+Specified Warfare / Conquest V0.1: independent-root external wars for one enemy-controlled greater-realm-adjacent territory; NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars including same target; server-only debug Attacker/Defender Victory; attacker victory grants the target to the attacking root after revalidation; stale wars terminate without transfer; disconnect and loss of independence cancel wars without automatic victory or liege inheritance. No armies, battles, claims, or peace. **Specified — not implemented.** No Luau, Studio GUI, remotes, or Git commit.
+
+## 2026-08-23 — Warfare / Conquest V0.1 prototype
+
+Implemented server-authoritative external wars: `DeclareWar` intent, greater-realm adjacency, NAP block, same-target coexistence, `TerritoryMapService.SetOwner` on attacker victory, stale competing wars, defender victory without transfer, cancel on disconnect/loss of independence. Prototype Declare War control in `TerritoryInfo`. Server-only `WarfareDebug.Invoke`. One-client Studio tests with mock rulers passed. **Not director-accepted** until Local Server + 2 Players. No armies/battles/claims/peace. No Git commit.
+
+## 2026-08-23 — Warfare greater-realm adjacency GUI fix
+
+Declare War GUI no longer treats any foreign-owned province as eligible. Client and server share `WarfareAdjacency` map-edge checks against territories owned by the attacking root plus descendants. Non-adjacent targets disable the button and the server still rejects `DeclareWar`. Vassal-border declarations remain valid. No Git commit.
+
+## 2026-08-23 — Warfare territory-specific UI wording
+
+`TerritoryInfo` Declare War now names the selected territory (`Declare War for <Name>` / `Declare Additional War for <Name>` when those two roots already have an active war). War status lists territory-specific active wars and distinguishes existing vs selected targets. TerritoryInfo panel size unchanged. No rule changes. No Git commit.
+
+## 2026-08-23 — Vale adjacency 8-neighbor correction
+
+Director-corrected Vale prototype adjacency from 4-connected (edge-only) to immediate 8-neighbor (edge or corner) on the existing 4×4 lattice. MapConfiguration data only; polygons unchanged. Warfare still consumes authored `adjacentIds`. Later **director-verified** in Local Server testing. No Git commit.
+
+## 2026-08-23 — Warfare / Conquest V0.1 pause checkpoint
+
+Director paused acceptance testing. Status: **implemented — partially director-verified — not director-accepted.** Documented director PASS list (including Vale 8-neighbor and attacker-victory Greyfen pipeline) and remaining tests (resume at Defender Victory). No new gameplay. No Git commit.
+
+## 2026-08-23 — Admin / Testing Infrastructure V0.1
+
+Recorded Kohl's Admin as command layer only; game state stays in services. Implemented `AdminBridge` / `AdminConfig` / Studio `AdminDebug.Invoke` wrapping existing APIs (inspect wars/territory/ruler, SetOwner, SetPrestige, ResolveWar). Official Kohl loader **not** inserted (Director Toolbox step). Existing `*Debug` folders kept. Warfare rules unchanged. No Git commit.

@@ -4,6 +4,9 @@
 	V0.1 test map preset: 16 irregular quads on a jittered 4x4 lattice.
 	This is one MapConfiguration, not a universal territory count.
 	Ownership is never stored here.
+
+	Vale adjacency is authored 8-neighbor (edge or corner) on this lattice,
+	not runtime proximity. Other maps may use different graphs.
 ]]
 
 local NAMES = {
@@ -48,26 +51,38 @@ local function cellVerts(col: number, row: number)
 	}
 end
 
+local function idAt(col: number, row: number): string?
+	if col < 1 or col > 4 or row < 1 or row > 4 then
+		return nil
+	end
+	return NAMES[(row - 1) * 4 + col][1]
+end
+
+-- Immediate 8-neighbors: N, NE, E, SE, S, SW, W, NW (skip out-of-bounds).
+local NEIGHBOR_OFFSETS = {
+	{ 0, -1 },
+	{ 1, -1 },
+	{ 1, 0 },
+	{ 1, 1 },
+	{ 0, 1 },
+	{ -1, 1 },
+	{ -1, 0 },
+	{ -1, -1 },
+}
+
 local territories = {}
 for row = 1, 4 do
 	for col = 1, 4 do
-		local index = (row - 1) * 4 + col
 		local adj = {}
-		if col > 1 then
-			table.insert(adj, NAMES[index - 1][1])
-		end
-		if col < 4 then
-			table.insert(adj, NAMES[index + 1][1])
-		end
-		if row > 1 then
-			table.insert(adj, NAMES[index - 4][1])
-		end
-		if row < 4 then
-			table.insert(adj, NAMES[index + 4][1])
+		for _, offset in NEIGHBOR_OFFSETS do
+			local neighborId = idAt(col + offset[1], row + offset[2])
+			if neighborId then
+				table.insert(adj, neighborId)
+			end
 		end
 		table.insert(territories, {
-			id = NAMES[index][1],
-			displayName = NAMES[index][2],
+			id = NAMES[(row - 1) * 4 + col][1],
+			displayName = NAMES[(row - 1) * 4 + col][2],
 			polygon = cellVerts(col, row),
 			adjacentIds = adj,
 		})

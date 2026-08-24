@@ -165,10 +165,43 @@ function TerritoryMapService.CountOwnedByRulers(rulerIds: { string }): number
 	return n
 end
 
--- Prototype/debug only. Not a client remote.
-function TerritoryMapService.DebugSetOwner(territoryId: string, rulerId: string?)
+function TerritoryMapService.GetOwnerRulerId(territoryId: string): string?
+	return ownerByTerritory[territoryId]
+end
+
+function TerritoryMapService.GetOwnedTerritoryIds(rulerId: string): { string }
+	local owned = territoriesByRuler[rulerId]
+	if not owned then
+		return {}
+	end
+	local copy = table.clone(owned)
+	table.sort(copy)
+	return copy
+end
+
+function TerritoryMapService.AreAdjacent(territoryA: string, territoryB: string): boolean
+	if territoryA == territoryB then
+		return false
+	end
 	local byId = definitionById()
-	assert(byId[territoryId], "Unknown territory")
+	local def = byId[territoryA]
+	if not def then
+		return false
+	end
+	for _, adj in def.adjacentIds do
+		if adj == territoryB then
+			return true
+		end
+	end
+	return false
+end
+
+-- Authoritative ownership change for conquest / debug. Not a client remote.
+function TerritoryMapService.SetOwner(territoryId: string, rulerId: string?): (boolean, string)
+	local byId = definitionById()
+	if not byId[territoryId] then
+		return false, "Unknown territory."
+	end
 	local previous = ownerByTerritory[territoryId]
 	if previous then
 		local list = territoriesByRuler[previous]
@@ -188,10 +221,26 @@ function TerritoryMapService.DebugSetOwner(territoryId: string, rulerId: string?
 		ensureColor(rulerId)
 		ownerByTerritory[territoryId] = rulerId
 		local list = territoriesByRuler[rulerId] or {}
-		table.insert(list, territoryId)
+		local already = false
+		for _, id in list do
+			if id == territoryId then
+				already = true
+				break
+			end
+		end
+		if not already then
+			table.insert(list, territoryId)
+		end
 		territoriesByRuler[rulerId] = list
 	end
 	pushState()
+	return true, "Ownership updated."
+end
+
+-- Prototype/debug only. Not a client remote.
+function TerritoryMapService.DebugSetOwner(territoryId: string, rulerId: string?)
+	local ok, err = TerritoryMapService.SetOwner(territoryId, rulerId)
+	assert(ok, err)
 end
 
 local function onClientIntent(player: Player, action: any)
@@ -232,7 +281,7 @@ function TerritoryMapService.Start()
 		if typeof(raw) ~= "string" then
 			return
 		end
-		local territoryId, rulerId = string.match(raw, "^([%w_]+)=([%w_]*)$")
+		local territoryId, rulerId = string.match(raw, "^(.-)=(.*)$")
 		if not territoryId then
 			warn("[Territory] debug SetOwner expected territoryId=rulerId")
 			return

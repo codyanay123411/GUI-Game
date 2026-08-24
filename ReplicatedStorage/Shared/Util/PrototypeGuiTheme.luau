@@ -277,6 +277,22 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 		local body = territory:FindFirstChild("Body")
 		if body and body:IsA("TextLabel") then
 			styleBody(body)
+			body.Size = UDim2.new(1, 0, 0, 40)
+		end
+		local warStatus = territory:FindFirstChild("WarStatus")
+		if warStatus and warStatus:IsA("TextLabel") then
+			styleBody(warStatus)
+			warStatus.TextSize = 12
+			warStatus.Size = UDim2.new(1, 0, 0, 44)
+			warStatus.ClipsDescendants = true
+			warStatus.TextTruncate = Enum.TextTruncate.AtEnd
+			warStatus.TextYAlignment = Enum.TextYAlignment.Top
+		end
+		local declareWar = territory:FindFirstChild("DeclareWar")
+		if declareWar and declareWar:IsA("TextButton") then
+			PrototypeGuiTheme.applyPrimaryButton(declareWar, true)
+			declareWar.TextSize = 12
+			declareWar.TextWrapped = true
 		end
 	end
 

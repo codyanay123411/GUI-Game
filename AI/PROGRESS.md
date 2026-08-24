@@ -35,6 +35,8 @@ A task must not be marked complete until it has been verified.
 - [x] Prototype GUI theme consistency (maintenance): Hierarchy, Title, TerritoryInfo, Vassalage overlay, and ResultToast share `PrototypeGuiTheme`. Layout stability and input layering preserved. Not a new gameplay system.
 - [x] Prototype GUI maintenance batch **director-verified / complete** (input layering, layout stability, unified theme, pan/zoom `gameProcessed` correction). Future prototype GUI must respect those rules. Not a new gameplay system.
 - [x] Diplomacy V0.1 **accepted / complete** (directors confirmed Local Server multiplayer: independent human rulers and subject behavior). Human GUI offer → real second-client overlay; Alliance Accept; NAP Accept; Alliance/NAP Decline; Alliance + NAP coexistence; independent Break; both clients updated after agreement changes; 30s pending expire; subject read-only diplomacy; loss of independence dissolves external diplomacy with no transfer to the new liege; disconnect of an independent ruler with active diplomacy removes that ruler and dissolves the survivor’s agreements; diplomacy remains rooted at the independent greater-realm ruler. No observed regression to hierarchy, territory/map, title progression, GUI layering, pan/zoom/select, or prototype theme/layout. Political Hierarchy V0.1, Territory / Map Foundation V0.1, and Title Progression V0.1 remain accepted. Warfare, opinion, vassal diplomatic autonomy, and other deferred systems **not** included.
+- [x] Warfare / Conquest V0.1 **implemented — partially director-verified — acceptance testing paused — not director-accepted.** Director Local Server tests that **passed** are listed under the pause checkpoint below. Vale 8-neighbor adjacency and the attacker-victory pipeline (Greyfen transfer → map refresh → Title control 1/2→2/2) are **director-verified**. **Not complete.** Do not infer remaining cases from MCP/agent tests. Hierarchy, Territory / Map, Title Progression, Diplomacy V0.1, and prototype GUI maintenance remain accepted / director-verified.
+- [x] Admin / Testing Infrastructure V0.1 **architecture recorded; foundation partial.** `AdminBridge` + Studio `AdminDebug.Invoke` wrap existing service APIs. Kohl's Admin **not installed** in the place (Director must insert official @Scripth loader). Chat commands not live. Warfare acceptance status unchanged.
 
 ## Project knowledge
 
@@ -47,4 +49,25 @@ A task must not be marked complete until it has been verified.
 - [x] Territory / Map Foundation V0.1 specified, implemented, and **accepted / complete** (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`) after two-client director testing
 - [x] Title Progression V0.1 specified, implemented, and **accepted / complete** (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`) after two-client director testing
 - [x] Diplomacy V0.1 specified, implemented, and **accepted / complete** (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`) after director Local Server multiplayer verification
+- [x] Warfare / Conquest V0.1 **implemented — partially director-verified — acceptance testing paused — not director-accepted** (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`). Resume at Defender Victory.
+- [x] Admin / Testing Infrastructure V0.1 specified; small Admin Bridge foundation implemented; Kohl loader **not** in the place.
 - [ ] Confirm a full 0.1 feature freeze beyond the political-hierarchy prototype priority
+
+## Pause checkpoint — Warfare / Conquest V0.1 (2026-08-23)
+
+Director stopped acceptance testing. **Do not continue implementation** until authorized. **Do not mark Warfare V0.1 accepted.**
+
+**Status:** implemented — partially director-verified — acceptance testing paused — **not** director-accepted.
+
+**Corrections this session (implementation already in the working tree):**
+1. Greater-realm adjacency GUI now shares `WarfareAdjacency` with the server (server was already authoritative).
+2. Territory-specific Declare War / Additional War copy in `TerritoryInfo` (presentation only).
+3. Vale map data: 8-neighbor (edge or corner) lattice; **director-verified**.
+
+**Director-verified PASS:** pan/zoom/select; greater-realm and vassal-border declaration; non-adjacent / true non-neighbor prevention; subject cannot declare; NAP blocks; breaking NAP restores eligibility; immediate declaration (no Accept/Decline); multiple territorial wars between the same roots; duplicate attacker+same-target rejection; additional-war presentation; diagonal/corner adjacency; **attacker victory** on Greyfen (`warId` `d34b9750-29ff-4c8a-bb22-f066c334f04b`, `Player_-1` vs `Player_-3`) via `WarfareDebug.Invoke("Resolve", warId, "Attacker")` — ownership/color updated, war cleared, Title control 1/2→2/2, hierarchy intact.
+
+**Stopped immediately before:** **Defender Victory.** On resume: Local Server multiplayer; declare a valid adjacent war; read `ServerScriptService.WarfareDebug.LastSnapshot.Value`; `Invoke("Resolve", warId, "Defender")`. Expect war ends, defender keeps the target, no transfer, no Prestige/truce/claim effects.
+
+**Still not director-verified (do not mark passed from MCP tests):** Defender Victory; competing same-target wars then first attacker victory + stale cleanup; participating-root disconnect during war; loss of independence during war / no liege inheritance.
+
+**Git at pause:** branch `main`, HEAD `e742f31` (Accept Diplomacy V0.1), **ahead of origin/main by 1**. Warfare implementation and these docs are **uncommitted** working-tree changes. Do not discard, reset, stash, commit, or push unless directors authorize.

@@ -1,7 +1,8 @@
 --!strict
 
 --[[
-	Validates static map adjacency. Does not drive gameplay in V0.1.
+	Validates static MapConfiguration adjacency: no self-links, no duplicates,
+	symmetric pairs, all IDs exist. Gameplay consumes the authored lists.
 ]]
 
 local MapAdjacency = {}
