@@ -270,10 +270,26 @@ Clients may **request** political actions and **display** state. The **server** 
 
 - Title-scaling formula and numerical thresholds for maps **other than** the Vale V0.1 test numbers (see Title Progression V0.1)
 - Title-loss systems (revoke, usurp, surrender, destroy, war, succession, and similar)
-- Vassal obligations (tax, military contribution, contracts, percentages, penalties, formulas)
+- Vassal obligations (tax, military contribution, contracts, percentages, penalties, formulas). Economy V0.1 locks **no automatic tax/tribute** from greater-realm membership; it does **not** design a tax system.
 - Independence **gameplay methods** (the hierarchy must support becoming independent later; methods are unspecified)
 - Disconnect / reconnect behavior
 - Join-in-progress participation
+
+### Delegated greater-realm authority (future architecture — not implemented)
+
+Future independent **roots** may delegate specific greater-realm powers to subjects. This is **not** Political Hierarchy V0.1, **not** Economy V0.1, and **not** a retrofit into accepted Warfare / Diplomacy / Title / Map systems.
+
+**Effective delegated authority** = **rank defaults** + **individual overrides**.
+
+- The independent **root remains the ultimate** greater-realm authority.
+- **Subject status alone does not** automatically grant greater-realm powers.
+- The root may configure **default delegated permissions by subject political rank** (example structure: Emperor configures Kings, Dukes, Lords). Those defaults are **realm-specific policy**, not universal hardcoded rules (“all Dukes can always do X”).
+- The root may **grant or revoke individual overrides** for particular subjects (trust one Lord with an authority their rank default lacks; restrict one King despite a broader King default).
+- Delegation lets an authorized subject **act on behalf of the greater realm**. It does **not** make them independent, create another root, change hierarchy relationships, automatically transfer territory ownership, or automatically transfer personal Gold.
+- Permissions describe gameplay **authorities / capabilities**, not specific GUI buttons. Conceptual example: prefer `ExternalWarAuthority` over `CanPressDeclareWarButton`.
+- Future gameplay systems should expose **delegation hooks** after their own authoritative APIs are designed. Do **not** define the complete permission catalog yet.
+
+**Economy and delegation.** Economy V0.1 treasury ownership is **personal to the ruler**. Delegated realm permissions must **not** be assumed to give a liege or subject access to another ruler’s personal Gold. Future realm treasury, taxation, spending authority, investment authority, and obligations must be **explicitly designed** if they exist.
 
 ### Compatibility with future war
 
@@ -324,7 +340,7 @@ NPC characters may support the simulation where humans cannot reasonably fill ev
 
 Detailed large-dynasty simulation and advanced AI rulers are not authorized for immediate implementation (see Explicitly Deferred Features).
 
-The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**. Warfare / Conquest V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. This accepts **Warfare V0.1 only**; it is not a complete military simulation.
+The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**. Warfare / Conquest V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. This accepts **Warfare V0.1 only**; it is not a complete military simulation. **Economy / Resources V0.1** is **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**.
 
 ### Development verification vs first real playtest
 
@@ -354,9 +370,9 @@ Custom testing commands must go: Kohl (or Studio debug) → project **Admin Brid
 
 **GameTester** is a distinct high-trust UserId allowlist (server-enforced). Ordinary Kohl moderator roles must **not** automatically receive game-state mutation. Never trust client-supplied admin status, ruler identity, or mutations. Do not expose arbitrary code execution or generic “set anything” remotes.
 
-**V0.1 status:** architecture recorded. Official Kohl's Admin (@Scripth, asset 172732271) is installed under `ServerScriptService`. Live GameTester commands (`adminhelp`, `inspectwars`, `inspectterritory`, `inspectruler`, `setowner`, `setprestige`, `resolvewar`) go through `AdminKohlAddon` → `AdminBridge`. Command feedback uses project ResultToast / compact inspect overlay; Kohl chrome is restyled from PrototypeGuiTheme after load. Kohl rank is not enough. Studio `AdminDebug.Invoke` and per-system `*Debug` folders remain. **Studio-only:** synthetic Local Server UserIds `< 0` may pass `AdminConfig.IsGameTester` while `RunService:IsStudio()` is true; they are not production allowlist entries. Do not treat this tooling as a complete/polished admin product.
+**V0.1 status:** architecture recorded. Official Kohl's Admin (@Scripth, asset 172732271) is installed under `ServerScriptService`. Live GameTester commands (`adminhelp`, `inspectwars`, `inspectterritory`, `inspectruler`, `setowner`, `setprestige`, `inspectgold`, `setgold`, `addgold`, `spendgold`, `resolvewar`) go through `AdminKohlAddon` → `AdminBridge`. Command feedback uses project ResultToast / compact inspect overlay; Kohl chrome is restyled from PrototypeGuiTheme after load. Kohl rank is not enough. Studio `AdminDebug.Invoke` and per-system `*Debug` folders remain. **Studio-only:** synthetic Local Server UserIds `< 0` may pass `AdminConfig.IsGameTester` while `RunService:IsStudio()` is true; they are not production allowlist entries. Do not treat this tooling as a complete/polished admin product.
 
-**Future systems:** when a new server-authoritative gameplay system is implemented, consider exposing Director/testing operations through the Admin Bridge after the system's own APIs exist. Do not implement deferred gameplay (economy, armies, etc.) as fake admin commands.
+**Future systems:** when a new server-authoritative gameplay system is implemented, consider exposing Director/testing operations through the Admin Bridge after the system's own APIs exist. Do not implement deferred gameplay (armies, buildings, taxation, etc.) as fake admin commands. **Economy / Resources V0.1** Gold APIs go through AdminBridge (`;inspectgold` `;setgold` `;addgold` `;spendgold`). Owner/ruler Kohl tokens use addon types `adminOwnerToken` / `adminRulerToken` (raw parse; suggestions are not authority).
 
 ## Character Traits & Attributes
 
@@ -408,7 +424,7 @@ Unclaimed territories use a **neutral gray** prototype look. They stay fully sel
 
 **Ownership is not hierarchy membership.** A vassal keeps direct ownership of their territory while visually belonging to the greater independent realm (root ruler). Dominant fill = greater realm; a secondary indicator (for example a thinner internal border) may keep the direct holder’s color. Exact rendering technique is implementation discretion. Map visuals **derive from** authoritative hierarchy state; do not change Political Hierarchy rules to fake this.
 
-Every territory is selectable, including unclaimed. Selection opens a simple information panel only: territory name, territory ID, owner, owner rank, independent/subject status, greater realm/root ruler. Unclaimed must read as Unclaimed. Do **not** add economy, gold, military, religion, development, claims, war actions, buildings, or population. Architect the panel so later systems can extend it. There is **no Claim/Conquer** action in Territory / Map Foundation V0.1. Player conquest of enemy-held **territory**, when using Warfare / Conquest V0.1, uses this map’s existing authoritative ownership path.
+Every territory is selectable, including unclaimed. Selection opens a simple information panel only: territory name, territory ID, owner, owner rank, independent/subject status, greater realm/root ruler. Unclaimed must read as Unclaimed. Territory / Map Foundation V0.1 must **not** add economy, gold, military, religion, development, claims, war actions, buildings, or population to that panel. Architect the panel so later systems can extend it. **Economy / Resources V0.1** uses a **separate** minimal player Gold UI, not a province-income breakdown in TerritoryInfo. There is **no Claim/Conquer** action in Territory / Map Foundation V0.1. Player conquest of enemy-held **territory**, when using Warfare / Conquest V0.1, uses this map’s existing authoritative ownership path. Economy V0.1 **reads** that ownership for income; it must not become a second ownership model.
 
 Desktop V0.1 navigation: click-and-drag pan, mouse-wheel zoom, click to select. Bounded strategy-map camera: no infinite pan away from the map; reasonable min/max zoom; pan constrained to map bounds; initial view frames the entire 16-territory test map. **“Focus my realm” is not Territory / Map Foundation V0.1.** Player/map orientation (center-on / show-my-realm or equivalent) is **required before the first published playtest**; do not implement or bind a key unless the Director authorizes it.
 
@@ -619,7 +635,7 @@ Example: Player1, Player3, and Player4 may all have active wars against Player2 
 
 **Loss of independence.** If a participating root loses independence and becomes somebody else’s subject during an active external war, affected wars involving that former root terminate. The war does **not** transfer to the new liege. The new liege does **not** inherit the war. No automatic territorial result merely because independence was lost. Same baseline philosophy as external Diplomacy V0.1. Advanced realm-war inheritance is deferred. **Director-verified.**
 
-**Territory integration.** Warfare does **not** maintain a duplicate ownership model. Territory / Map remains authoritative. Successful conquest uses the existing ownership path.
+**Territory integration.** Warfare does **not** maintain a duplicate ownership model. Territory / Map remains authoritative. Successful conquest uses the existing ownership path. Economy V0.1 pays **future** Gold income to the new **direct owner**; it does **not** transfer the defeated ruler’s Gold treasury.
 
 **Hierarchy integration.** Warfare consumes Hierarchy for root, independence, and greater-realm membership. Subjects contribute territory to greater-realm adjacency but do not gain independent external-war authority.
 
@@ -651,7 +667,9 @@ Players may potentially:
 
 ## Economy
 
-Characters may possess wealth. An **economic** victory category remains conceptual (overwhelming economic influence of a player or political hierarchy). Buildings, development, and detailed economy formulas are deferred except for the approved resource architecture below. Exact earning rates, starting amounts, costs, sinks, caps, and interactions remain unresolved. Do not invent them.
+Characters may possess wealth. An **economic** victory category remains conceptual (overwhelming economic influence of a player or political hierarchy). Buildings, development, tax-law, markets, debt, realm treasuries, inheritance, military upkeep, and detailed economy formulas remain **deferred** except for the approved resource architecture and **Economy / Resources V0.1** Gold foundation below.
+
+Do **not** introduce **Credits** as a replacement for Gold. Do **not** collapse Gold, Prestige, and Influence into one generic currency.
 
 ### Match resources (reset each match)
 
@@ -665,11 +683,11 @@ Influence = political leverage
 
 Do not design them as interchangeable currencies with different icons. Each should eventually have a recognizable strategic purpose.
 
-**Gold** — economic and material power. May eventually interact with military expenses, territorial investment, economic development, political transactions, and other tangible expenditures.
+**Gold** — economic and material power. **Economy / Resources V0.1** (below) is the Gold foundation. Gold may eventually interact with military expenses, territorial investment, economic development, political transactions, and other tangible expenditures. Those sinks are **not** V0.1 gameplay.
 
-**Prestige** — reputation, status, renown, and political legitimacy. May eventually be gained through significant accomplishments (successful rule, warfare, political advancement, dynastic achievements, diplomacy, or other approved systems). May be used as a **requirement** for political actions. For title establishment: a **minimum Prestige threshold is required; that Prestige is not consumed**. Vale Title Progression V0.1 **test** thresholds are 100 / 250 / 500 for Duke / King / Emperor; those are not the full Prestige economy. Title Progression V0.1 uses temporary server-side test Prestige only. Income, decay, spending, caps, and persistence remain unresolved.
+**Prestige** — reputation, status, renown, and political legitimacy. May eventually be gained through significant accomplishments (successful rule, warfare, political advancement, dynastic achievements, diplomacy, or other approved systems). May be used as a **requirement** for political actions. For title establishment: a **minimum Prestige threshold is required; that Prestige is not consumed**. Vale Title Progression V0.1 **test** thresholds are 100 / 250 / 500 for Duke / King / Emperor; those are not the full Prestige economy. Title Progression V0.1 uses temporary server-side test Prestige only. Prestige **income, decay, spending, caps, and persistence remain unresolved**. Economy V0.1 does **not** implement Prestige.
 
-**Influence** — political leverage and political capital. May eventually interact with political organization, factions, political demands, support for political objectives, and other political actions.
+**Influence** — political leverage and political capital. May eventually interact with political organization, factions, political demands, support for political objectives, and other political actions. **Deferred** until those political systems are designed. Economy V0.1 does **not** implement Influence.
 
 ### Account-level (persist between matches)
 
@@ -685,6 +703,63 @@ MATCH RESOURCES          ACCOUNT-LEVEL
 ├── Prestige             └── Lifetime Support (non-spendable statistic)
 └── Influence
 ```
+
+### Economy / Resources V0.1
+
+Specified design checkpoint. **IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Gold foundation only. Not the finished economy. Do not modify accepted Hierarchy, Territory / Map, Title, Diplomacy, or Warfare authority merely to accommodate Economy. Future systems must **consume** Economy’s Gold authority rather than duplicating or directly mutating balances.
+
+**Purpose.** Establish ruler Gold state, starting Gold, territory-generated Gold income, authoritative income delivery, safe add/deduct, player-relevant replication/display, and admin/debug inspection and mutation for testing. Integrate by **reading** existing Territory ownership and Hierarchy ruler identity. Do **not** invent temporary shops, buildings, armies, or placeholder purchases merely so Gold can be spent.
+
+**Starting Gold (prototype).** Every ruler begins with **150 Gold**. This is Economy V0.1 prototype balance (about 15 minutes of baseline production from one territory at 10 Gold/min). It is **not** declared permanently balanced for the finished game. It may be rebalanced after real Gold sinks, armies, development, buildings, and published match testing exist.
+
+**Baseline territory income.** Configured per territory as `baseGoldIncome` (Gold per minute) on the map definition. Vale prototype territories use **10 Gold/min**. EconomyService converts Gold/min to the 6-second payout (`goldPerMinute * 6 / 60`). V0.1 requires that conversion to be a **whole number**; invalid map values error at Economy start (no silent fractional carry). Do **not** design rich/poor provinces in V0.1 beyond that config field.
+
+**Income recipient.** Territory-generated Gold belongs to the territory’s **direct owner**. Greater-realm membership alone creates **no** automatic tax, tribute, treasury share, or Gold redirection. Example: Lord B directly owns Greyfen under King A; Greyfen’s V0.1 income goes to Lord B, not to King A. Future taxation/obligations/realm-economic systems may deliberately move Gold; do **not** fake them in V0.1.
+
+**Unclaimed.** An Unclaimed territory has no direct owner and generates Gold for **nobody**. No global treasury or hidden recipient.
+
+**Income delivery.** One **global** server tick every **six seconds**. All eligible rulers are paid on that tick. Whole-number Gold. For Vale 10 Gold/min: **+1 Gold every 6 seconds** per directly owned territory. At each payout, use **current** authoritative ownership. A newly acquired territory contributes to the **new** direct owner’s **subsequent** payouts. Do not prorate partial six-second intervals.
+
+**Conquest.** Capturing another ruler’s territory does **not** steal, transfer, loot, or confiscate that ruler’s existing Gold. The V0.1 economic reward of conquest is the territory’s **future income stream** (more directly owned territories → higher payout). Looting, reparations, treasury seizure, surrender payments, and war indemnities are deferred.
+
+**Subjects.** Becoming a subject does **not** reset, transfer, merge, confiscate, or give Gold to the liege. Personal Gold remains the ruler’s. The subject continues receiving Gold from territories they **directly** own. Hierarchy status and Economy V0.1 treasury are distinct.
+
+**Disconnect / removal (V0.1 only).** When a ruler leaves the match and their match ruler/economy state is removed, their Gold is **removed**. It does **not** transfer to liege, subjects, enemies, territory owners, another ruler, or a global treasury. No V0.1 inheritance or redistribution. **This is not the intended final polished behavior.** Future wealth succession/distribution when a ruler disappears, dies, is succeeded, or otherwise leaves political control is **unresolved**. Do not select succession, heirs, subjects, realm treasury, dissolution, or contract rules now.
+
+**Spending.** Economy V0.1 has **no required player-facing Gold sink**. Prove safe deduction via server/admin/debug testing. Authoritative API concepts: inspect/get balance, add Gold, safe spend/deduct, debug/admin set Gold (exact names follow project conventions). Normal authoritative spending **must not** allow the balance below 0: spend succeeds fully or is **rejected** with **no partial deduction** and **no negative balance**. **No debt** in V0.1. Future systems must spend through Economy’s API, not mutate balances themselves.
+
+**Server authority.** Gold is server-authoritative. Clients must not set, add, deduct, determine payouts, determine ownership for income, or mutate another ruler’s economy. No generic client-accessible “set economy” remote. UI displays replicated player-relevant state only.
+
+**Admin / testing.** Kohl `;inspectgold` `;setgold` `;addgold` `;spendgold` → AdminBridge → `EconomyService`. Kohl is **not** economic authority. Studio `AdminDebug.Invoke` and `EconomyDebug.Invoke` are server-only.
+
+**Ordinary player UI (minimal).** Player-relevant only: **current Gold** (example `Gold: 150`); **current income rate** (example `Income: +10 Gold/min`); **next payout countdown** cycling through the six-second interval (conceptually `0:06` … `0:01`, payout, then `0:06`). If direct ownership changes, the displayed Gold/min updates (1 territory +10; capture another +20). Do **not** expose every ruler’s treasury in ordinary UI. Admin/debug may inspect global/player economy state. Do **not** build transaction history, graphs, giant treasury dashboards, detailed province income breakdowns, or a complex economy menu unless later authorized.
+
+**Must not become (V0.1).** Civilization-style strategic resource inventory; food/wood/stone/iron/trade-good simulation; population or manpower simulation; tax-law or market simulation; debt/loans; buildings; development; realm treasury; inheritance; military upkeep. Gold is enough for this checkpoint.
+
+**Acceptance.** **IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Acceptance testing is **paused** (2026-08-24 session end). Do not mark accepted because these tests passed.
+
+**Director-verified PASS (2026-08-24 Local Server; not full acceptance):**
+
+- Multiplayer start **150 Gold**; both clients shared the same global 6-second payout countdown; one-territory income as specified
+- Direct-owner income: **10 Gold/min** per baseline territory; **+1** Gold per global tick per owned territory; two territories **+20 Gold/min / +2 per tick**; scaling with additional direct holdings
+- Warfare conquest: target transferred; **treasury not stolen**; future income follows new direct owner; three territories **+30 Gold/min / +3 per tick**; defeated ruler with no remaining land **+0 Gold/min** and treasury stopped increasing
+- Subjecthood: Player3 vassal of Player1 **kept personal Gold**; still received **+10 Gold/min / +1 per tick** from their directly owned land; liege received **no** share from that land; no reset/merge/confiscation/tax
+- Unclaimed: after ownership removed, income **+0 Gold/min**; Gold stopped increasing across multiple ticks; unclaimed land pays **nobody**; ownership restorable via the existing `TerritoryMapService` path (Kohl `;setowner <id> unclaimed` is admin/debug, not a new unclaim gameplay system)
+
+**Next Director test when development resumes:** `;spendgold` exact deduct; overspend **rejected** with **zero** deduction; Gold never negative; no partial spend. Then continue the remaining V0.1 checklist (do not invent results): disconnect Gold removal with no transfer; client cannot mutate Gold; remaining admin/UI items as needed.
+
+Do not mark Economy V0.1 director-accepted merely because code exists or because the tests above passed.
+
+### Future economic direction — tall vs wide (not Economy V0.1)
+
+The polished economy should support meaningful competition between **building wide** and **building tall**. This is **future design direction**, not V0.1 implementation.
+
+- **Wide:** expand territorial control; more **directly owned** territories → greater baseline Gold income. Economy V0.1 already supplies that primitive.
+- **Tall:** a ruler with less land should eventually be able to invest in and develop territory so highly developed land can become substantially more economically productive.
+
+**Locked future principle:** territorial **quantity** should matter, and territorial **quality** should eventually matter too. A smaller, highly developed realm should eventually be capable of economically competing with a larger but poorly developed realm. Neither wide expansion nor tall development should automatically be the only viable economic strategy.
+
+Possible future contributors (not locked, not implemented): buildings, development, territorial investment, population/citizen-related systems **if later adopted**, economic modifiers, other systems. Do **not** lock exact formulas. Do **not** invent a citizen-trust mechanic from this direction. Do **not** implement development now.
 
 ## Events & Emergent Storytelling
 
@@ -800,11 +875,13 @@ A full numbered 0.1 feature freeze beyond the following is **not** specified.
 
 **Diplomacy V0.1** is specified under Relationships & Diplomacy. The prototype is **accepted / complete**. Independent-root Alliance and Non-Aggression Pact only; pending 30s requests; server authority; consume hierarchy; dissolve on loss of independence; no opinion/autonomy. Warfare / Conquest V0.1 **queries** NAP/Alliance; Diplomacy does not implement wars.
 
-**Warfare / Conquest V0.1** is specified under Warfare. **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Independent-root external wars; one enemy-controlled **territory** target; greater-realm adjacency (Vale 8-neighbor lattice **director-verified**); NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars (including same target); server-only debug Attacker/Defender Victory. Director-verified including attacker/defender victory, competing same-target, stale cleanup, disconnect of attacker or defender root, loss of independence without liege inheritance, player-relevant ordinary GUI, and global admin InspectWars. AdminBridge `resolvewar` uses `WarfareService.DebugResolveWar`. This is **V0.1 only**, not a complete military game. Future warfare must build on this authority.
+**Warfare / Conquest V0.1** is specified under Warfare. **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Independent-root external wars; one enemy-controlled **territory** target; greater-realm adjacency (Vale 8-neighbor lattice **director-verified**); NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars (including same target); server-only debug Attacker/Defender Victory. Director-verified including attacker/defender victory, competing same-target, stale cleanup, disconnect of attacker or defender root, loss of independence without liege inheritance, player-relevant ordinary GUI, and global admin InspectWars. AdminBridge `resolvewar` uses `WarfareService.DebugResolveWar`. This is **V0.1 only**, not a complete military game. Future warfare must build on this authority. Economy V0.1 **reads** post-conquest ownership for future Gold income; conquest does **not** steal existing Gold.
 
-**Admin / Testing Infrastructure V0.1** is specified under Admin / Testing. Official Kohl loader is in the place; listed AdminBridge commands are live for GameTester UserIds (plus Studio synthetic UserId exception). It is **not** a finished admin product. Convenient copy/reuse of reusable IDs is required before the first published playtest, not implemented now.
+**Admin / Testing Infrastructure V0.1** is specified under Admin / Testing. Official Kohl loader is in the place; listed AdminBridge commands are live for GameTester UserIds (plus Studio synthetic UserId exception). Owner/ruler tokens use `adminOwnerToken` / `adminRulerToken` (**Director-verified PASS** Local Server autocomplete including `unclaimed` on `setowner`). It is **not** a finished admin product. Convenient copy/reuse of reusable IDs is required before the first published playtest, not implemented now.
 
-**Naming formulas, economy, and monetization** remain specified only at the earlier checkpoint level except where Title Progression V0.1 already locks Vale test Prestige thresholds. Additional map assets, real Prestige/Gold/Influence gameplay, and monetization products remain unresolved.
+**Economy / Resources V0.1** is specified under Economy. **IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Gold foundation (`EconomyService`; Vale `baseGoldIncome` 10; start 150; global 6s tick; direct-owner income). Several Local Server tests are Director-verified PASS; acceptance is paused (next: spend/overspend). Prestige remains Title V0.1 test Prestige. Influence remains deferred.
+
+**Naming formulas and monetization** remain specified only at the earlier checkpoint level except where Title Progression V0.1 already locks Vale test Prestige thresholds and Economy V0.1 locks prototype Gold numbers. Additional map assets, real Prestige/Influence gameplay, Crown products, and buildings/development remain unresolved / deferred.
 
 Political Hierarchy V0.1 remains a foundational dependency for later warfare, rebellion, title progression, diplomacy, and victory conditions. Territory ownership is a separate concept from hierarchy membership.
 
@@ -814,7 +891,7 @@ Part of the long-term vision, **not** authorized for immediate implementation me
 
 - Warfare beyond V0.1 (armies, battles, sieges, claims, casus belli, war score, peace, alliance participation, and the rest of the V0.1 deferred list)
 - Religion
-- Detailed economy
+- Detailed economy beyond Economy / Resources V0.1 (buildings, development, taxation, trade, realm treasury, inheritance, markets, debt)
 - Schemes
 - Assassination
 - Complex factions
@@ -823,7 +900,7 @@ Part of the long-term vision, **not** authorized for immediate implementation me
 - Advanced AI rulers
 - Detailed military simulation
 - Buildings
-- Development
+- Development (tall-vs-wide quality is **future direction**, not implemented)
 - Council systems
 - Complex character events
 - Final victory-condition calculations
@@ -831,20 +908,22 @@ Part of the long-term vision, **not** authorized for immediate implementation me
 - Title-scaling formula and numerical thresholds for maps **other than** Vale Title Progression V0.1 test numbers (Duke 2/100, King 5/250, Emperor 10/500)
 - Real Prestige resource system (income, decay, spending, UI economy, persistence); V0.1 titles use temporary server-side test Prestige only
 - Title-loss systems
-- Vassal obligations (tax, military contribution, contracts, formulas)
+- Vassal obligations (tax, military contribution, contracts, formulas). Economy V0.1 has **no automatic tax**
 - Independence gameplay methods
-- Disconnect / reconnect beyond the temporary V0.1 hierarchy cleanup and the specified Unclaimed-on-leave map rule
+- Disconnect / reconnect beyond the temporary V0.1 hierarchy cleanup, the specified Unclaimed-on-leave map rule, and Economy V0.1 Gold removal without redistribution (polished wealth succession remains unresolved)
 - Join-in-progress mechanics
 - Starting-territory player choice / lobby map voting
 - Behavior when more humans join than the selected map has territories
 - Additional production maps beyond the 16-territory V0.1 test map
 - Touch / controller map input (architecturally possible; not required for V0.1)
-- Gold / Prestige / Influence starting amounts, rates, caps, and formulas
+- Gold / Prestige / Influence **caps** and remaining formulas; Prestige/Influence **starting amounts and rates**; Gold **final** (non-prototype) balance after sinks exist. Economy V0.1 locks prototype **150 starting Gold** and **10 Gold/min** baseline per claimed territory only
 - Crown prices, packages, earning methods, and exact cosmetics
 - Lifetime Support calculations and monetization implementation
 - Procedural naming algorithm and final geographic/political names
 - Player replacement of AI rulers and detailed AI political behavior
 - Diplomacy beyond V0.1 (opinion, vassal diplomatic autonomy, inheritance, map modes, extra agreement types, NAP auto-break / violation penalties)
+- Delegated greater-realm authority / permission catalog (architecture specified; not implemented; catalog unresolved)
+- Civilization-style strategic resources, food/wood/stone/iron, trade goods, population/manpower simulation, tax-law simulation, markets, debt/loans
 
 ## Long-Term Vision
 

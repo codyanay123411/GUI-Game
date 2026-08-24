@@ -7,14 +7,14 @@ This project is a GUI-first Roblox game. Source-controlled Luau lives on disk an
 | Path | Purpose |
 | --- | --- |
 | `ServerScriptService/` | Authoritative server scripts. Contains the server entry point and server-only systems. |
-| `ServerScriptService/Services/` | Authoritative server-side systems. Currently `PoliticalHierarchyService.luau`, `TerritoryMapService.luau`, `TitleProgressionService.luau`, `DiplomacyService.luau`, `WarfareService.luau`, plus Admin Bridge (`AdminConfig`, `AdminBridge`, `AdminService`, `AdminKohlAddon`). |
+| `ServerScriptService/Services/` | Authoritative server-side systems. Currently `PoliticalHierarchyService.luau`, `TerritoryMapService.luau`, `TitleProgressionService.luau`, `DiplomacyService.luau`, `WarfareService.luau`, `EconomyService.luau`, plus Admin Bridge (`AdminConfig`, `AdminBridge`, `AdminService`, `AdminKohlAddon`). |
 | `ReplicatedStorage/Shared/` | Modules that are safe and appropriate for both client and server. |
-| `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Currently `PoliticalHierarchyConfig.luau`, `MapCatalog.luau`, `ValePrototypeMap.luau`, `RealmColors.luau`, `DiplomacyConfig.luau`, `WarfareConfig.luau`. |
-| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Currently `PoliticalTypes.luau`, `TerritoryTypes.luau`, `TitleTypes.luau`, `DiplomacyTypes.luau`, and `WarfareTypes.luau`. |
-| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (`NextRank` / `Name`), `TitleRequirements.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`, `PrototypeGuiTheme.luau`, `KohlPrototypeTheme.luau`, `WarfareAdjacency.luau`, `PlayerRelevantView.luau`. |
-| `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. Hierarchy: `HierarchyClientEvent`, `HierarchyServerEvent`. Territory: `TerritoryClientEvent`, `TerritoryServerEvent`. Title: `TitleClientEvent`, `TitleServerEvent`. Diplomacy: `DiplomacyClientEvent`, `DiplomacyServerEvent`. Warfare: `WarfareClientEvent`, `WarfareServerEvent`. Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
+| `ReplicatedStorage/Shared/Config/` | Centralized configuration data. Currently `PoliticalHierarchyConfig.luau`, `MapCatalog.luau`, `ValePrototypeMap.luau`, `RealmColors.luau`, `DiplomacyConfig.luau`, `WarfareConfig.luau`, `EconomyConfig.luau`. |
+| `ReplicatedStorage/Shared/Types/` | Reusable Luau type definitions. Currently `PoliticalTypes.luau`, `TerritoryTypes.luau`, `TitleTypes.luau`, `DiplomacyTypes.luau`, `WarfareTypes.luau`, and `EconomyTypes.luau`. |
+| `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (`NextRank` / `Name`), `TitleRequirements.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`, `PrototypeGuiTheme.luau`, `KohlPrototypeTheme.luau`, `WarfareAdjacency.luau`, `PlayerRelevantView.luau`, `EconomyPayout.luau`. |
+| `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. Hierarchy: `HierarchyClientEvent`, `HierarchyServerEvent`. Territory: `TerritoryClientEvent`, `TerritoryServerEvent`. Title: `TitleClientEvent`, `TitleServerEvent`. Diplomacy: `DiplomacyClientEvent`, `DiplomacyServerEvent`. Warfare: `WarfareClientEvent`, `WarfareServerEvent`. Economy: `EconomyClientEvent`, `EconomyServerEvent`. Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
 | `StarterPlayerScripts/` | Client scripts that run for each player. On disk this is a root folder; in Studio it maps to `StarterPlayer.StarterPlayerScripts`. Contains the client entry point and controllers. |
-| `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau`, `TerritoryMapController.luau`, `TitleProgressionController.luau`, `DiplomacyController.luau`, and `WarfareController.luau`. |
+| `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau`, `TerritoryMapController.luau`, `TitleProgressionController.luau`, `DiplomacyController.luau`, `WarfareController.luau`, and `EconomyController.luau`. |
 | `docs/` | Project documentation, including this architecture note. |
 | `AI/` | Agent tracker: progress, decisions, and changelog. |
 
@@ -22,7 +22,7 @@ GUI instances are **not** stored in this filesystem. They are created and edited
 
 Reserved Script Sync folders that still have no Luau modules keep `_Placeholder.luau` so Studio materializes the folder. Delete or replace the placeholder when real modules occupy that folder. `ReplicatedStorage/Remotes/_Placeholder.luau` is kept because remotes are Studio instances, not synced Luau.
 
-Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesystem source file). V0.1 layout: central `MapStage` (`{1,-404},{1,-184}`), right `Main` hierarchy panel, right `DiplomacyPanel` above a bottom-right `TitlePanel`, bottom `TerritoryInfo` (`{1,-404},{0,160}` including Declare War + war status), top-left `ResultToast`. Incoming vassalage is `VassalageOfferOverlay`; incoming diplomacy is `DiplomacyOfferOverlay` (offset so both can coexist).
+Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesystem source file). V0.1 layout: central `MapStage` (`{1,-404},{1,-184}`), right `Main` hierarchy panel, right `DiplomacyPanel` above a bottom-right `TitlePanel`, bottom `TerritoryInfo` (`{1,-404},{0,160}` including Declare War + war status), compact `EconomyPanel` above TerritoryInfo in the map column, top-left `ResultToast`. Incoming vassalage is `VassalageOfferOverlay`; incoming diplomacy is `DiplomacyOfferOverlay` (offset so both can coexist).
 
 ## Server / client / shared separation
 
@@ -111,12 +111,12 @@ Examples: Accept/Decline on a Vassalage overlay must not also select a territory
 
 Use Roblox GUI/input mechanisms that **consume/block** input for the visible/interactable bounds of the higher-priority GUI. Do not rely on ZIndex alone. Do not make the entire screen globally modal if that unnecessarily blocks unrelated map area.
 
-**Implemented (map input):** `TerritoryMapController` ignores pan/select/zoom when `PlayerGui:GetGuiObjectsAtPosition` finds `VassalageOfferOverlay`, `DiplomacyOfferOverlay`, `TitlePanel`, `Main`, `TerritoryInfo`, or `DiplomacyPanel` at the pointer. Map press must start on the map itself. Result toasts are not blocking layers. Check runs only on pointer events, not per frame. Mouse wheel over the map still zooms when Roblox marks it `gameProcessed` because `MapStage` is an Active GUI surface; `gameProcessed` is not treated as higher-GUI blocking.
+**Implemented (map input):** `TerritoryMapController` ignores pan/select/zoom when `PlayerGui:GetGuiObjectsAtPosition` finds `VassalageOfferOverlay`, `DiplomacyOfferOverlay`, `TitlePanel`, `Main`, `TerritoryInfo`, `DiplomacyPanel`, `AdminInspectPanel`, or `EconomyPanel` at the pointer. Map press must start on the map itself. Result toasts are not blocking layers. Check runs only on pointer events, not per frame. Mouse wheel over the map still zooms when Roblox marks it `gameProcessed` because `MapStage` is an Active GUI surface; `gameProcessed` is not treated as higher-GUI blocking.
 
 ## Configuration and simulation
 
 - **Map-driven political scaling.** Title-qualification thresholds come from the selected map’s configuration, not from hardcoded universal territory counts and not from human player count. Shared config belongs in `ReplicatedStorage/Shared/Config/` conceptually; the server still applies and validates it. Vale Title Progression V0.1 **test** numbers (Duke 2/100, King 5/250, Emperor 10/500) live on `ValePrototypeMap.titleRequirements` only; they must not become a universal engine constant.
-- **Match vs account state.** Gold, Prestige, and Influence are match resources and reset between matches. Crowns and Lifetime Support are account-level and persist. Do not mix competitive match power into premium currency.
+- **Match vs account state.** Gold, Prestige, and Influence are match resources and reset between matches. Crowns and Lifetime Support are account-level and persist. Do not mix competitive match power into premium currency. **Economy / Resources V0.1** (**IMPLEMENTED — NOT DIRECTOR-ACCEPTED**) is the Gold foundation only.
 - **Performance.** Prefer storing authoritative state and recalculating on meaningful changes. Avoid continuous polling and per-frame re-evaluation of unchanged political information or of every NPC action. This is a constraint on future systems, not a mandate to optimize empty modules.
 
 ## Territory / map foundation (V0.1 — accepted / complete)
@@ -151,10 +151,23 @@ Political Hierarchy V0.1 remains the source of liege/vassal/root-ruler truth. Ma
 - **Must not:** armies, battles, claims, peace, map recolor for war, title/Prestige grants, client victory authority.
 - **Acceptance:** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 only; not a complete military game). Director-verified PASS includes adjacent/non-adjacent/duplicate declaration, attacker and defender victory, competing same-target wars, stale-war cleanup, loss of independence without liege inheritance, attacker-root and defender-root disconnect without conquest or leftover stale wars, player-relevant ordinary GUI, global admin InspectWars, and AdminBridge ResolveWar → `WarfareService.DebugResolveWar`. Hierarchy, map, title, diplomacy V0.1, and prototype GUI maintenance stay accepted. Future military systems must build on this authority.
 
+## Economy / Resources (V0.1 — IMPLEMENTED — NOT DIRECTOR-ACCEPTED)
+
+- **Server:** `EconomyService` Gold by rulerId (start 150). Reads `TerritoryMapService` ownership and map `baseGoldIncome` (Gold/min). One global 6s payout via `EconomyPayout.GoldPerTick`. Unclaimed pays nobody. Direct owner only. `TrySpend` / `AddGold` / `DebugSetGold` / `GetBalance` / `GetIncomeGoldPerMinute` / `GetInspect`. `RulerCreated` inits Gold without resetting existing; `RulerRemoving` deletes Gold with no transfer. `EconomyClientEvent` Ready only; `EconomyServerEvent` pushes **that player’s** State JSON (`gold`, `incomeGoldPerMinute`, `nextPayoutAt`). Map config that is not a whole tick errors at Start.
+- **Client:** `EconomyController` + `EconomyPanel` (Gold / Gold/min / global countdown). No mutation intents.
+- **Admin:** `;inspectgold` `;setgold` `;addgold` `;spendgold` → AdminBridge → EconomyService. `EconomyDebug.Invoke`.
+- **Must not:** Prestige/Influence economies, Crowns, buildings, development, tax, trade, debt, loot, client mutate remotes.
+- **Bootstrap:** Hierarchy → Territory → Title → Diplomacy → Warfare → **Economy** → Admin.
+- **Acceptance:** **IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Director Local Server **PASS** (2026-08-24, not full acceptance): multiplayer 150 + shared 6s clock; 1/2/3-territory income; conquest future-income without treasury steal; subject Gold/land income with no liege share; unclaimed pays nobody. **Resume:** `;spendgold` / overspend. Agent Studio Play checks remain historical in changelog.
+
+## Delegated greater-realm authority (future — not implemented)
+
+Specified in `AI/GAME_DESIGN.md` / `AI/DECISIONS.md`. Rank defaults + individual overrides. Do not retrofit into accepted V0.1 systems. Permission catalog unresolved.
+
 ## Admin / testing (V0.1 — Kohl live for current bridge ops)
 
 - **Kohl's Admin** (official @Scripth, Creator Store `172732271`, folder `ServerScriptService.Kohl's Admin`) is command UI/auth only. Custom commands belong in `Config.Addons` (CollectionService tag on the Addons folder). Auto-update loads MainModule asset `1868400649`; local Config/Addons still apply.
-- **AdminBridge** is the only game-state testing façade. Live: Kohl `;adminhelp` / `;inspectwars` / `;inspectterritory` / `;inspectruler` / `;setowner` / `;setprestige` / `;resolvewar` → addon → `AdminBridge.Execute(UserId, …)` with `AdminConfig` GameTester allowlist. In Studio only, synthetic Local Server UserIds (`< 0`) also pass that check; published servers do not. Studio: `ServerScriptService.AdminDebug.Invoke(operation, …)` (no UserId).
+- **AdminBridge** is the only game-state testing façade. Live: Kohl `;adminhelp` / `;inspectwars` / `;inspectterritory` / `;inspectruler` / `;setowner` / `;setprestige` / `;inspectgold` / `;setgold` / `;addgold` / `;spendgold` / `;resolvewar` → addon → `AdminBridge.Execute(UserId, …)` with `AdminConfig` GameTester allowlist. Kohl owner/ruler argument types (`adminOwnerToken` / `adminRulerToken`) parse raw strings and only suggest player names (`unclaimed` on SetOwner); AdminBridge remains the resolver. **Director-verified PASS (2026-08-24):** Local Server `setowner` suggestions showed Player1, Player2, Player3, and `unclaimed`; `setowner` and `setgold` worked. In Studio only, synthetic Local Server UserIds (`< 0`) also pass that check; published servers do not. Studio: `ServerScriptService.AdminDebug.Invoke(operation, …)` (no UserId).
 - **Presentation (not authority):** `AdminFeedbackEvent` is server-to-client display only. Mutations still cannot be invoked from the client. `AdminFeedbackController` uses ResultToast + `AdminInspectPanel`. `AdminKohlThemeClient` restyles Kohl command chrome from `KohlPrototypeTheme` / `PrototypeGuiTheme` after load (survives MainModule auto-update). Do not fork Kohl MainModule for look. In-game copy/reuse of reusable admin IDs is a **pre-playtest admin UX requirement**, not implemented now.
 - No project Admin remotes that invoke AdminBridge. Per-system `*Debug` folders remain (mock rulers, WarfareDebug Declare/Resolve, etc.).
 - Future gameplay services should expose testing through this bridge, not by scattering Kohl requires.

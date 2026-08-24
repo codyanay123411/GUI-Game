@@ -21,6 +21,7 @@ local INSPECT = {
 	InspectWars = true,
 	InspectTerritory = true,
 	InspectRuler = true,
+	InspectGold = true,
 }
 
 local TITLES = {
@@ -28,8 +29,12 @@ local TITLES = {
 	InspectWars = "Active wars",
 	InspectTerritory = "Territory",
 	InspectRuler = "Ruler",
+	InspectGold = "Gold",
 	SetOwner = "Territory owner",
 	SetPrestige = "Prestige",
+	SetGold = "Gold",
+	AddGold = "Gold",
+	SpendGold = "Gold",
 	ResolveWar = "War",
 }
 

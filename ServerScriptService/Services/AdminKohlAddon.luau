@@ -10,8 +10,64 @@
 ]]
 
 return function(_K)
+	local Players = game:GetService("Players")
 	local RunService = game:GetService("RunService")
 	local ServerScriptService = game:GetService("ServerScriptService")
+
+	-- Suggestion-only types: Kohl must not validate/resolve targets.
+	-- AdminBridge remains the resolver for player names, rulerIds, and special tokens.
+	local function playerNameSuggestions(): { any }
+		local names = {}
+		local list = Players:GetPlayers()
+		table.sort(list, function(a: Player, b: Player)
+			return a.Name < b.Name
+		end)
+		for _, player in list do
+			local aliases = { player.Name }
+			if player.DisplayName ~= "" and player.DisplayName ~= player.Name then
+				table.insert(aliases, player.DisplayName)
+			end
+			table.insert(names, { aliases, player.Name })
+		end
+		return names
+	end
+
+	local function acceptRawToken(v: any): (boolean, string?)
+		if v == nil then
+			return false, "Need a target"
+		end
+		return true, nil
+	end
+
+	local function parseRawToken(v: any): string
+		return tostring(v)
+	end
+
+	local function registerRawTargetType(typeName: string, displayName: string, extraSuggestions: { any }?)
+		if _K.Registry.types[typeName] then
+			return
+		end
+		_K.Registry.registerType(typeName, {
+			displayName = displayName,
+			filterLog = true,
+			validate = acceptRawToken,
+			parse = parseRawToken,
+			suggestions = function()
+				local names = playerNameSuggestions()
+				if extraSuggestions then
+					for _, extra in extraSuggestions do
+						table.insert(names, extra)
+					end
+				end
+				return names
+			end,
+		})
+	end
+
+	registerRawTargetType("adminRulerToken", "player or rulerId", nil)
+	registerRawTargetType("adminOwnerToken", "player, rulerId, or unclaimed", {
+		{ { "unclaimed" }, "unclaimed" },
+	})
 
 	local function runOp(context, operation: string, a: any, b: any)
 		if not RunService:IsServer() then
@@ -74,7 +130,7 @@ return function(_K)
 		description = "Inspect a hierarchy ruler.",
 		group = "Creator",
 		args = {
-			{ type = "player # rawString", name = "who", description = "Player, rulerId, or userId" },
+			{ type = "adminRulerToken", name = "who", description = "Player, rulerId, or userId" },
 		},
 		run = function(context, who)
 			runOp(context, "InspectRuler", who)
@@ -87,7 +143,7 @@ return function(_K)
 		group = "Creator",
 		args = {
 			{ type = "rawString", name = "territoryId", description = "Territory id" },
-			{ type = "player # rawString", name = "owner", description = "Player, rulerId, or unclaimed" },
+			{ type = "adminOwnerToken", name = "owner", description = "Player, rulerId, or unclaimed" },
 		},
 		run = function(context, territoryId, owner)
 			runOp(context, "SetOwner", territoryId, owner)
@@ -99,11 +155,62 @@ return function(_K)
 		description = "Set Title V0.1 test Prestige (not spent).",
 		group = "Creator",
 		args = {
-			{ type = "player # rawString", name = "who", description = "Player or rulerId" },
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
 			{ type = "number", name = "value", description = "Prestige" },
 		},
 		run = function(context, who, value)
 			runOp(context, "SetPrestige", who, value)
+		end,
+	})
+
+	register({
+		name = "inspectgold",
+		description = "Inspect Economy V0.1 Gold for a ruler.",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+		},
+		run = function(context, who)
+			runOp(context, "InspectGold", who)
+		end,
+	})
+
+	register({
+		name = "setgold",
+		description = "Set Economy V0.1 Gold (whole number >= 0).",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Gold" },
+		},
+		run = function(context, who, value)
+			runOp(context, "SetGold", who, value)
+		end,
+	})
+
+	register({
+		name = "addgold",
+		description = "Add Economy V0.1 Gold.",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Gold to add" },
+		},
+		run = function(context, who, value)
+			runOp(context, "AddGold", who, value)
+		end,
+	})
+
+	register({
+		name = "spendgold",
+		description = "Spend Economy V0.1 Gold (rejects if unaffordable).",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Gold to spend" },
+		},
+		run = function(context, who, value)
+			runOp(context, "SpendGold", who, value)
 		end,
 	})
 

@@ -98,6 +98,9 @@ local function shouldReplaceAddon(existing: ModuleScript, sourceName: string): b
 	if sourceName == "AdminKohlAddon" then
 		return moduleSourceContains(existing, "return runOp")
 			or moduleSourceContains(existing, "local ok, message = AdminBridge")
+			or not moduleSourceContains(existing, "inspectgold")
+			or moduleSourceContains(existing, "player # rawString")
+			or not moduleSourceContains(existing, "adminOwnerToken")
 	end
 	if sourceName == "AdminKohlThemeClient" then
 		return moduleSourceContains(existing, "changeTheme") and not moduleSourceContains(existing, "Font.fromEnum")

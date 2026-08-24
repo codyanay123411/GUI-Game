@@ -42,6 +42,7 @@ local PRIMARY_PANELS = {
 	DiplomacyPanel = true,
 	DiplomacyOfferOverlay = true,
 	AdminInspectPanel = true,
+	EconomyPanel = true,
 }
 
 local function ensureCorner(inst: GuiObject, radius: number)
@@ -317,6 +318,26 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 			PrototypeGuiTheme.applyPrimaryButton(declareWar, true)
 			declareWar.TextSize = 12
 			declareWar.TextWrapped = true
+		end
+	end
+
+	local economy = gui:FindFirstChild("EconomyPanel")
+	if economy and economy:IsA("GuiObject") then
+		economy.BackgroundColor3 = C.panel
+		economy.BorderSizePixel = 0
+		ensureCorner(economy, 8)
+		ensureStroke(economy, 1, C.stroke)
+		ensurePad(economy, 10)
+		local header = economy:FindFirstChild("Header")
+		if header and header:IsA("TextLabel") then
+			stylePanelTitle(header)
+			header.Size = UDim2.new(1, 0, 0, 20)
+			header.Text = "Economy"
+		end
+		local body = economy:FindFirstChild("Body")
+		if body and body:IsA("TextLabel") then
+			styleBody(body)
+			body.TextYAlignment = Enum.TextYAlignment.Top
 		end
 	end
 

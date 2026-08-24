@@ -183,3 +183,27 @@ Reconciled docs to current locked Director decisions without gameplay or Luau ch
 ## 2026-08-24 — Warfare / Conquest V0.1 director-accepted
 
 Director completed the Warfare / Conquest V0.1 acceptance sequence. Status is now **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 only; not a complete military game). Recorded the full Director PASS list, including attacker/defender disconnect without conquest, loss of independence without liege inheritance, player-relevant ordinary GUI, global InspectWars, and AdminBridge ResolveWar → `WarfareService.DebugResolveWar`. Future military systems must build on this authority. Documentation only; no gameplay/Luau. No Git commit.
+
+## 2026-08-24 — Economy / Resources V0.1 design checkpoint
+
+Documented Economy / Resources V0.1 as the **Gold foundation** (designed / specified — not implemented — not director-accepted): start 150 Gold; 10 Gold/min per directly owned baseline territory; +1 Gold every 6 seconds; income to the **direct owner**; Unclaimed pays nobody; no automatic tax; conquest does not steal treasury; subjecthood preserves personal Gold; disconnect removes Gold without redistribution (not final succession). No required player Gold sink. Recorded **tall vs wide** as future economic direction and **delegated greater-realm authority** (rank defaults + individual overrides) as future architecture. Prestige remains Title V0.1 test Prestige; Influence remains deferred; Crowns remain non-competitive account currency. No EconomyService, remotes, GUI, or Git commit.
+
+## 2026-08-24 — Economy / Resources V0.1 implemented (not director-accepted)
+
+Implemented Gold foundation: `EconomyService` (start 150; Vale `baseGoldIncome` 10 Gold/min; one global 6s payout; direct-owner income; `TrySpend`/`AddGold`/`DebugSetGold`; per-player Ready/State remotes); `EconomyPanel` HUD; AdminBridge/Kohl inspectgold/setgold/addgold/spendgold; `EconomyDebug`. Agent Studio Play verified start gold/income, 1- and 2-territory ticks, no treasury steal on ownership change, spend/overspend/negative set, subject keeps Gold and land income, liege gets no share. Not director-accepted. No Git commit.
+
+## 2026-08-24 — Kohl SetOwner unclaimed token (admin debug)
+
+Kohl `setowner` owner arg was registered as `player # rawString`, which Kohl parses as Player unless prefixed with `#`. Literal `unclaimed` (and rulerIds without `#`) failed with "Invalid player" before `AdminBridge.Execute`. Owner/ruler tokens are now `rawString`; AdminBridge still resolves player names, rulerIds, and `unclaimed` → `TerritoryMapService.SetOwner(..., nil)`. Same-class Kohl types on inspectruler/setprestige/gold commands fixed the same way. Economy/Territory gameplay unchanged. No Git commit.
+
+## 2026-08-24 — Kohl raw-target autocomplete / admin UX
+
+Restored Kohl command-bar player suggestions for AdminBridge target tokens without reverting to typed `player` validation. Addon types `adminOwnerToken` / `adminRulerToken` parse as raw strings; suggestions list current Players (SetOwner also lists `unclaimed`). AdminBridge remains the resolver. Not a gameplay or Economy change. No Git commit.
+
+## 2026-08-24 — Economy V0.1 Director verification checkpoint (not accepted)
+
+Documentation reconciliation after Director Local Server testing. Economy remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**; acceptance paused at session end.
+
+**Director-verified PASS:** multiplayer start 150 Gold and shared global 6s countdown; 1/2/3-territory income scaling; conquest redirects future income without stealing treasury (landless defeated ruler +0); subject keeps Gold and direct-land income with no liege share; unclaimed pays nobody. **Kohl raw-target autocomplete / admin UX DIRECTOR-VERIFIED PASS:** Local Server `setowner` listed Player1, Player2, Player3, and `unclaimed`; `setowner` and `setgold` worked. Not a new unclaim gameplay system.
+
+**Next resume:** `;spendgold` success vs overspend. Historical changelog rows left unchanged. No Git commit (Director GitHub Desktop).

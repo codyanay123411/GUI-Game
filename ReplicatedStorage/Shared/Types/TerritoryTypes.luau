@@ -11,6 +11,8 @@ export type TerritoryDefinition = {
 	displayName: string,
 	polygon: { Point },
 	adjacentIds: { TerritoryId },
+	-- Gold per minute for the direct owner. EconomyService converts this to the payout tick.
+	baseGoldIncome: number,
 }
 
 export type TitleRequirement = {

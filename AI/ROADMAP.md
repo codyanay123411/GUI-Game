@@ -4,11 +4,11 @@ Phases describe **dependency and preferred order**, not a hard ban on touching a
 
 AI agents must **not** prematurely implement major later-phase gameplay systems merely because they appear on this list. If work would skip ahead, stop and ask, or stay within the current phase.
 
-Gameplay implementation: **Political Hierarchy V0.1 is accepted / complete** (see `AI/PROGRESS.md`). **Territory / Map Foundation V0.1 is accepted / complete.** **Title Progression V0.1 is accepted / complete.** **Diplomacy V0.1 is accepted / complete.** **Warfare / Conquest V0.1 is IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Later phases are not started. Completing warfare V0.1 does **not** start Phase 2 Character Simulation.
+Gameplay implementation: **Political Hierarchy V0.1 is accepted / complete** (see `AI/PROGRESS.md`). **Territory / Map Foundation V0.1 is accepted / complete.** **Title Progression V0.1 is accepted / complete.** **Diplomacy V0.1 is accepted / complete.** **Warfare / Conquest V0.1 is IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** **Economy / Resources V0.1 is IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Later phases are not started. Completing warfare V0.1 does **not** start Phase 2 Character Simulation.
 
 Studio Play / Local Server / MCP / Director acceptance sessions are **development verification**, not the **first real playtest** (published Roblox server, one complete map, friends/humans, ~30-minute coherent match, determinable winner). See `AI/GAME_DESIGN.md`.
 
-Do not implement aging, family simulation, or succession as currently approved core design. Do not implement a real Prestige economy, title-loss, armies/battles, opinion, or vassal diplomatic autonomy unless directors authorize that work. Do not implement pre-playtest polish (map orientation, admin copy/reuse dashboard) unless the Director authorizes it.
+Do not implement aging, family simulation, or succession as currently approved core design. Do not implement a real Prestige economy, title-loss, armies/battles, opinion, vassal diplomatic autonomy, buildings/development, or delegated greater-realm permissions unless directors authorize that work. Do not implement pre-playtest polish (map orientation, admin copy/reuse dashboard) unless the Director authorizes it.
 
 ## 1. Foundation & Architecture — COMPLETE
 
@@ -46,6 +46,8 @@ Opinion, bonds, rivalries, and other character-to-character relations.
 
 Liege/vassal structure and realm administration.
 
+**Delegated greater-realm authority** (rank defaults + individual overrides = effective permissions) is **future architecture**, specified in `AI/GAME_DESIGN.md` / `AI/DECISIONS.md`. **Not implemented.** Do not retrofit into accepted V0.1 systems. Permission catalog unresolved.
+
 ## 9. Diplomacy
 
 Negotiated relations between independent greater realms.
@@ -68,7 +70,9 @@ Event content and emergent storytelling on top of simulation state.
 
 ## 13. Economy & Development
 
-Match resources Gold / Prestige / Influence (reset per match, distinct roles). Buildings and detailed formulas later. Account-level Crowns and Lifetime Support are not match-power currencies.
+Match resources Gold / Prestige / Influence (reset per match, distinct roles). Account-level Crowns and Lifetime Support are not match-power currencies.
+
+**Economy / Resources V0.1** (Gold foundation: start 150; Vale `baseGoldIncome` 10 Gold/min; global +1 Gold / 6 sec per owned baseline territory; direct-owner income; Unclaimed pays nobody; no automatic tax; conquest does not steal treasury; no required player Gold sink) is **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. Director Local Server **PASS** items (2026-08-24) are recorded in `AI/PROGRESS.md`; **spend/overspend** is the next resume test. Buildings, development, taxation, trade, and **tall-vs-wide** quality investment remain later. Prestige remains Title V0.1 test Prestige. Influence remains deferred.
 
 ## 14. Persistence
 

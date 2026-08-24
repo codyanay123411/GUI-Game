@@ -16,6 +16,7 @@ local Hierarchy = require(script.Parent.PoliticalHierarchyService)
 local Territory = require(script.Parent.TerritoryMapService)
 local Title = require(script.Parent.TitleProgressionService)
 local Warfare = require(script.Parent.WarfareService)
+local Economy = require(script.Parent.EconomyService)
 
 local AdminBridge = {}
 
@@ -42,6 +43,10 @@ function AdminBridge.HelpText(): string
 		";inspectruler <player|rulerId>",
 		";setowner <territoryId> <player|rulerId|unclaimed>",
 		";setprestige <player|rulerId> <number>",
+		";inspectgold <player|rulerId>",
+		";setgold <player|rulerId> <number>",
+		";addgold <player|rulerId> <number>",
+		";spendgold <player|rulerId> <number>",
 		";resolvewar <warId> attacker|defender",
 		"Studio fallback: ServerScriptService.AdminDebug.Invoke",
 	}, "\n")
@@ -206,6 +211,54 @@ local function setPrestige(rulerRef: any, valueAny: any): (boolean, string)
 	return true, string.format("Prestige set to %s for %s.", tostring(value), rulerLabel(rulerId))
 end
 
+local function inspectGold(rulerRef: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local snap = Economy.GetInspect(rulerId)
+	if not snap then
+		return fail("No economy state for " .. rulerLabel(rulerId))
+	end
+	return true, HttpService:JSONEncode(snap)
+end
+
+local function setGold(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Gold.")
+	end
+	return Economy.DebugSetGold(rulerId, value)
+end
+
+local function addGold(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Gold.")
+	end
+	return Economy.AddGold(rulerId, value)
+end
+
+local function spendGold(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Gold.")
+	end
+	return Economy.TrySpend(rulerId, value)
+end
+
 local function resolveWar(warId: string, outcome: string): (boolean, string)
 	if typeof(warId) ~= "string" or warId == "" then
 		return fail("Need warId.")
@@ -280,6 +333,14 @@ function AdminBridge.Execute(actorUserId: number?, operation: string, a: any, b:
 		return done(setOwner(a, b))
 	elseif op == "SetPrestige" then
 		return done(setPrestige(a, b))
+	elseif op == "InspectGold" then
+		return done(inspectGold(a))
+	elseif op == "SetGold" then
+		return done(setGold(a, b))
+	elseif op == "AddGold" then
+		return done(addGold(a, b))
+	elseif op == "SpendGold" then
+		return done(spendGold(a, b))
 	elseif op == "ResolveWar" then
 		return done(resolveWar(a, b))
 	end

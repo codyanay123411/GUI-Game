@@ -85,6 +85,7 @@ for row = 1, 4 do
 			displayName = NAMES[(row - 1) * 4 + col][2],
 			polygon = cellVerts(col, row),
 			adjacentIds = adj,
+			baseGoldIncome = 10,
 		})
 	end
 end
