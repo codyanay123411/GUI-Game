@@ -323,7 +323,7 @@ NPC characters may support the simulation where humans cannot reasonably fill ev
 
 Detailed large-dynasty simulation and advanced AI rulers are not authorized for immediate implementation (see Explicitly Deferred Features).
 
-The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**. Warfare / Conquest V0.1 is **implemented — partially director-verified — acceptance testing paused — not director-accepted**.
+The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**. Warfare / Conquest V0.1 is **implemented — partially director-verified — acceptance testing in progress — not director-accepted**.
 
 ## Admin / Testing Infrastructure V0.1
 
@@ -333,7 +333,7 @@ Custom testing commands must go: Kohl (or Studio debug) → project **Admin Brid
 
 **GameTester** is a distinct high-trust UserId allowlist (server-enforced). Ordinary Kohl moderator roles must **not** automatically receive game-state mutation. Never trust client-supplied admin status, ruler identity, or mutations. Do not expose arbitrary code execution or generic “set anything” remotes.
 
-**V0.1 status:** architecture recorded; a small Admin Bridge foundation exists for **currently implemented** systems only. Kohl's Admin itself must be inserted in Studio from the **official** loader (@Scripth). Chat commands are not live until that install is done and the project addon is loaded. Existing Studio `*Debug` folders remain.
+**V0.1 status:** architecture recorded. Official Kohl's Admin (@Scripth, asset 172732271) is installed under `ServerScriptService`. Live GameTester commands (`adminhelp`, `inspectwars`, `inspectterritory`, `inspectruler`, `setowner`, `setprestige`, `resolvewar`) go through `AdminKohlAddon` → `AdminBridge`. Command feedback uses project ResultToast / compact inspect overlay; Kohl chrome is restyled from PrototypeGuiTheme after load. Kohl rank is not enough. Studio `AdminDebug.Invoke` and per-system `*Debug` folders remain. Do not treat this tooling as a complete gameplay system.
 
 **Future systems:** when a new server-authoritative gameplay system is implemented, consider exposing Director/testing operations through the Admin Bridge after the system's own APIs exist. Do not implement deferred gameplay (economy, armies, etc.) as fake admin commands.
 
@@ -560,7 +560,7 @@ War should have clear political objectives. Losing a war does **not** necessaril
 
 ### Warfare / Conquest V0.1
 
-Specified design checkpoint. **Implemented — partially director-verified — acceptance testing paused — not director-accepted.** Do not reopen Political Hierarchy V0.1, Territory / Map Foundation V0.1, Title Progression V0.1, or Diplomacy V0.1. Do not begin armies, battles, sieges, claims, casus belli, peace negotiations, war score, or other deferred military systems from this checkpoint.
+Specified design checkpoint. **Implemented — partially director-verified — acceptance testing in progress — not director-accepted.** Director-verified resolution: **Attacker Victory PASS**, **Defender Victory PASS**. Next remaining director test: competing same-target wars / stale-war resolution. Do not reopen Political Hierarchy V0.1, Territory / Map Foundation V0.1, Title Progression V0.1, or Diplomacy V0.1. Do not begin armies, battles, sieges, claims, casus belli, peace negotiations, war score, or other deferred military systems from this checkpoint.
 
 **Purpose.** Minimum server-authoritative warfare primitive to prove that independent greater realms can declare external wars, target one enemy-controlled territory, validate borders through existing greater-realm territory, coexist in multiple simultaneous wars, resolve wars through a **server-only debug** mechanism, and transfer territory after a valid attacker victory. Infrastructure testing only. Not a military simulation.
 
@@ -777,7 +777,7 @@ A full numbered 0.1 feature freeze beyond the following is **not** specified.
 
 **Diplomacy V0.1** is specified under Relationships & Diplomacy. The prototype is **accepted / complete**. Independent-root Alliance and Non-Aggression Pact only; pending 30s requests; server authority; consume hierarchy; dissolve on loss of independence; no opinion/autonomy. Warfare / Conquest V0.1 **queries** NAP/Alliance; Diplomacy does not implement wars.
 
-**Warfare / Conquest V0.1** is specified under Warfare. **Implemented — partially director-verified — acceptance testing paused — not director-accepted.** Independent-root external wars; one enemy-controlled territory target; greater-realm adjacency (Vale 8-neighbor lattice **director-verified**); NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars (including same target); server-only debug Attacker/Defender Victory; **attacker victory pipeline director-verified** (Greyfen transferred; title realm-control updated). Resume acceptance at **Defender Victory**. Stale-war, disconnect, and loss-of-independence cancellation remain implemented but **not** director-verified.
+**Warfare / Conquest V0.1** is specified under Warfare. **Implemented — partially director-verified — acceptance testing in progress — not director-accepted.** Independent-root external wars; one enemy-controlled territory target; greater-realm adjacency (Vale 8-neighbor lattice **director-verified**); NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars (including same target); server-only debug Attacker/Defender Victory; **attacker victory** and **defender victory** director-verified. Next director test: competing same-target wars / stale-war resolution. Disconnect and loss-of-independence cancellation remain implemented but **not** director-verified. Resolution may be driven from `WarfareDebug` or GameTester `resolvewar` via AdminBridge (same `DebugResolveWar` path).
 
 **Admin / Testing Infrastructure V0.1** is specified under Admin / Testing. Architecture recorded; small Admin Bridge foundation for current systems; Kohl loader not in the place until the Director inserts it.
 

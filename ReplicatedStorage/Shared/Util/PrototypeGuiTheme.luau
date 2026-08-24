@@ -27,6 +27,7 @@ PrototypeGuiTheme.Colors = {
 	disabled = Color3.fromRGB(42, 46, 54),
 	disabledText = Color3.fromRGB(140, 144, 150),
 	scrollBar = Color3.fromRGB(72, 78, 92),
+	toastError = Color3.fromRGB(36, 18, 18),
 }
 
 local C = PrototypeGuiTheme.Colors
@@ -40,6 +41,7 @@ local PRIMARY_PANELS = {
 	VassalageOfferOverlay = true,
 	DiplomacyPanel = true,
 	DiplomacyOfferOverlay = true,
+	AdminInspectPanel = true,
 }
 
 local function ensureCorner(inst: GuiObject, radius: number)
@@ -100,6 +102,28 @@ function PrototypeGuiTheme.applyPrimaryButton(button: TextButton, enabled: boole
 	else
 		button.BackgroundColor3 = C.disabled
 		button.TextColor3 = C.disabledText
+	end
+end
+
+function PrototypeGuiTheme.applyToast(toast: GuiObject, kind: string)
+	local stroke = toast:FindFirstChildOfClass("UIStroke")
+	local label = toast:FindFirstChild("Label")
+	if kind == "error" then
+		toast.BackgroundColor3 = C.toastError
+		if stroke then
+			stroke.Color = C.danger
+		end
+		if label and label:IsA("TextLabel") then
+			label.TextColor3 = C.dangerText
+		end
+	else
+		toast.BackgroundColor3 = C.toast
+		if stroke then
+			stroke.Color = C.accentGold
+		end
+		if label and label:IsA("TextLabel") then
+			label.TextColor3 = C.accentGold
+		end
 	end
 end
 
@@ -394,6 +418,38 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 			label.TextWrapped = true
 			label.TextXAlignment = Enum.TextXAlignment.Left
 			label.TextYAlignment = Enum.TextYAlignment.Center
+		end
+	end
+
+	local inspect = gui:FindFirstChild("AdminInspectPanel")
+	if inspect and inspect:IsA("GuiObject") then
+		inspect.BackgroundColor3 = C.panel
+		inspect.BorderSizePixel = 0
+		ensureCorner(inspect, 8)
+		ensureStroke(inspect, 1, C.stroke)
+		ensurePad(inspect, 10)
+		local header = inspect:FindFirstChild("Header")
+		if header and header:IsA("TextLabel") then
+			stylePanelTitle(header)
+			header.TextColor3 = C.section
+			header.Size = UDim2.new(1, -80, 0, 22)
+		end
+		local scroll = inspect:FindFirstChild("BodyScroll")
+		if scroll and scroll:IsA("ScrollingFrame") then
+			styleScroll(scroll)
+		end
+		local body = inspect:FindFirstChild("Body", true)
+		if body and body:IsA("TextLabel") then
+			styleBody(body)
+			body.Font = Enum.Font.Gotham
+			body.TextSize = 13
+			body.TextColor3 = C.textSecondary
+		end
+		local closeBtn = inspect:FindFirstChild("CloseButton")
+		if closeBtn and closeBtn:IsA("TextButton") then
+			PrototypeGuiTheme.applyDangerButton(closeBtn)
+			closeBtn.TextSize = 12
+			closeBtn.Text = "Close"
 		end
 	end
 

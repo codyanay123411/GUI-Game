@@ -377,6 +377,33 @@ function TerritoryMapController.Start()
 
 	-- Map is the lowest input layer. Higher project GUI at this point owns the pointer.
 	-- ResultToast is informational and is not treated as a blocking layer.
+	-- AdminInspectPanel and visible Kohl command/dashboard chrome block the map.
+	local function isKohlBlockingGui(obj: GuiObject): boolean
+		local screenGui = obj:FindFirstAncestorWhichIsA("ScreenGui")
+		if not screenGui then
+			return false
+		end
+		local guiName = screenGui.Name
+		if
+			guiName ~= "FluxUILayerTopbar"
+			and guiName ~= "FluxUILayerTop"
+			and guiName ~= "FluxUILayerDefault"
+			and guiName ~= "FluxUILayerBottom"
+		then
+			return false
+		end
+		local current: Instance? = obj
+		while current and current ~= screenGui do
+			if current:IsA("GuiObject") and current.Visible then
+				local n = current.Name
+				if n == "CommandBar" or n == "Window" or n == "Dialog" or n == "Cmdbar2" or n == "KADashboardButton" or n == "KACommandsButton" then
+					return true
+				end
+			end
+			current = current.Parent
+		end
+		return false
+	end
 	local function isMapDescendant(obj: Instance): boolean
 		local current: Instance? = obj
 		while current and current ~= gui do
@@ -393,7 +420,7 @@ function TerritoryMapController.Start()
 		while current and current ~= gui do
 			if current:IsA("GuiObject") and current.Parent == gui then
 				local name = current.Name
-				if name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" then
+				if name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" then
 					return current
 				end
 			end
@@ -406,6 +433,9 @@ function TerritoryMapController.Start()
 		local objects = player.PlayerGui:GetGuiObjectsAtPosition(screen.X, screen.Y)
 		for _, obj in objects do
 			if obj:IsA("GuiObject") and obj.Visible and not isMapDescendant(obj) then
+				if isKohlBlockingGui(obj) then
+					return true
+				end
 				local panel = blockingPanelOf(obj)
 				if panel and panel.Visible then
 					return true

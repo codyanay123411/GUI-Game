@@ -155,3 +155,15 @@ Director paused acceptance testing. Status: **implemented — partially director
 ## 2026-08-23 — Admin / Testing Infrastructure V0.1
 
 Recorded Kohl's Admin as command layer only; game state stays in services. Implemented `AdminBridge` / `AdminConfig` / Studio `AdminDebug.Invoke` wrapping existing APIs (inspect wars/territory/ruler, SetOwner, SetPrestige, ResolveWar). Official Kohl loader **not** inserted (Director Toolbox step). Existing `*Debug` folders kept. Warfare rules unchanged. No Git commit.
+
+## 2026-08-23 — Kohl's Admin live integration
+
+Inserted official Kohl's Admin (@Scripth, asset 172732271). Wired `AdminKohlAddon` into `Config.Addons`. Live GameTester commands: adminhelp, inspectwars, inspectterritory, inspectruler, setowner, setprestige, resolvewar → AdminBridge. Player-name resolution for ruler/prestige/owner. Kohl rank is not GameTester. No Admin remotes. `*Debug` folders preserved. Warfare V0.1 still not accepted (Attacker/Defender Victory director-PASS; next competing same-target wars). No Git commit.
+
+## 2026-08-23 — Kohl admin GUI theme integration
+
+Project-owned admin feedback: `AdminFeedbackEvent` (server → client display only) → ResultToast for mutations/errors and a compact map-corner `AdminInspectPanel` for inspect/help. `AdminKohlThemeClient` applies PrototypeGuiTheme-mapped Kohl colors after load. `getKohlsAdminPopup` disabled via Config Settings when possible. Map input layering includes AdminInspectPanel and Kohl command-bar/dashboard chrome. AdminBridge/GameTester/Warfare rules unchanged. No Git commit.
+
+## 2026-08-23 — Kohl admin runtime error fixes
+
+Kohl `Command:run` pcall treats a successful `run` return as an error string (`escapeRichText` → gsub). Project addon `run` callbacks no longer return `true` / `AdminBridge.Execute` results. Stale Kohl `Config.Addons` copies are replaced only when they still contain old `return runOp` wrappers; canonical addon is re-registered after Kohl's async addon load. Theme `Font`/`FontMono` use `Font.fromEnum` so Flux `FontFace` assignment is not an EnumItem. Verified `;adminhelp`, `;setprestige me 100`, `;inspectwars` with no gsub/FontFace errors. No gameplay, permission, or AdminBridge redesign. No Git commit.
