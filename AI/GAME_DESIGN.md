@@ -340,7 +340,7 @@ NPC characters may support the simulation where humans cannot reasonably fill ev
 
 Detailed large-dynasty simulation and advanced AI rulers are not authorized for immediate implementation (see Explicitly Deferred Features).
 
-The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**. Warfare / Conquest V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. This accepts **Warfare V0.1 only**; it is not a complete military simulation. **Economy / Resources V0.1** is **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**.
+The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**. Warfare / Conquest V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. This accepts **Warfare V0.1 only**; it is not a complete military simulation. **Economy / Resources V0.1** is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 Gold foundation only; not a finished economy).
 
 ### Development verification vs first real playtest
 
@@ -706,7 +706,7 @@ MATCH RESOURCES          ACCOUNT-LEVEL
 
 ### Economy / Resources V0.1
 
-Specified design checkpoint. **IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Gold foundation only. Not the finished economy. Do not modify accepted Hierarchy, Territory / Map, Title, Diplomacy, or Warfare authority merely to accommodate Economy. Future systems must **consume** Economy’s Gold authority rather than duplicating or directly mutating balances.
+Specified design checkpoint, now **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Gold foundation only. Not the finished economy. Do not modify accepted Hierarchy, Territory / Map, Title, Diplomacy, or Warfare authority merely to accommodate Economy. Future systems must **consume** Economy’s Gold authority rather than duplicating or directly mutating balances.
 
 **Purpose.** Establish ruler Gold state, starting Gold, territory-generated Gold income, authoritative income delivery, safe add/deduct, player-relevant replication/display, and admin/debug inspection and mutation for testing. Integrate by **reading** existing Territory ownership and Hierarchy ruler identity. Do **not** invent temporary shops, buildings, armies, or placeholder purchases merely so Gold can be spent.
 
@@ -736,19 +736,22 @@ Specified design checkpoint. **IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Gold fou
 
 **Must not become (V0.1).** Civilization-style strategic resource inventory; food/wood/stone/iron/trade-good simulation; population or manpower simulation; tax-law or market simulation; debt/loans; buildings; development; realm treasury; inheritance; military upkeep. Gold is enough for this checkpoint.
 
-**Acceptance.** **IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Acceptance testing is **paused** (2026-08-24 session end). Do not mark accepted because these tests passed.
+**Director acceptance (2026-08-24).** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** This accepts **Economy / Resources V0.1 only** (Gold foundation). It is not a complete economy.
 
-**Director-verified PASS (2026-08-24 Local Server; not full acceptance):**
+**Director-verified PASS (Local Server):**
 
 - Multiplayer start **150 Gold**; both clients shared the same global 6-second payout countdown; one-territory income as specified
-- Direct-owner income: **10 Gold/min** per baseline territory; **+1** Gold per global tick per owned territory; two territories **+20 Gold/min / +2 per tick**; scaling with additional direct holdings
-- Warfare conquest: target transferred; **treasury not stolen**; future income follows new direct owner; three territories **+30 Gold/min / +3 per tick**; defeated ruler with no remaining land **+0 Gold/min** and treasury stopped increasing
+- Direct-owner income: **10 Gold/min** per baseline territory; **+1** Gold per global tick per owned territory; two territories **+20 Gold/min / +2 per tick**; three territories **+30 Gold/min / +3 per tick**
+- Warfare conquest: target transferred; **treasury not stolen**; future income follows new direct owner; landless defeated ruler **+0 Gold/min** and treasury stopped increasing
+- Direct ownership transfer (non-war): future income follows the new owner; old owner’s Gold remains intact
 - Subjecthood: Player3 vassal of Player1 **kept personal Gold**; still received **+10 Gold/min / +1 per tick** from their directly owned land; liege received **no** share from that land; no reset/merge/confiscation/tax
 - Unclaimed: after ownership removed, income **+0 Gold/min**; Gold stopped increasing across multiple ticks; unclaimed land pays **nobody**; ownership restorable via the existing `TerritoryMapService` path (Kohl `;setowner <id> unclaimed` is admin/debug, not a new unclaim gameplay system)
+- **Spend / overspend:** static 0-income ruler at 209 Gold; `;spendgold Player2 500` → `Insufficient Gold.`, balance **209**; `;spendgold Player2 100` → `Spent 100 Gold.`, balance **109**; no partial spend; no negative balance
+- **Disconnect Gold wipe:** Player2 disconnected with 109 Gold; remaining players did **not** receive that Gold; they continued only normal territorial income; Player2’s active war cancelled by existing Warfare disconnect cleanup; no inheritance/redistribution
+- Kohl raw-target autocomplete/admin UX (Player1/Player2/Player3/`unclaimed` on `setowner`; `setowner`/`setgold` work)
+- Accepted Hierarchy / Territory / Title / Diplomacy / Warfare systems were exercised during this testing without an Economy-blocking regression
 
-**Next Director test when development resumes:** `;spendgold` exact deduct; overspend **rejected** with **zero** deduction; Gold never negative; no partial spend. Then continue the remaining V0.1 checklist (do not invent results): disconnect Gold removal with no transfer; client cannot mutate Gold; remaining admin/UI items as needed.
-
-Do not mark Economy V0.1 director-accepted merely because code exists or because the tests above passed.
+A landless liege with surviving subjects is a **separate unresolved hierarchy/title design case**. Economy V0.1 may show **+0 Gold/min** for a landless ruler. Do **not** change accepted Hierarchy, Territory, Title, Diplomacy, or Warfare rules to “solve” that case. This acceptance does **not** include taxation, tribute, realm treasury, buildings, development, trade, debt, armies/upkeep, inheritance, reconnect/persistence, Prestige/Influence economies, Crowns, Lifetime Support, delegated permissions, or economic victory scoring.
 
 ### Future economic direction — tall vs wide (not Economy V0.1)
 
@@ -879,7 +882,7 @@ A full numbered 0.1 feature freeze beyond the following is **not** specified.
 
 **Admin / Testing Infrastructure V0.1** is specified under Admin / Testing. Official Kohl loader is in the place; listed AdminBridge commands are live for GameTester UserIds (plus Studio synthetic UserId exception). Owner/ruler tokens use `adminOwnerToken` / `adminRulerToken` (**Director-verified PASS** Local Server autocomplete including `unclaimed` on `setowner`). It is **not** a finished admin product. Convenient copy/reuse of reusable IDs is required before the first published playtest, not implemented now.
 
-**Economy / Resources V0.1** is specified under Economy. **IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Gold foundation (`EconomyService`; Vale `baseGoldIncome` 10; start 150; global 6s tick; direct-owner income). Several Local Server tests are Director-verified PASS; acceptance is paused (next: spend/overspend). Prestige remains Title V0.1 test Prestige. Influence remains deferred.
+**Economy / Resources V0.1** is specified under Economy. **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Gold foundation only (`EconomyService`; Vale `baseGoldIncome` 10; start 150; global 6s tick; direct-owner income). Prestige remains Title V0.1 test Prestige. Influence remains deferred. Landless-liege political consequences remain unresolved and are not part of this acceptance.
 
 **Naming formulas and monetization** remain specified only at the earlier checkpoint level except where Title Progression V0.1 already locks Vale test Prestige thresholds and Economy V0.1 locks prototype Gold numbers. Additional map assets, real Prestige/Influence gameplay, Crown products, and buildings/development remain unresolved / deferred.
 

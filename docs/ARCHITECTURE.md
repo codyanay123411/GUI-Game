@@ -116,7 +116,7 @@ Use Roblox GUI/input mechanisms that **consume/block** input for the visible/int
 ## Configuration and simulation
 
 - **Map-driven political scaling.** Title-qualification thresholds come from the selected map’s configuration, not from hardcoded universal territory counts and not from human player count. Shared config belongs in `ReplicatedStorage/Shared/Config/` conceptually; the server still applies and validates it. Vale Title Progression V0.1 **test** numbers (Duke 2/100, King 5/250, Emperor 10/500) live on `ValePrototypeMap.titleRequirements` only; they must not become a universal engine constant.
-- **Match vs account state.** Gold, Prestige, and Influence are match resources and reset between matches. Crowns and Lifetime Support are account-level and persist. Do not mix competitive match power into premium currency. **Economy / Resources V0.1** (**IMPLEMENTED — NOT DIRECTOR-ACCEPTED**) is the Gold foundation only.
+- **Match vs account state.** Gold, Prestige, and Influence are match resources and reset between matches. Crowns and Lifetime Support are account-level and persist. Do not mix competitive match power into premium currency. **Economy / Resources V0.1** (**IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**) is the Gold foundation only.
 - **Performance.** Prefer storing authoritative state and recalculating on meaningful changes. Avoid continuous polling and per-frame re-evaluation of unchanged political information or of every NPC action. This is a constraint on future systems, not a mandate to optimize empty modules.
 
 ## Territory / map foundation (V0.1 — accepted / complete)
@@ -151,14 +151,14 @@ Political Hierarchy V0.1 remains the source of liege/vassal/root-ruler truth. Ma
 - **Must not:** armies, battles, claims, peace, map recolor for war, title/Prestige grants, client victory authority.
 - **Acceptance:** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 only; not a complete military game). Director-verified PASS includes adjacent/non-adjacent/duplicate declaration, attacker and defender victory, competing same-target wars, stale-war cleanup, loss of independence without liege inheritance, attacker-root and defender-root disconnect without conquest or leftover stale wars, player-relevant ordinary GUI, global admin InspectWars, and AdminBridge ResolveWar → `WarfareService.DebugResolveWar`. Hierarchy, map, title, diplomacy V0.1, and prototype GUI maintenance stay accepted. Future military systems must build on this authority.
 
-## Economy / Resources (V0.1 — IMPLEMENTED — NOT DIRECTOR-ACCEPTED)
+## Economy / Resources (V0.1 — IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED)
 
 - **Server:** `EconomyService` Gold by rulerId (start 150). Reads `TerritoryMapService` ownership and map `baseGoldIncome` (Gold/min). One global 6s payout via `EconomyPayout.GoldPerTick`. Unclaimed pays nobody. Direct owner only. `TrySpend` / `AddGold` / `DebugSetGold` / `GetBalance` / `GetIncomeGoldPerMinute` / `GetInspect`. `RulerCreated` inits Gold without resetting existing; `RulerRemoving` deletes Gold with no transfer. `EconomyClientEvent` Ready only; `EconomyServerEvent` pushes **that player’s** State JSON (`gold`, `incomeGoldPerMinute`, `nextPayoutAt`). Map config that is not a whole tick errors at Start.
 - **Client:** `EconomyController` + `EconomyPanel` (Gold / Gold/min / global countdown). No mutation intents.
 - **Admin:** `;inspectgold` `;setgold` `;addgold` `;spendgold` → AdminBridge → EconomyService. `EconomyDebug.Invoke`.
 - **Must not:** Prestige/Influence economies, Crowns, buildings, development, tax, trade, debt, loot, client mutate remotes.
 - **Bootstrap:** Hierarchy → Territory → Title → Diplomacy → Warfare → **Economy** → Admin.
-- **Acceptance:** **IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Director Local Server **PASS** (2026-08-24, not full acceptance): multiplayer 150 + shared 6s clock; 1/2/3-territory income; conquest future-income without treasury steal; subject Gold/land income with no liege share; unclaimed pays nobody. **Resume:** `;spendgold` / overspend. Agent Studio Play checks remain historical in changelog.
+- **Acceptance:** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 Gold only). Director Local Server **PASS** (2026-08-24): multiplayer 150 + shared 6s clock; 1/2/3-territory income; conquest/admin transfer future-income without treasury steal; subject Gold/land income with no liege share; unclaimed pays nobody; spend/overspend (209→reject 500, spend 100→109); disconnect Gold wipe with no transfer; Kohl raw-target autocomplete. Landless-liege hierarchy is not an Economy defect and is not accepted by this stamp. Client Gold mutation is Ready-only by architecture.
 
 ## Delegated greater-realm authority (future — not implemented)
 

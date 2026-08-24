@@ -207,3 +207,20 @@ Documentation reconciliation after Director Local Server testing. Economy remain
 **Director-verified PASS:** multiplayer start 150 Gold and shared global 6s countdown; 1/2/3-territory income scaling; conquest redirects future income without stealing treasury (landless defeated ruler +0); subject keeps Gold and direct-land income with no liege share; unclaimed pays nobody. **Kohl raw-target autocomplete / admin UX DIRECTOR-VERIFIED PASS:** Local Server `setowner` listed Player1, Player2, Player3, and `unclaimed`; `setowner` and `setgold` worked. Not a new unclaim gameplay system.
 
 **Next resume:** `;spendgold` success vs overspend. Historical changelog rows left unchanged. No Git commit (Director GitHub Desktop).
+
+## 2026-08-24 — Economy V0.1 spend/overspend and disconnect PASS (not accepted)
+
+Director Local Server verification added:
+
+- **Spend / overspend PASS:** Player2 at 209 Gold (0 income); `;spendgold Player2 500` → `Insufficient Gold.`, balance stayed 209; `;spendgold Player2 100` → `Spent 100 Gold.`, balance 109; no partial spend; no negative.
+- **Disconnect Gold wipe PASS:** Player2 left with 109 Gold; Player1/Player3 did not receive it; territorial income only; war cancelled by existing Warfare disconnect cleanup.
+
+Status remains **IMPLEMENTED — DIRECTOR-VERIFIED IN PART — NOT DIRECTOR-ACCEPTED.** Historical changelog rows left unchanged. No Git commit.
+
+## 2026-08-24 — Economy / Resources V0.1 director-accepted
+
+Director issued final acceptance after the completed Local Server verification record. Status is now **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 Gold foundation only; not a complete economy).
+
+**Director-verified PASS preserved:** multiplayer start 150 Gold and synchronized global 6s payout clock; direct-ownership income scaling across 1/2/3 territories; Warfare conquest ownership handoff; treasury not stolen on conquest; landless ruler income at +0; subject/vassal personal Gold and direct-land income; no automatic liege Gold share; admin ownership-transfer income redirect; unclaimed pays nobody; valid spend exact deduction; overspend rejection with zero deduction / no partial spend / no negative; disconnect Gold destruction with no transfer; Kohl raw-target autocomplete previously Director-verified; existing accepted systems exercised without an Economy-blocking regression.
+
+This acceptance does **not** include landless-liege political consequences, title loss, realm collapse, succession/usurpation, wealth inheritance, reconnect/persistence, taxation, tribute, realm treasury, buildings, development, trade, debt, armies/upkeep, Prestige/Influence economies, Crowns, Lifetime Support, delegated permissions, or economic victory scoring. Documentation only; no Luau/gameplay. No Git commit.

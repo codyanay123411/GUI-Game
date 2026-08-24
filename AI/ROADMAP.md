@@ -4,7 +4,7 @@ Phases describe **dependency and preferred order**, not a hard ban on touching a
 
 AI agents must **not** prematurely implement major later-phase gameplay systems merely because they appear on this list. If work would skip ahead, stop and ask, or stay within the current phase.
 
-Gameplay implementation: **Political Hierarchy V0.1 is accepted / complete** (see `AI/PROGRESS.md`). **Territory / Map Foundation V0.1 is accepted / complete.** **Title Progression V0.1 is accepted / complete.** **Diplomacy V0.1 is accepted / complete.** **Warfare / Conquest V0.1 is IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** **Economy / Resources V0.1 is IMPLEMENTED — NOT DIRECTOR-ACCEPTED.** Later phases are not started. Completing warfare V0.1 does **not** start Phase 2 Character Simulation.
+Gameplay implementation: **Political Hierarchy V0.1 is accepted / complete** (see `AI/PROGRESS.md`). **Territory / Map Foundation V0.1 is accepted / complete.** **Title Progression V0.1 is accepted / complete.** **Diplomacy V0.1 is accepted / complete.** **Warfare / Conquest V0.1 is IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** **Economy / Resources V0.1 is IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Later phases are not started. Completing warfare V0.1 or Economy V0.1 does **not** start Phase 2 Character Simulation.
 
 Studio Play / Local Server / MCP / Director acceptance sessions are **development verification**, not the **first real playtest** (published Roblox server, one complete map, friends/humans, ~30-minute coherent match, determinable winner). See `AI/GAME_DESIGN.md`.
 
@@ -72,7 +72,7 @@ Event content and emergent storytelling on top of simulation state.
 
 Match resources Gold / Prestige / Influence (reset per match, distinct roles). Account-level Crowns and Lifetime Support are not match-power currencies.
 
-**Economy / Resources V0.1** (Gold foundation: start 150; Vale `baseGoldIncome` 10 Gold/min; global +1 Gold / 6 sec per owned baseline territory; direct-owner income; Unclaimed pays nobody; no automatic tax; conquest does not steal treasury; no required player Gold sink) is **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. Director Local Server **PASS** items (2026-08-24) are recorded in `AI/PROGRESS.md`; **spend/overspend** is the next resume test. Buildings, development, taxation, trade, and **tall-vs-wide** quality investment remain later. Prestige remains Title V0.1 test Prestige. Influence remains deferred.
+**Economy / Resources V0.1** (Gold foundation: start 150; Vale `baseGoldIncome` 10 Gold/min; global +1 Gold / 6 sec per owned baseline territory; direct-owner income; Unclaimed pays nobody; no automatic tax; conquest does not steal treasury; no required player Gold sink) is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. This accepts **V0.1 Gold only**. Director Local Server **PASS** items (including spend/overspend and disconnect Gold wipe) are recorded in `AI/PROGRESS.md`. Buildings, development, taxation, trade, and **tall-vs-wide** quality investment remain later. Prestige remains Title V0.1 test Prestige. Influence remains deferred. Landless-liege political consequences remain unresolved and are not part of this acceptance.
 
 ## 14. Persistence
 
