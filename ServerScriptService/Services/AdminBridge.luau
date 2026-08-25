@@ -17,6 +17,7 @@ local Territory = require(script.Parent.TerritoryMapService)
 local Title = require(script.Parent.TitleProgressionService)
 local Warfare = require(script.Parent.WarfareService)
 local Economy = require(script.Parent.EconomyService)
+local Military = require(script.Parent.MilitaryService)
 
 local AdminBridge = {}
 
@@ -47,6 +48,11 @@ function AdminBridge.HelpText(): string
 		";setgold <player|rulerId> <number>",
 		";addgold <player|rulerId> <number>",
 		";spendgold <player|rulerId> <number>",
+		";inspecttroops <player|rulerId>",
+		";settroops <player|rulerId> <number>",
+		";addtroops <player|rulerId> <number>",
+		";inspectmilitary <warId>",
+		";inspectcontest",
 		";resolvewar <warId> attacker|defender",
 		"Studio fallback: ServerScriptService.AdminDebug.Invoke",
 	}, "\n")
@@ -127,9 +133,7 @@ end
 local function inspectWars(): (boolean, string)
 	local snap = Warfare.GetSnapshot()
 	local wars = snap.wars or {}
-	if #wars == 0 then
-		return true, "No active wars."
-	end
+	local cooldowns = snap.cooldowns or {}
 	local lines = { string.format("Active wars: %d", #wars) }
 	for _, war in wars do
 		table.insert(
@@ -142,6 +146,15 @@ local function inspectWars(): (boolean, string)
 				tostring(war.targetTerritoryId)
 			)
 		)
+	end
+	if #cooldowns > 0 then
+		table.insert(lines, string.format("Post-war cooldowns: %d", #cooldowns))
+		for _, row in cooldowns do
+			table.insert(lines, string.format("  %s until %s", tostring(row.territoryId), tostring(row.endsAt)))
+		end
+	end
+	if #wars == 0 and #cooldowns == 0 then
+		return true, "No active wars."
 	end
 	return true, table.concat(lines, "\n")
 end
@@ -259,6 +272,57 @@ local function spendGold(rulerRef: any, valueAny: any): (boolean, string)
 	return Economy.TrySpend(rulerId, value)
 end
 
+local function inspectTroops(rulerRef: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local snap = Military.GetInspect(rulerId)
+	if not snap then
+		return fail("No troop state for " .. rulerLabel(rulerId))
+	end
+	return true, HttpService:JSONEncode(snap)
+end
+
+local function setTroops(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Troops.")
+	end
+	return Military.DebugSetTroops(rulerId, value)
+end
+
+local function addTroops(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Troops.")
+	end
+	return Military.DebugAddTroops(rulerId, value)
+end
+
+local function inspectMilitary(warId: any): (boolean, string)
+	if typeof(warId) ~= "string" or warId == "" then
+		return fail("Need warId.")
+	end
+	local snap = Military.GetEngagementInspect(warId)
+	if not snap then
+		return fail("No military engagement.")
+	end
+	return true, HttpService:JSONEncode(snap)
+end
+
+local function inspectContest(): (boolean, string)
+	return true, HttpService:JSONEncode(Warfare.GetContestInspect())
+end
+
 local function resolveWar(warId: string, outcome: string): (boolean, string)
 	if typeof(warId) ~= "string" or warId == "" then
 		return fail("Need warId.")
@@ -341,6 +405,16 @@ function AdminBridge.Execute(actorUserId: number?, operation: string, a: any, b:
 		return done(addGold(a, b))
 	elseif op == "SpendGold" then
 		return done(spendGold(a, b))
+	elseif op == "InspectTroops" then
+		return done(inspectTroops(a))
+	elseif op == "SetTroops" then
+		return done(setTroops(a, b))
+	elseif op == "AddTroops" then
+		return done(addTroops(a, b))
+	elseif op == "InspectMilitary" then
+		return done(inspectMilitary(a))
+	elseif op == "InspectContest" then
+		return done(inspectContest())
 	elseif op == "ResolveWar" then
 		return done(resolveWar(a, b))
 	end

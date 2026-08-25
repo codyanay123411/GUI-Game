@@ -63,6 +63,7 @@ function WarfareController.Start()
 	local diplomacyPush = remotes:WaitForChild("DiplomacyServerEvent") :: RemoteEvent
 
 	local wars = {}
+	local cooldowns = {}
 	local hierarchy = { rulers = {} }
 	local ownership: { [string]: string } = {}
 	local diplomacy = { agreements = {} }
@@ -205,6 +206,28 @@ function WarfareController.Start()
 		)
 	end
 
+	local function cooldownEndsAt(territoryId: string): number?
+		for _, row in cooldowns do
+			if row.territoryId == territoryId then
+				local endsAt = tonumber(row.endsAt)
+				if endsAt ~= nil and endsAt > workspace:GetServerTimeNow() then
+					return endsAt
+				end
+				return nil
+			end
+		end
+		return nil
+	end
+
+	local function isContested(territoryId: string): boolean
+		for _, war in wars do
+			if war.targetTerritoryId == territoryId then
+				return true
+			end
+		end
+		return false
+	end
+
 	local function localRootId(): string?
 		return PlayerRelevantView.LocalRootRulerId(hierarchy.rulers, player.UserId)
 	end
@@ -225,7 +248,34 @@ function WarfareController.Start()
 		return matches
 	end
 
-	local function refresh()
+	local refresh: () -> ()
+	local cooldownUiToken = 0
+
+	local function scheduleSelectedCooldownRefresh()
+		cooldownUiToken += 1
+		local token = cooldownUiToken
+		local selected = selectedValue.Value
+		if selected == "" then
+			return
+		end
+		local endsAt = cooldownEndsAt(selected)
+		if endsAt == nil then
+			return
+		end
+		local remaining = endsAt - workspace:GetServerTimeNow()
+		if remaining <= 0 then
+			return
+		end
+		-- Slightly after expiry so declaration is not enabled a frame early vs server prune.
+		task.delay(remaining + 0.05, function()
+			if token ~= cooldownUiToken then
+				return
+			end
+			refresh()
+		end)
+	end
+
+	refresh = function()
 		local me = myRuler()
 		local selected = selectedValue.Value
 		local bits = {}
@@ -272,6 +322,16 @@ function WarfareController.Start()
 					declareBtn.Text = "NAP blocks war"
 					declareBtn.Active = false
 					PrototypeGuiTheme.applyPrimaryButton(declareBtn, false)
+				elseif isContested(selected) then
+					declareBtn.Text = "Already contested"
+					declareBtn.Active = false
+					PrototypeGuiTheme.applyPrimaryButton(declareBtn, false)
+					table.insert(bits, "Territory is already contested.")
+				elseif cooldownEndsAt(selected) then
+					declareBtn.Text = "Post-war cooldown"
+					declareBtn.Active = false
+					PrototypeGuiTheme.applyPrimaryButton(declareBtn, false)
+					table.insert(bits, "Territory is on post-war cooldown.")
 				elseif not isAdjacentForRoot(me, selected) then
 					declareBtn.Text = "Not adjacent"
 					declareBtn.Active = false
@@ -326,6 +386,7 @@ function WarfareController.Start()
 
 		warStatus.Text = table.concat(bits, "\n")
 		declareBtn.TextSize = 12
+		scheduleSelectedCooldownRefresh()
 	end
 
 	declareBtn.MouseButton1Click:Connect(function()
@@ -354,6 +415,7 @@ function WarfareController.Start()
 			return
 		end
 		wars = data.wars or {}
+		cooldowns = data.cooldowns or {}
 		refresh()
 	end)
 

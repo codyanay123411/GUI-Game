@@ -340,15 +340,85 @@ NPC characters may support the simulation where humans cannot reasonably fill ev
 
 Detailed large-dynasty simulation and advanced AI rulers are not authorized for immediate implementation (see Explicitly Deferred Features).
 
-The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**. Warfare / Conquest V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. This accepts **Warfare V0.1 only**; it is not a complete military simulation. **Economy / Resources V0.1** is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 Gold foundation only; not a finished economy).
+The first meaningful **gameplay prototype** (Political Hierarchy V0.1) is **accepted / complete**. It must **not** expand into a deep autonomous character simulation. Territory / Map Foundation V0.1 is **accepted / complete**. Diplomacy V0.1 is **accepted / complete**. Warfare / Conquest V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. This accepts **Warfare V0.1 only**; it is not a complete military simulation. **Economy / Resources V0.1** is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 Gold foundation only; not a finished economy). **Military / Armies V0.1** is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (ordinary V0.1 scope only). Normal wars resolve through Military battle feeding Warfare attacker/defender application. `resolvewar` remains privileged.
 
 ### Development verification vs first real playtest
 
 Studio Play Solo, Local Server synthetic-client sessions, MCP sessions, isolated regression testing, and Director acceptance checks are **development verification / acceptance testing**. They are **not** this project’s first real playtest.
 
-The **first real playtest** is: a **published Roblox server**; the Director plus friends / actual human players joining normally; **one completed map** (multiple maps are not required); GUI sufficiently polished and intentionally laid out; core backend systems implemented and integrated; a coherent playable match loop of about **30 minutes** from beginning through conclusion; a winner that can actually be determined. The build should feel like a playable game rather than a collection of development/debug prototypes.
+The **first real playtest** is: a **published Roblox server**; the Director plus friends / actual human players joining normally; **one completed map** (multiple maps are not required); GUI sufficiently polished and intentionally laid out; core backend systems implemented and integrated; a coherent playable match loop of about **30 minutes** from beginning through conclusion; a winner that can actually be determined. The build should feel like a playable game rather than a collection of development/debug prototypes. The Director may still use a **simple single published map/server** for that first playtest.
 
 Do not call Studio verification “the playtest.”
+
+**V0.5 playtest stage (product direction).** Around **V0.5** the project intends a first **serious** playtesting phase with real players (multiplayer/emergent bugs, pacing, balance, UX friction). That stage uses `AI/PLAYTEST_BACKLOG.md`. It does **not** replace the published-server **first real playtest** definition above, and it is **not** a claim that half of all possible features exist at V0.5. Cumbersome remaining multiplayer tests may be deferred as non-blocking until that stage; **deferred is not PASS.** V0.1–V0.4: build/integrate (**ugly is acceptable; confusing is not**). V0.5–V0.9: iterate from playtest feedback. V1.0: release-target polish/onboarding. Pacing: **the timer should pressure indecision, not punish normal thinking.**
+
+### Player communications (PRE-V0.5 REQUIRED — DESIGN FREEZE IN PROGRESS — NOT IMPLEMENTED)
+
+A **usable player text-communication system** must exist **before** the serious V0.5 multiplayer playtesting milestone so players can negotiate, coordinate, threaten, cooperate, betray, and conduct politics in-game. **Status: PRE-V0.5 REQUIRED — DESIGN FREEZE IN PROGRESS — NOT IMPLEMENTED.** This is the **current authorized design milestone**. Implementation is **not** authorized. Do **not** implement chat remotes, GUI, TextChatService configuration, or Kohl permission/command changes from this section. This is **not** a Military / Armies V0.1 blocker, **not** a current gameplay regression, **not** a current critical defect, and **not** a `AI/PLAYTEST_BACKLOG.md` verification item. Distinct from deferred gameplay **Council systems**.
+
+**Historical name:** player-facing **General** / General/Public is **retired**. The replacement public-political path is **Diplomatic**.
+
+#### Ordinary player paths (frozen)
+
+Four ordinary paths, plus a separate administrative system (not an ordinary player channel).
+
+**1. DIPLOMATIC** — Public political communication with geographically nearby realms. **Not** a global server-wide room and **not** a conventional room with fixed membership. Eligibility uses the **authoritative realm-adjacency graph**. A Diplomatic message reaches rulers at **realm-graph distance ≤ 2 from the sender**. Example: Red—Blue—Green: Red reaches Blue and Green. Red—Blue—Green—Yellow: Red reaches Blue and Green, **not** Yellow; Green reaches Red, Blue, and Yellow. Conversations may be **intentionally asymmetric**; a player may receive a reply to a conversation whose earlier message they never received. Do **not** repair, backfill, synchronize, or eliminate that asymmetry (desired emergent information gameplay). Recipient eligibility is calculated from authoritative political/territorial state **at the moment the message is sent**. Already delivered messages are **not** retroactively removed if borders/ownership later change; future messages use the new graph. Players may disclose or lie about strategy. The game must **not** censor numbers, troop claims, strategic words, or player-chosen intelligence. Protected information is what the **game system** automatically exposes, not what humans type.
+
+**2. COUNCIL** — Private **direct-liege** feudal communication (not realm-wide, not recursive). A ruler’s Council is **that ruler + that ruler’s direct subjects only**. Example: Emperor A → King B → Duke C → Lord D: A’s Council = A+B; B’s Council = B+C; C’s Council = C+D. A ruler may participate **upward** as someone’s direct subject and simultaneously have a **separate downward** Council with their own direct subjects. **Geographic distance does not restrict Council.** Information may travel the feudal chain or other permitted paths. Distinct from deferred gameplay Council systems.
+
+**3. ALLIES** — Private allied coordination. **Alliance only.** **NAP does not grant access.** Subjects do **not** inherit their liege’s Allies access. Only the rulers who are actual parties to **that specific Alliance** participate. Each distinct Alliance relationship is **compartmentalized**. Example: A allied with X and separately with Z → A–X and A–Z are separate contexts; X must not automatically see A–Z; Z must not automatically see A–X. Do **not** merge every ally into one giant Allies room. **Geographic distance does not restrict Allies.**
+
+**4. DIRECT** — Private 1:1 political communication. Exactly two players. **Relationship-independent** (liege, subject, ally, enemy, or unrelated). **Normal Direct requires current realm adjacency (graph distance = 1):** if any **territory** belonging to Realm A borders any **territory** belonging to Realm B, those rulers are neighboring for normal Direct. If they do not currently share a border, normal Direct is unavailable. **Existing contact does not create a permanent line.** If two rulers have a Direct conversation and then stop sharing a border, **send access is cut immediately** (no grandfathering). Previously delivered Direct messages may remain visible for the **match**, but neither side may send further **normal** Direct messages while adjacency is broken. If adjacency is restored, normal Direct may become available again. Direct is **match-scoped**; no cross-session/DataStore Direct history for Communications V0.x. If a participant leaves, that participant is unavailable. **Roblox/platform direct-chat eligibility must be obeyed**; never bypass safety/eligibility.
+
+#### Admin / Observer (frozen information requirement; not ordinary play)
+
+Authorized administrators need **relationship-aware observation** of relevant in-game communication (Diplomatic, Council, Allies, Direct, and future supported types) for moderation/debug. Presentation must make clear **who** is talking, **where** the conversation exists, and the political relationship/context. Admins are **politically neutral observers** for this purpose: do **not** apply ordinary viewer-relative tags ambiguously. Show **explicit context** (conceptual examples: `[Direct: Player2 ↔ Player4]` / `[Liege ↔ Subject]` / `[King] Player2:` …; `[Alliance: Player1 ↔ Player3]` / `[Emperor] Player1:` …). Exact formatting/colors are **not** frozen; the information requirement **is**. Observer presentation must support **mute/silence** so a large server does not overwhelm an administrator. Muting the observer view must **not** stop underlying player communication. Direct is private from ordinary players, **not** from authorized game moderation or Roblox/platform moderation.
+
+**Admin announcements (direction, not frozen UX):** authorized administrators should eventually have an explicit announcement capability (conceptual: `[ADMIN] The server will restart in 10 minutes.`). Admin/system communication must be unmistakably administrative. Admins must **not** casually masquerade as normal participants inside someone else’s Council, Alliance, or Direct conversation. If later intervention into a conversation is ever permitted, it must be visibly ADMIN/SYSTEM. Exact announcement command/UX is **not** frozen. Do not implement yet.
+
+#### Dynamic chat identity (frozen baseline)
+
+Every ordinary player message must display the speaker’s **current authoritative Title** (example: `[King] Player2`). Title is live; do **not** permanently cache it as stale metadata. Rank changes apply to **future** messages. In appropriate contexts, messages may additionally display **one** viewer-relative political relationship tag. Frozen baseline priority: **Liege / Subject**, then **Ally**, then **none**. No tag spam. **No territory-count tags** in Communications V0.x. The same underlying message may render different relationship context for different viewers. Identity comes from authoritative game state, not client claims.
+
+- **Diplomatic:** `[Title] [viewer-relative relationship if useful] PlayerName` (examples: `[King] [Liege] Player2`, `[King] [Subject] Player2`, `[King] [Ally] Player2`, `[King] Player2`).
+- **Council:** `[Title] PlayerName` only. Do not add “Council Member.”
+- **Allies:** `[Title] PlayerName` only. Do not add “Ally.”
+- **Direct:** `[Title] [viewer-relative Liege/Subject/Ally if applicable] PlayerName`.
+
+System/channel-help messages are **not** ordinary player messages and do **not** receive Title/relationship tags.
+
+#### Channel help (frozen intent; copy polish later)
+
+Every communication context must clearly explain itself. When a player first enters/opens a context, show a clearly identifiable **SYSTEM** informational message for **that** channel only. Director does **not** want one giant Help dump of every channel. Players need a **harmless player-level** way to re-display the current channel’s explanation. Conceptual command: `help` (possibly via Kohl if it can expose a player-level command **without** admin privileges). Exact Kohl syntax is **not** frozen; audit Kohl during implementation. Intended meaning (final copy may be polished later without changing mechanics):
+
+- Diplomatic: Public political communication with nearby realms. Messages reach rulers within realm-graph distance 2. Audience may differ between rulers.
+- Council: Private communication between a ruler and their direct subjects. Geographic distance does not restrict Council communication.
+- Allies: Private communication between the rulers participating in this specific Alliance. Subjects and NAP partners do not receive these messages.
+- Direct: Private 1:1 communication with a neighboring ruler. Realms must currently share a border for normal communication.
+
+#### Roblox architecture (frozen direction; API audit before implementation)
+
+Use **Roblox TextChatService** as the underlying Communications infrastructure. Prefer extending/customizing Roblox’s native chat. Roblox continues to handle required text filtering/moderation. The game layers political rules, identity, channels, visibility, and presentation on top. Do **not** build an entirely separate custom chat frontend unless frozen requirements cannot be cleanly represented through currently supported TextChatService/native chat capabilities. Before implementation, audit current TextChatService APIs. Previously identified **candidates** (not an order to use a specific callback without audit): custom TextChannels; conditional delivery; TextChatMessageProperties / PrefixText; configurable native chat window/input; CanUsersDirectChatAsync or current equivalent; a custom frontend backed by TextChatService only if absolutely required.
+
+#### Intelligence / espionage boundary (frozen)
+
+Espionage/information-control governs what **the game system** reveals. It does **not** police voluntary human speech. Players may type true or false troop claims; the game must not try to verify them. Do **not** implement naive keyword filtering, number censorship, or strategic-word censorship. Military hidden commitment remains protected from **automatic/system** disclosure per Military / Armies V0.1.
+
+#### Future long-distance / espionage communication (undesigned)
+
+Document only. Do **not** implement or design mechanics now. Room is reserved for a future advanced system where espionage, messengers, diplomatic infrastructure, Gold, or similar could potentially permit communication **beyond** normal geographic range. Possible future concept (not locked): normal Direct = free/ordinary but requires adjacency; advanced long-distance = potentially expensive and distance-sensitive; espionage may interact. Exact mechanics, costs, interception, detection, distance formulas, and permissions are **not** designed. Do not invent them.
+
+**Required before V0.5 serious playtesting:** usable player text communication covering the frozen Diplomatic, Council, Allies, and Direct paths; dynamic current-title identity; frozen viewer-relative baseline above; Roblox-required moderation/text filtering; enough function for real multiplayer politics; Admin/Observer information requirement (implementation of observer/announcements may follow ordinary paths). **Not necessarily required before V0.5:** complete espionage or interception; long-distance paid communication; polished chat UI; V1.0 onboarding; every future political tag; territory-count tags; advanced history/search; the future Hierarchy/Diplomacy layout idea below.
+
+**Still unresolved (do not invent):** exact native TextChatService UI/channel-selection UX; how players initiate/select a Direct conversation; Council selector UX when a player has upward and downward Councils; Alliance selector UX with multiple distinct alliances; exact visual formatting/colors/brackets; exact player-level contextual help command integration with Kohl; exact Admin observer UI/presentation; exact Admin announcement command/UX; long-distance/espionage communication mechanics; interception/detection; message history/search beyond ordinary match-scoped chat; load/stress behavior; final acceptance test matrix.
+
+Do not implement Communications until the Director authorizes an **implementation** pass (this freeze is design documentation only).
+
+**Related future UI idea (not Communications V0.x; do not implement now):** Tab could eventually toggle the Hierarchy interface in place of the normal leaderboard/player-list role; Diplomacy could eventually move into/over the map-side interface similarly to Military, freeing more permanent map space. Recorded only.
+
+### Public product match entry (future — not current work)
+
+Before the game is a **normal public product**, players will need a proper match-entry flow. Conceptual requirements (not designed in detail, **not** required for Military / Armies V0.1, **not** required for the first published playtest): lobby / hub or menu; select an available playing world / map as appropriate; join or queue for a match; matchmaking / queue population; players enter the selected match/server; the match starts when required conditions are met. Do **not** implement matchmaking, a queue service, a lobby, a world selector, or a multi-map server browser unless the Director later authorizes that work.
 
 ### Required before first published playtest (not current work)
 
@@ -597,7 +667,7 @@ War should have clear political objectives. Losing a war does **not** necessaril
 
 ### Warfare / Conquest V0.1
 
-Specified design checkpoint. **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** This accepts **Warfare V0.1 only** (independent-root external wars, one enemy-controlled **territory**, debug resolution, player-relevant ordinary GUI). It does **not** mean warfare is feature-complete for the final game. Multiple simultaneous wars on the same **territory** remain allowed; do **not** add a one-war-per-territory restriction. Do not reopen Political Hierarchy V0.1, Territory / Map Foundation V0.1, Title Progression V0.1, or Diplomacy V0.1. Future military systems (armies, battles, war score, peace, claims/casus belli if adopted, occupation/sieges if adopted, improved presentation) must **build on** this V0.1 authority, not replace or duplicate it without an explicit architecture decision.
+Specified design checkpoint. **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** This accepts **Warfare V0.1 only** (independent-root external wars, one enemy-controlled **territory**, debug resolution, player-relevant ordinary GUI). It does **not** mean warfare is feature-complete for the final game. **Military / Armies V0.1** later **supersedes** same-target multiplicity (see below and Military / Armies V0.1). Do not reopen Political Hierarchy V0.1, Territory / Map Foundation V0.1, Title Progression V0.1, Diplomacy V0.1, or Economy V0.1 Gold. Future military systems must **build on** this V0.1 war-lifecycle authority, not replace or duplicate it without an explicit architecture decision.
 
 **Purpose.** Minimum server-authoritative warfare primitive to prove that independent greater realms can declare external wars, target one enemy-controlled territory, validate borders through existing greater-realm territory, coexist in multiple simultaneous wars, resolve wars through a **server-only debug** mechanism, and transfer territory after a valid attacker victory. Infrastructure testing only. Not a military simulation.
 
@@ -617,19 +687,19 @@ Example: Bob personally owns Westmere; vassal Cody owns Northvale; Northvale bor
 
 **Alliance.** Alliance does **not** automatically join another realm’s war. No call to arms, allied armies, shared wars, military access, or automatic co-belligerents. Those are deferred. Diplomacy remains the source of truth for Alliance state.
 
-**Multiple simultaneous wars.** A ruler / greater realm may participate in **multiple** active wars at once. There is no “one war at a time” restriction. Different territories may be targeted by separate wars. A defender may declare a separate valid war in the opposite direction. There is **no** special counter-war or counterattack mechanic: if Realm A attacks Realm B, Realm B may independently declare another valid war against Realm A for a **different** eligible enemy-controlled bordering territory. That second declaration uses the same validation rules. It is simply another war object.
+**Multiple simultaneous wars.** A ruler / greater realm may participate in **multiple** active wars at once. There is no “one war at a time **per realm**” restriction. **Different territories** may be targeted by separate wars. A defender may declare a separate valid war in the opposite direction for a **different** eligible enemy-controlled bordering territory. There is **no** special counter-war mechanic. That second declaration uses the same validation rules. It is simply another war object.
 
-**Multiple wars, same territory.** Multiple active wars **may** target the same territory. Do **not** introduce a one-active-war-per-territory restriction. Each war is an independent authoritative record. At minimum it must retain attacker root, defender root, target territory, and active/resolved state. Resolution **must revalidate** the target before applying territorial transfer.
+**Multiple wars, same territory (Warfare V0.1 historical rule — SUPERSEDED).** Warfare / Conquest V0.1 originally allowed multiple active wars on the same target and forbade a one-active-war-per-territory restriction. That rule was **Director-accepted and Director-verified** (competing same-target wars + stale cleanup after first capture). **Military / Armies V0.1 intentionally supersedes it** (Director decision 2026-08-24). It is **not** a bugfix and is **not** permission to redesign Warfare generally.
 
-Example: Player1, Player3, and Player4 may all have active wars against Player2 for Greyfen. If Player1 wins first and Greyfen validly leaves Player2’s greater realm, remaining wars against Player2 for Greyfen are **stale**. They must **not** subsequently transfer Greyfen merely because debug resolution says attacker victory.
+**Current rule (Military / Armies V0.1 supersession).** A territory may be the target of **at most one** active war at a time. The first valid server-authorized declaration places that territory in a **CONTESTED** state for war-declaration eligibility. Later declarations targeting that same territory are **rejected** while it remains contested (concept: “Territory is already contested.”). No declaration queue. First valid declaration processed by the authoritative server wins the contest. When that war resolves or cancels under the final lifecycle rules, the territory enters the designed **10-second post-war territory cooldown** where applicable, then becomes normally attackable again. Simultaneous wars remain allowed only when they target **different** territories.
 
-**Stale / invalid resolution.** Before applying a result, the server revalidates. If another war already caused the target to leave the **original defending greater realm**, competing wars over that target become invalid/stale and terminate **without** transferring the territory. V0.1 does **not** retarget the new owner, automatically create a war against the new occupier, or model contested occupation, three-way wars, hostile third parties, continuation against a new occupier, war-score inheritance, or peace-conference claims.
+**Stale / invalid resolution.** Before applying a result, the server revalidates. If the target has left the **original defending greater realm** (for example admin/debug ownership change), the war is invalid/stale and terminates **without** transferring the territory. V0.1 does **not** retarget the new owner, automatically create a war against the new occupier, or model contested occupation, three-way wars, hostile third parties, continuation against a new occupier, war-score inheritance, or peace-conference claims. Competing same-target player wars are no longer created under the Military supersession; stale cleanup remains relevant for ownership changes while a single contest exists.
 
-**Resolution.** There are no real armies or battles in V0.1. Active wars remain unresolved until a **server-only debug** mechanism resolves them. That mechanism must support at least **Attacker Victory** and **Defender Victory**. It exists solely to prove warfare infrastructure independently from future military simulation. It must **not** be exposed as a normal player authority mechanism.
+**Resolution.** Warfare / Conquest V0.1 itself has no player armies. Until Military / Armies V0.1 is implemented, active wars remain unresolved until **server-only debug** Attacker/Defender Victory (`DebugResolveWar`). That path is **not** ordinary player authority. After Military implementation, ordinary wars resolve through Military battle results feeding this same Attacker/Defender application path; `resolvewar` remains privileged and must **reject** after Military mechanical resolution (see Military / Armies V0.1).
 
 **Attacker Victory.** The server must revalidate the war before changing ownership. If still valid: **target territory → direct ownership of the attacking root ruler**. Do not automatically distribute conquered land to vassals, neighboring subjects, title holders, previous owners, or AI administrators. Realm administration / conquered-land redistribution is deferred.
 
-**Defender Victory.** The war ends; target ownership remains unchanged. No V0.1 reparations, Prestige, penalties, truces, cooldowns, claims, opinion, or economic effects.
+**Defender Victory.** The war ends; target ownership remains unchanged. No V0.1 reparations, Prestige, penalties, diplomatic truces, claims, or opinion. The **10-second post-war territory cooldown** is a Military / Armies V0.1 declaration-eligibility window, not a diplomatic truce.
 
 **Disconnect.** If a participating **root ruler** disconnects, affected active wars involving that ruler are cancelled / terminated. No automatic victory. No territory transfer because of disconnect. No persistence, reconnect restoration, AI takeover, or succession handoff. **Director-verified** for both attacker-root and defender-root disconnect; remaining client sees cancellation; ordinary Territory UI shows no active wars; no stale active war remains.
 
@@ -643,11 +713,99 @@ Example: Player1, Player3, and Player4 may all have active wars against Player2 
 
 **Title integration.** Warfare does **not** directly grant rank, Prestige, promotion, or demotion. Successful conquest changes ownership; Title Progression may observe the new control counts through existing architecture. Warfare itself does not promote the ruler.
 
-**GUI.** Respect current prototype UI: `PrototypeGuiTheme`; map as primary workspace; no uncontrolled permanent stacking; stable assigned regions; higher GUI blocks map input beneath it; toasts for results; no state-driven primary-panel geometry. Do **not** assign warfare keybinds. Declare War lives in `TerritoryInfo`. Ordinary player-facing war lists show only wars involving the local player’s **greater realm** (subjects inherit the root’s view). Unrelated third-party wars stay out of TerritoryInfo. Global war lists remain admin/debug (`;inspectwars`, WarfareDebug). Future UI shell remains specified, not implemented.
+**GUI.** Respect current prototype UI: `PrototypeGuiTheme`; map as primary workspace; no uncontrolled permanent stacking; stable assigned regions; higher GUI blocks map input beneath it; toasts for results; no state-driven primary-panel geometry. Do **not** assign warfare keybinds. Declare War lives in `TerritoryInfo`. Ordinary player-facing war lists show only wars involving the local player’s **greater realm** (subjects inherit the root’s view). Unrelated third-party wars stay out of TerritoryInfo. Global war lists remain admin/debug (`;inspectwars`, WarfareDebug). Future UI shell remains specified, not implemented. Prototype “additional war” copy for two roots targeting the **same** territory is obsolete under the Military same-target supersession; additional wars may still exist for **different** territories.
 
-**Director acceptance (2026-08-24).** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Recorded PASS: valid adjacent declaration; non-adjacent rejection; duplicate/matching active-war rejection; attacker victory with target **territory** transfer; defender victory with ownership unchanged; simultaneous competing wars on the same target **territory**; stale-war cleanup after another attacker captures the target; loss of independence during an active war terminates the war and the new liege does not inherit it; defender-root disconnect terminates the war without conquest; attacker-root disconnect terminates the war without conquest (most recent: Player1 attacker vs Player3 defender for frostfield; remaining client “War cancelled (left the match).”; ordinary Territory UI no active wars; no transfer); disconnect cleanup leaves no active stale war; ordinary Warfare GUI is player/realm-relevant; admin InspectWars remains global; AdminBridge ResolveWar uses `WarfareService.DebugResolveWar`.
+**Director acceptance (2026-08-24).** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Recorded PASS at acceptance time: valid adjacent declaration; non-adjacent rejection; duplicate/matching active-war rejection; attacker victory with target **territory** transfer; defender victory with ownership unchanged; **simultaneous competing wars on the same target territory** and **stale-war cleanup after another attacker captures the target** (those two PASSes are **historical Warfare V0.1 verification**; same-target multiplicity is **superseded** by Military / Armies V0.1); loss of independence during an active war terminates the war and the new liege does not inherit it; defender-root disconnect terminates the war without conquest; attacker-root disconnect terminates the war without conquest (most recent: Player1 attacker vs Player3 defender for frostfield; remaining client “War cancelled (left the match).”; ordinary Territory UI no active wars; no transfer); disconnect cleanup leaves no active stale war; ordinary Warfare GUI is player/realm-relevant; admin InspectWars remains global; AdminBridge ResolveWar uses `WarfareService.DebugResolveWar`.
 
 **Explicitly deferred from Warfare / Conquest V0.1:** armies, units, troop counts, troop movement, battles, combat simulation, sieges, occupations, casualties, military economy, recruitment, reinforcement, supply, logistics, commanders, generals, army AI, claims, casus belli, war goals beyond the single target territory, war score, peace negotiations, peace treaties, surrender, reparations, truces, cooldowns, Prestige rewards/penalties, opinion/reputation, aggressive expansion, coalitions, call to arms, alliance war participation, military access, guarantees, tributaries, contested occupation, multi-party peace, automatic continuation against a new territory owner, vassal independent warfare, vassal war autonomy, conquered-territory redistribution, unclaimed-territory warfare, persistence, reconnect restoration, succession/inheritance of wars, AI warfare, advanced war GUI, warfare keybinds.
+
+### Military / Armies V0.1 (IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED)
+
+**Status.** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** for **ordinary V0.1 acceptance scope only**. Not a complete military game. Do not expand into V0.2. Agent verification is not Director verification. Eight MIL-MP overlay/race cases remain deferred in `AI/PLAYTEST_BACKLOG.md` (deferred ≠ PASS; not a V0.x progress blocker). Canonical 18-item PASS list: `AI/PROGRESS.md`.
+
+**Why.** Replace debug-only war outcomes with a short military contest: Territory → Gold → Troops → War → Battle / Casualties → Conquest → more Territory → more Gold.
+
+**Authorities.** Military owns Troops, commitments, battle calculation, and casualty application. Warfare owns war lifecycle, contest/cooldown eligibility, and Attacker/Defender outcome application (including revalidation). Territory owns ownership/geometry. Economy owns Gold (`TrySpend` for recruitment). Diplomacy remains NAP/Alliance truth. Hierarchy remains root/independence truth. Military must not `SetOwner` or create wars. Clients must not set Troops or battle results.
+
+#### Troops
+
+- Resource name **Troops**. **1 Troop = 1 soldier.** Whole numbers only. Finite. Casualties remove actual soldiers.
+- Each ruler has **one personal pool**. Territory does **not** store Troops. Greater realms do **not** auto-pool. Alliance does **not** contribute.
+- **Start:** **1,000** Troops per ruler (prototype balance, not final). Init on ruler create. On ruler **removal**, that ruler’s Troop state is destroyed (no transfer), like Gold.
+- **Invariant:** Total = Available + Troops committed across all active wars.
+- Subjecthood and title changes must **not** merge, confiscate, or transfer personal Troops. Landless-liege politics remain a **separate** unresolved hierarchy/title case.
+
+#### Recruitment
+
+- Instant. **1 Gold recruits 3 Troops.** Purchases must be **multiples of 3 Troops** (minimum 3 Troops / 1 Gold). No fractional Gold. Gold deduction **only** through `EconomyService.TrySpend`.
+- Client requests an amount (example: Recruit 300). Server validates; client cannot grant Troops.
+- **Max recruit (M):** compact Military-panel button immediately right of Recruit. Client sends a **RecruitMax** intent with **no Gold/Troop amount**. The server re-reads current Gold at processing time and recruits `CurrentGold × 3`. Does not require TextBox input. Manual Troops-entry Recruit remains. 0 Gold recruits nothing (`Insufficient Gold.`). Allowed during unlocked commitment (emergency Available troops). Never changes a locked commitment.
+- Recruit **0**, non-multiples of 3, malformed/negative amounts: **reject** (not interaction, not a spend).
+- Allowed while at war. New Troops enter **Available**. They may be committed only to a battle whose commitment is **not** locked. Recruitment never changes a locked commitment.
+
+#### Wars, contest, cooldown
+
+- **Same-target supersession** of Warfare V0.1 competing same-target wars: at most **one** active war per territory. First valid server declaration wins **CONTESTED**. Later same-target declarations rejected (concept: “Territory is already contested.”). No queue.
+- Simultaneous wars remain allowed on **different** territories (strict Available accounting; overextension is intended).
+- After the war **resolves or cancels**, the target enters a **10-second territory-only** post-war cooldown, then AVAILABLE. Not a diplomatic truce, not ruler immunity, not a global war cooldown. Other territories stay attackable. Recruitment stays allowed.
+- Lifecycle: AVAILABLE → CONTESTED → POST-WAR COOLDOWN (10s) → AVAILABLE.
+
+#### Commitment actors and windows
+
+- Only the **two war root rulers** commit, each from their **personal** pool. A subject who directly owns the target is **not** the commitment actor. Subjects do not auto-contribute. Lieges do not seize/merge/borrow/pool subject Troops.
+- Each side independently chooses how many **currently Available** Troops to commit. No automatic full-army commit. Server rejects overcommit. Commitment is to the **war**, not the territory. Same Troops cannot be in two wars. After lock, commitment cannot change or be pulled out.
+- Opponent commitments stay hidden until **both** lock, then reveal **simultaneously** (fielded count only; not Total/Available).
+- While own commitment is unlocked: UI like “Opponent preparing forces” — do **not** reveal whether they manually locked. After own lock: “Waiting for opponent” — still no lock/amount leak.
+- If both manually lock early: proceed immediately (do not wait out the rest of the 40s window).
+- **Pacing:** “The timer should pressure indecision, not punish normal thinking.” The ~30-minute match target remains a broad design goal; the commitment window must not feel rushed merely to satisfy that goal. The window is a **ceiling**, not a mandatory delay. Military wars still resolve immediately when both sides Ready early.
+- **0–40s** normal decision window: the commitment amount field is the intended commitment. Valid field changes are sent automatically as SetCommit intents (no separate “Set Forces” button). Optional early Lock/Ready freezes the **latest server-accepted** value immediately. The local TextBox is never authoritative. Do **not** auto-lock before 40s merely because a valid intent exists. Over-Available input is rejected; last valid intermediate auto-submit while editing digits is **Director-accepted as-is for V0.1** (not a remaining UX fix).
+- **Selected-territory Military context:** when the local player selects a territory that is the target of one of their active Military wars, the Military panel displays and controls **that war only** (independent commitment, lock, timer). Selecting another of their war targets switches context. Selection does **not** SetCommit, lock, cancel, or move Troops. An unrelated selected territory must not present another war as if it belonged to that land. Last Battle uses the same selected-territory rule. **SELECTED-TERRITORY MILITARY CONTEXT: DIRECTOR PASS. TERRITORY-CONTEXTUAL LAST BATTLE: DIRECTOR PASS.**
+- **Interacted** = the server has accepted **at least one valid commitment-intent amount**. Opening UI, focusing a field, blank input, or typing locally is **not** interaction. Rejected malformed/negative/overcommit is **not** interaction and does **not** replace the last accepted intent. Accepted **0** **is** interaction. Later accepted 600→750 replaces the latest valid value.
+- At **40s:** if interacted, auto-lock the **latest accepted** value. If never interacted, remain non-responsive until 55s. **40–55s** is AFK / nonresponsive grace only — not extra thinking time for players who already interacted.
+- At **55s** hard timeout, completely nonresponsive: attacker → engagement **fails/cancels**; defender → lock **0**. Valid attacker force vs defender 0 → **unopposed** attacker victory. **NEVER-INTERACTED ATTACKER 55s CANCEL: DIRECTOR PASS.** **DEFENDER-0 / UNOPPOSED: DIRECTOR PASS.**
+- Attacker may declare with 0 Available; must lock at least **1** Troop or the engagement fails (locking 0 after interaction still fails). Player-facing notice: **Attack cancelled: you committed 0 Troops.** (not only “Forces locked.”). Defender may start at 0 Available, emergency-recruit while unlocked, commit new Troops before lock; if still 0 when locked → unopposed if attacker has force.
+
+#### Battle (one battle = one war)
+
+- Combat effectiveness (hidden): each side Committed × random **0.90–1.10**. Defender also × independent random **1.00–1.05**. These rolls do **not** add/remove soldiers. Players see actual committed counts, not Effective Strength.
+- Higher Effective Strength wins. **Exact ties favor defender** (treat as defender win when attacker Effective Strength is not greater).
+- Randomness must not rescue terrible numerical strategy.
+- **Unopposed** (attacker has valid committed force, defender commitment = 0): no effectiveness/defense/ratio/casualty rolls; attacker casualties 0; defender battle casualties 0.
+- Otherwise **Victory Ratio** = winner Effective ÷ loser Effective:
+  - **CLOSE** ratio < 1.15: winner 20–25%, loser 25–35%
+  - **CLEAR** 1.15 ≤ ratio < 1.50: winner 15–20%, loser 35–40%
+  - **DECISIVE** ratio ≥ 1.50: winner 10–15%, loser 40–50%
+- Percents independently randomized in-band. Casualties = **floor**(committed × percent). No fractional soldiers, no carried fractions. Winning does **not** guarantee fewer absolute casualties. Floor may be 0 at very small committed counts (no minimum-casualty rule).
+- Casualties permanently reduce **Total**. Survivors of that war’s commitment return to **Available** when the war concludes (no wounded, recovery, travel-home, retreat, or postwar army cooldown).
+- No repeated battles, campaign, war score, or reinforcement cycle. Pace: generally well under ~1–2 minutes, supporting repeated fights in a ~30-minute match.
+
+#### Mechanical resolution vs presentation
+
+- When **both** valid commitments are locked, Military **immediately** calculates the battle (rolls, winner, ratio/band, casualties). The result is **mechanically final**.
+- Then ~**5 seconds** of **presentation only** (prototype timing). UI may look “in progress”; nothing in those 5 seconds may reinforce, change commitments, reroll, change casualties, retreat, or change the winner through ordinary play.
+- After ~5s, show the final result and apply normal Warfare outcome display. Do **not** show rolls, defense multiplier, ratio, or casualty-percent rolls to ordinary players.
+- **Last Battle summary (participant Military panel):** after conclusion, cache each participant-authorized BattleResult **per territory** for ~**20 seconds** (independent expiry per result). Selecting that territory shows **that** summary. Another territory’s later battle does not overwrite it. An **active** war on a territory supersedes that territory’s old Last Battle. Unrelated selected land must not show another territory’s summary. Empty selection with exactly one cached result may show it (single-war). ResultToast remains the brief “this just happened” notice. No battle history. Third parties do not get this summary. **LAST BATTLE READABILITY: DIRECTOR PASS. TERRITORY-CONTEXTUAL LAST BATTLE: DIRECTOR PASS.**
+
+#### Outcomes
+
+- **Attacker Military victory:** apply casualties; report attacker victory to Warfare; Warfare performs accepted conquest (target → attacking **root** after revalidation).
+- **Defender Military victory:** apply casualties; report defender victory to Warfare; ownership unchanged; war ends.
+- Participant result UI (examples): VICTORY — GREYFEN CAPTURED / DEFENDED — GREYFEN HELD, with each side Committed / Casualties / Survivors. Unopposed defender: Committed 0 / Casualties 0 (not misleading “0 survivors”).
+- Non-participants: public war/map outcome only; no exact commitment/casualty report.
+- Outside battle: no exact Total/Available/Committed of other rulers; no weak/moderate/strong estimate. Hierarchy/alliance grant **no** extra military intel. Espionage is **future**.
+- Map: associate presentation with the contested territory and, where practical, a relevant border. No geographic army objects. Exact placement algorithm **not** locked.
+
+#### Cancel, unwind, admin resolve
+
+- If a war is canceled **before** Military mechanical resolution: no battle, **zero** casualties, committed Troops of **surviving/non-removed** rulers return to Available, that war’s commitment ledger is cleared, no duplicate Troops, do **not** destroy Troops merely because the war canceled. Applies to disconnect cleanup, attacker timeout/cancel, stale/invalid war, and other legitimate cancels unless another explicit rule says otherwise. No new political cancel consequences.
+- **Admin `resolvewar` before** mechanical resolution: Military unwinds unresolved commitments (zero casualties, return Available); Warfare then applies the forced Attacker/Defender result on its normal path. Admin does not mutate client state as authority.
+- **Admin `resolvewar` after** mechanical resolution (including during the 5s presentation): **reject** (already resolving/resolved). Do not overwrite the calculated casualties/outcome.
+
+#### Visibility, testing, deferred
+
+- Hidden-state testability and **agent-first verification** apply at implementation (server/admin/debug; optional seeded RNG for tests; ordinary match RNG may stay random). Ordinary remotes must not leak diagnostics.
+- Two-human disconnect, independence-during-war, simultaneous post-dual-lock reveal, subject-as-commitment-actor, and last-millisecond races: `AI/PLAYTEST_BACKLOG.md` MIL-MP-01–05, 07, 10, remaining 11 (**DEFERRED ≠ PASS**). If later testing shows Troop duplication, dropped outcomes, double resolution, stuck CONTESTED, or equivalent authoritative corruption, treat it as a real defect.
+- **Deferred:** physical armies, movement, interception, terrain, forts, sieges, occupation, commanders, unit classes, supply, morale, mercenaries, levies, navy, pathfinding, tactical sim, war score, peace, claims/CB, manpower, military buildings, timed reinforcement, loyalty/desertion, espionage, troop quality, tall-vs-wide military, delegated military authority, ally access/CTA, subject military obligations.
 
 ## Religion
 
@@ -808,6 +966,14 @@ The GUI should expose the simulation clearly rather than overwhelm players with 
 
 Polished production UI is deferred. GUI instances are created in Studio, not as source-controlled instance trees (see `docs/ARCHITECTURE.md`).
 
+### Configurable controls (future — not current work)
+
+The future UI shell already requires **centralized** navigation/keybinds with **no keys assigned** and forbids each controller inventing a private key. The long-term **public product** should go further: a Settings / Controls menu where players can **view** gameplay and GUI/menu binds and **rebind** supported actions, conceptually similar to grand-strategy control settings (not a clone of another game’s UI).
+
+**Intended input architecture (not an implementation choice):** Physical Input → configurable **logical action** → gameplay/UI controller. Controllers should eventually respond to actions such as `OpenMilitary`, `OpenDiplomacy`, `OpenRealm`, `OpenEconomy`, `OpenSettings` (examples only; catalog **unresolved**) rather than treating a particular physical key as the permanent contract.
+
+The **first published playtest** may use temporary/default binds if any keys are later authorized. Configurable remapping, Settings/Controls GUI, bind persistence, DataStores, and device remapping are **not** required for that playtest unless the Director later says so. Do **not** implement Settings/Controls, remapping, or new keybinds from this section. Future player-facing systems should avoid unnecessarily hardcoding GUI-open behavior in a way that would make remapping difficult later; do **not** over-engineer the current prototype.
+
 ## Accessibility of Complexity
 
 Sophisticated underlying simulation is allowed. The player should not need to manually manage every calculation. Translate complicated simulation into understandable decisions.
@@ -878,7 +1044,11 @@ A full numbered 0.1 feature freeze beyond the following is **not** specified.
 
 **Diplomacy V0.1** is specified under Relationships & Diplomacy. The prototype is **accepted / complete**. Independent-root Alliance and Non-Aggression Pact only; pending 30s requests; server authority; consume hierarchy; dissolve on loss of independence; no opinion/autonomy. Warfare / Conquest V0.1 **queries** NAP/Alliance; Diplomacy does not implement wars.
 
-**Warfare / Conquest V0.1** is specified under Warfare. **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Independent-root external wars; one enemy-controlled **territory** target; greater-realm adjacency (Vale 8-neighbor lattice **director-verified**); NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars (including same target); server-only debug Attacker/Defender Victory. Director-verified including attacker/defender victory, competing same-target, stale cleanup, disconnect of attacker or defender root, loss of independence without liege inheritance, player-relevant ordinary GUI, and global admin InspectWars. AdminBridge `resolvewar` uses `WarfareService.DebugResolveWar`. This is **V0.1 only**, not a complete military game. Future warfare must build on this authority. Economy V0.1 **reads** post-conquest ownership for future Gold income; conquest does **not** steal existing Gold.
+**Warfare / Conquest V0.1** is specified under Warfare. **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** Independent-root external wars; one enemy-controlled **territory** target; greater-realm adjacency (Vale 8-neighbor lattice **director-verified**); NAP blocks declaration; Alliance does not auto-join; multiple simultaneous wars on **different** territories; server-only debug Attacker/Defender Victory. Historical Warfare V0.1 verification included competing same-target wars; **Military / Armies V0.1 supersedes** same-target multiplicity (at most one active war per territory). Director-verified including attacker/defender victory, disconnect of attacker or defender root, loss of independence without liege inheritance, player-relevant ordinary GUI, and global admin InspectWars. AdminBridge `resolvewar` uses `WarfareService.DebugResolveWar`. This is **V0.1 only**, not a complete military game. Future warfare must build on this authority. Economy V0.1 **reads** post-conquest ownership for future Gold income; conquest does **not** steal existing Gold.
+
+**Military / Armies V0.1** is specified under Warfare. **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (ordinary V0.1 scope; PASS list in `AI/PROGRESS.md`). Director-locked contract is in that section. Ordinary wars resolve through Military battle into Warfare attacker/defender application. `resolvewar` remains privileged (unwind if pre-mechanical; reject after). Eight MIL-MP overlay cases remain deferred (deferred ≠ PASS).
+
+**Player communications / Communications V0.x** is specified under Product / Player communications. **PRE-V0.5 REQUIRED — DESIGN FREEZE IN PROGRESS — NOT IMPLEMENTED.** Current authorized **design** milestone. Implementation not authorized. Ordinary paths: Diplomatic (replaces retired General), Council (direct-liege), Allies (per Alliance, not NAP), Direct (adjacency, no grandfathering). Admin/Observer is separate. Canonical freeze: that section and `AI/DECISIONS.md`.
 
 **Admin / Testing Infrastructure V0.1** is specified under Admin / Testing. Official Kohl loader is in the place; listed AdminBridge commands are live for GameTester UserIds (plus Studio synthetic UserId exception). Owner/ruler tokens use `adminOwnerToken` / `adminRulerToken` (**Director-verified PASS** Local Server autocomplete including `unclaimed` on `setowner`). It is **not** a finished admin product. Convenient copy/reuse of reusable IDs is required before the first published playtest, not implemented now.
 
@@ -904,10 +1074,13 @@ Part of the long-term vision, **not** authorized for immediate implementation me
 - Detailed military simulation
 - Buildings
 - Development (tall-vs-wide quality is **future direction**, not implemented)
-- Council systems
+- Council systems (gameplay councils — **not** the same as the future **Council** chat channel under Player communications)
+- Player communications / chat (PRE-V0.5 REQUIRED; **DESIGN FREEZE IN PROGRESS — NOT IMPLEMENTED**; current authorized **design** milestone; implementation not authorized; not a Military V0.1 blocker)
 - Complex character events
 - Final victory-condition calculations
 - Polished production UI
+- Battle History / War Chronicle (optional future flavor: scrollable prior battles, territory, victory/defeat, fielded forces, casualties/survivors, timestamps, notable stats). **Not** Military V0.1. **Not** a blocker. Do not implement from this line.
+- Settings / Controls menu and player-configurable keybind remapping (long-term product; not automatically required for the first published playtest)
 - Title-scaling formula and numerical thresholds for maps **other than** Vale Title Progression V0.1 test numbers (Duke 2/100, King 5/250, Emperor 10/500)
 - Real Prestige resource system (income, decay, spending, UI economy, persistence); V0.1 titles use temporary server-side test Prestige only
 - Title-loss systems
@@ -916,6 +1089,7 @@ Part of the long-term vision, **not** authorized for immediate implementation me
 - Disconnect / reconnect beyond the temporary V0.1 hierarchy cleanup, the specified Unclaimed-on-leave map rule, and Economy V0.1 Gold removal without redistribution (polished wealth succession remains unresolved)
 - Join-in-progress mechanics
 - Starting-territory player choice / lobby map voting
+- Public-product lobby / hub, world/map selection, join/queue, and matchmaking (not required for the first published playtest; not Military V0.1)
 - Behavior when more humans join than the selected map has territories
 - Additional production maps beyond the 16-territory V0.1 test map
 - Touch / controller map input (architecturally possible; not required for V0.1)
@@ -946,6 +1120,7 @@ This is a design/architecture philosophy, not authorization to prematurely optim
 - Implementation agents implement those mechanics.
 - Agents must not invent major game systems merely because a concept appears in this document.
 - Unspecified mechanics remain unspecified until designed.
+- **Agent-first verification** (canonical: `.cursor/rules/project.mdc`): agents verify as much as the environment allows before asking the Director to test; agent PASS is not Director acceptance.
 
 ## Authority
 

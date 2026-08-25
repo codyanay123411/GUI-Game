@@ -4,7 +4,7 @@
 
 Before substantial work, review `AI/GAME_DESIGN.md`, `AI/ROADMAP.md`, `AI/PROGRESS.md`, and `AI/DECISIONS.md`. After substantial work, update this file and append meaningful changes to `AI/CHANGELOG.md`. Record significant architectural decisions in `AI/DECISIONS.md`. Do not edit `AI/GAME_DESIGN.md` unless the user explicitly requests a design change.
 
-A task must not be marked complete until it has been verified.
+A task must not be marked complete until it has been verified. Agent-first verification is required. **Deferred** multiplayer/emergent cases (`AI/PLAYTEST_BACKLOG.md`) do **not** count as PASS and do **not** equal Director acceptance; they may be non-blocking for further V0.x work per `.cursor/rules/project.mdc` rule 29.
 
 ## Environment setup
 
@@ -37,13 +37,15 @@ A task must not be marked complete until it has been verified.
 - [x] Diplomacy V0.1 **accepted / complete** (directors confirmed Local Server multiplayer: independent human rulers and subject behavior). Human GUI offer → real second-client overlay; Alliance Accept; NAP Accept; Alliance/NAP Decline; Alliance + NAP coexistence; independent Break; both clients updated after agreement changes; 30s pending expire; subject read-only diplomacy; loss of independence dissolves external diplomacy with no transfer to the new liege; disconnect of an independent ruler with active diplomacy removes that ruler and dissolves the survivor’s agreements; diplomacy remains rooted at the independent greater-realm ruler. No observed regression to hierarchy, territory/map, title progression, GUI layering, pan/zoom/select, or prototype theme/layout. Political Hierarchy V0.1, Territory / Map Foundation V0.1, and Title Progression V0.1 remain accepted. Warfare, opinion, vassal diplomatic autonomy, and other deferred systems **not** included.
 - [x] Warfare / Conquest V0.1 **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 only; not a complete military game). Director-verified PASS: valid adjacent declaration; non-adjacent rejection; duplicate/matching active-war rejection; attacker victory and target-territory transfer; defender victory with ownership unchanged; simultaneous competing wars against the same target; stale-war cleanup after another attacker captures the target; loss of independence during an active war terminates the war; the new liege does not inherit that war; defender-root disconnect terminates the war without conquest; attacker-root disconnect terminates the war without conquest (most recent: Player1 attacker vs Player3 defender, target frostfield; remaining client “War cancelled (left the match).”; ordinary Territory UI no active wars; no transfer); disconnect cleanup leaves no active stale war; ordinary Warfare GUI player/realm-relevant; admin InspectWars remains global; AdminBridge ResolveWar uses `WarfareService.DebugResolveWar`. Hierarchy, Territory / Map, Title Progression, Diplomacy V0.1, and prototype GUI maintenance remain accepted / director-verified.
 - [x] Economy / Resources V0.1 **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (V0.1 Gold foundation only; not a complete economy). `EconomyService`; start 150; Vale 10 Gold/min `baseGoldIncome`; global 6s tick; direct-owner income; Unclaimed pays nobody; conquest future-income only; subject Gold preserved; no liege tax; spend/overspend; disconnect Gold wipe. Ordinary HUD is player-relevant. Kohl inspectgold/setgold/addgold/spendgold via AdminBridge. Prestige remains Title test Prestige. Influence deferred. Tall-vs-wide and delegated greater-realm authority remain **future**. Landless-liege political consequences remain unresolved and are **not** part of this acceptance.
-- [x] Admin / Testing Infrastructure V0.1 **Kohl live for current AdminBridge ops — not a complete admin product.** Official @Scripth Kohl's Admin is in the place. GameTester chat/command-bar commands: adminhelp, inspectwars, inspectterritory, inspectruler, setowner, setprestige, inspectgold, setgold, addgold, spendgold, resolvewar. Kohl owner/ruler tokens use `adminOwnerToken` / `adminRulerToken` (raw parse + player suggestions; SetOwner also suggests `unclaimed`) so `;setowner <id> unclaimed` reaches AdminBridge. **Director-verified PASS (2026-08-24 Local Server):** autocomplete showed Player1, Player2, Player3, and `unclaimed`; `setowner` and `setgold` worked. Not a new unclaim gameplay system. **Studio-only:** Local Server synthetic UserIds `< 0` pass `AdminConfig.IsGameTester`; published servers still require the allowlist. Project-owned themed feedback (ResultToast + AdminInspectPanel). Kohl addon `run` returns nothing (no gsub boolean error); prototype theme Fonts are `Font` datatypes (no FontFace EnumItem spam). `AdminDebug.Invoke` and `*Debug` folders remain. Kohl rank is not GameTester. Warfare V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. Economy V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (Gold foundation only).
+- [x] Military / Armies V0.1 **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (ordinary V0.1 scope only; not a complete military game; not V0.2). Eighteen ordinary Director PASSes recorded below (2026-08-24). Eight MIL-MP overlay/race cases remain **DEFERRED** in `AI/PLAYTEST_BACKLOG.md` (deferred ≠ PASS; not a V0.x progress blocker). Privileged `resolvewar` unwind/reject is Agent-verified. Hidden rolls/commits are admin/debug only.
+- [ ] Player communications / chat **PRE-V0.5 REQUIRED — DESIGN FREEZE IN PROGRESS — NOT IMPLEMENTED** (current authorized **design** milestone; implementation not authorized; not a Military V0.1 blocker; not a playtest-verification-backlog item). Canonical: `AI/GAME_DESIGN.md`.
+- [x] Admin / Testing Infrastructure V0.1 **Kohl live for current AdminBridge ops — not a complete admin product.** Official @Scripth Kohl's Admin is in the place. GameTester chat/command-bar commands: adminhelp, inspectwars, inspectterritory, inspectruler, setowner, setprestige, inspectgold, setgold, addgold, spendgold, inspecttroops, settroops, addtroops, inspectmilitary, inspectcontest, resolvewar. Kohl owner/ruler tokens use `adminOwnerToken` / `adminRulerToken` (raw parse + player suggestions; SetOwner also suggests `unclaimed`) so `;setowner <id> unclaimed` reaches AdminBridge. **Director-verified PASS (2026-08-24 Local Server):** autocomplete showed Player1, Player2, Player3, and `unclaimed`; `setowner` and `setgold` worked. Not a new unclaim gameplay system. **Studio-only:** Local Server synthetic UserIds `< 0` pass `AdminConfig.IsGameTester`; published servers still require the allowlist. Project-owned themed feedback (ResultToast + AdminInspectPanel). Kohl addon `run` returns nothing (no gsub boolean error); prototype theme Fonts are `Font` datatypes (no FontFace EnumItem spam). `AdminDebug.Invoke` and `*Debug` folders remain. Kohl rank is not GameTester. Warfare V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. Economy V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (Gold foundation only). Military / Armies V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (ordinary V0.1 scope).
 
 ## Project knowledge
 
 - [x] `AI/GAME_DESIGN.md` created (structured placeholders; verified on disk)
-- [x] `AI/ROADMAP.md` created (16 phases; current phase 1; verified on disk)
-- [x] `.cursor/rules/project.mdc` created (always-apply operating rule; verified on disk)
+- [x] `AI/ROADMAP.md` created (16 phases; Phase 1 complete; current authorized design milestone: Communications V0.x freeze)
+- [x] `AI/PLAYTEST_BACKLOG.md` — canonical **V0.5 Playtest Verification Backlog** (deferred ≠ PASS)
 - [x] Initial multiplayer game vision / design bible v0.1 written into `AI/GAME_DESIGN.md` (verified on disk; no gameplay implemented)
 - [x] Political Hierarchy Design V0.1 specified/documented (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`) — **V0.1 prototype accepted** after two-client accept and decline verification
 - [x] Design checkpoint (maps, title progression, naming, economy, monetization, performance) specified/documented — map and title V0.1 implemented separately; naming/monetization still not implemented; **Economy / Resources V0.1** is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (Gold foundation)
@@ -52,6 +54,8 @@ A task must not be marked complete until it has been verified.
 - [x] Diplomacy V0.1 specified, implemented, and **accepted / complete** (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`) after director Local Server multiplayer verification
 - [x] Warfare / Conquest V0.1 **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`). V0.1 only; future military systems must build on this authority.
 - [x] Economy / Resources V0.1 **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (`AI/GAME_DESIGN.md`, `AI/DECISIONS.md`). Gold foundation only; tall-vs-wide and delegated greater-realm authority remain future architecture.
+- [x] Military / Armies V0.1 **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (`AI/GAME_DESIGN.md`). Ordinary V0.1 war resolution through Military battle feeding Warfare. Deferred MIL-MP overlay cases remain in `AI/PLAYTEST_BACKLOG.md` (deferred ≠ PASS).
+- [ ] Player communications / chat **PRE-V0.5 REQUIRED — DESIGN FREEZE IN PROGRESS — NOT IMPLEMENTED.** Current authorized design milestone. Ordinary paths: Diplomatic (replaces General), Council (direct-liege), Allies (per Alliance), Direct (adjacency, no grandfathering). Implementation not authorized. **Not** a Military V0.1 blocker. **Not** a `AI/PLAYTEST_BACKLOG.md` item. See `AI/GAME_DESIGN.md`.
 - [x] Admin / Testing Infrastructure V0.1: official Kohl loader installed; listed AdminBridge commands live for GameTester UserIds; Studio debug fallback preserved.
 - [ ] Confirm a full 0.1 feature freeze beyond the political-hierarchy prototype priority
 
@@ -80,7 +84,7 @@ Studio / Local Server / MCP sessions remain **development verification**, not th
 
 ## Warfare / Conquest V0.1 — director-accepted (2026-08-24)
 
-**Status:** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** This accepts **Warfare V0.1 only**. It is not a complete military game.
+**Status:** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** This accepts **Warfare V0.1** war-lifecycle authority. It is not a complete military game. **Military / Armies V0.1** **supersedes** same-target multiplicity and is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (ordinary V0.1 scope; deferred MIL-MP rows remain).
 
 **Director-verified PASS:**
 
@@ -89,7 +93,7 @@ Studio / Local Server / MCP sessions remain **development verification**, not th
 - duplicate/matching active-war rejection
 - attacker victory and target-territory transfer
 - defender victory with ownership unchanged
-- simultaneous competing wars against the same target territory
+- simultaneous competing wars against the same target territory (**historical Warfare V0.1 PASS**; same-target multiplicity **superseded** by Military / Armies V0.1)
 - stale-war cleanup after another attacker captures the target
 - loss of independence during an active war terminates the war
 - the new liege does not inherit the former independent ruler's war
@@ -107,5 +111,48 @@ Studio / Local Server / MCP sessions remain **development verification**, not th
 **Previous political-state test:** Player2 was an independent defender in an active war; Player2 became a vassal of Player3; the active war terminated; Player3 did not inherit Player2's war.
 
 Studio / Local Server / MCP sessions remain **development verification**, not the first real playtest.
+
+**Git:** do not commit or push unless directors authorize.
+
+## Military / Armies V0.1 — director-accepted (2026-08-24)
+
+**Status:** **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED.** This accepts **Military / Armies V0.1 ordinary scope only**. It is not a complete military game and is not V0.2. Agent verification is not Director verification. Do not ask the Director to repeat these PASSes unless a concrete contradiction appears.
+
+**Director-verified PASS (18):**
+
+1. Last Battle summary readability (~20s; territory; VICTORY/DEFEAT; own/enemy committed; own casualties/survivors; ResultToast vs panel roles; new war overrides)
+2. Attacker explicit commitment 0 + Ready → cancel; notice `Attack cancelled: you committed 0 Troops.`; no battle; no Last Battle; Troops unchanged; cooldown
+3. Defender 0 / unopposed attacker victory (nonzero attacker); transfer; Last Battle enemy 0; 0 casualties; survivors = attacking force
+4. Commitment editing while unlocked (global Total / Available / Committed)
+5. Over-Available input: reject illegal amount; last valid intermediate auto-submit **accepted as-is for V0.1** (not a remaining UX fix; ugly OK, confusing is not)
+6. Recruit after lock: Total/Available rise; locked commitment unchanged
+7. Timeout / AFK: accepted commitment preserved; AFK opponent 0; battle proceeds; Last Battle/ownership coherent
+8. 10s post-war cooldown (server: no immediate redeclare)
+9. Post-war cooldown live UI refresh (selected territory flips back to Declare War without reselect)
+10. Casualty / ledger after battle (example: 760 − 187 = 573; 187 + 313 = 500)
+11. Multiple simultaneous wars / global overextension (no dual-use of the same Troops)
+12. Selected-territory active-war Military context (independent wars, timers, presentation)
+13. Territory-contextual Last Battle (example Brightfen/Duskfen; no cross-contamination)
+14. Duplicate war on same territory rejected (`Already contested.`)
+15. Defender victory / ownership unchanged; attacker Last Battle DEFEAT
+16. Attacker victory / ownership transfer (example Duskfen; toast + Last Battle VICTORY; 92 + 708 = 800)
+17. Pre-battle enemy commitment secrecy (locked 237 not shown to opponent; “Opponent preparing forces”)
+18. Never-interacted attacker 55s cancel (Brightfen; toast `War cancelled (attacker did not commit).`; no battle; no Last Battle; ownership unchanged; Troops 862/862/0; idle Military; target post-war cooldown / disabled Declare)
+
+**Ordinary Director checks remaining:** none.
+
+**Deferred (not PASS, not V0.x progress blockers):** `AI/PLAYTEST_BACKLOG.md` **MIL-MP-01, MIL-MP-02, MIL-MP-03, MIL-MP-04, MIL-MP-05, MIL-MP-07, MIL-MP-10, remaining MIL-MP-11 races** (eight overlay/race cases). MIL-MP-06/08/09 ordinary observations **VALIDATED**. If later deferred testing shows Troop duplication, dropped outcomes, double resolution, stuck CONTESTED, or equivalent authoritative corruption, that is a real defect (no longer deferred).
+
+Studio / Local Server / MCP sessions remain **development verification**, not the first real playtest.
+
+**Git:** do not commit or push unless directors authorize.
+
+## Communications V0.x — design freeze in progress (2026-08-24)
+
+**Status:** **PRE-V0.5 REQUIRED — DESIGN FREEZE IN PROGRESS — NOT IMPLEMENTED.** Current authorized **design** milestone. Implementation is **not** authorized. Not Director-accepted as an implementation. Military / Armies V0.1 remains **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (ordinary V0.1). Eight MIL-MP rows remain deferred in `AI/PLAYTEST_BACKLOG.md`.
+
+**Frozen (see `AI/GAME_DESIGN.md`):** Diplomatic (replaces General); Council = ruler + direct subjects; Allies = per Alliance (no NAP, no subject inherit); Direct = 1:1 + current border, send cut immediately if adjacency lost; Admin/Observer metadata + mute; live Title identity; TextChatService direction; no voluntary-speech censorship.
+
+**Unresolved:** native channel UX, Direct/Council/Allies selectors, visual formatting, Kohl `help` wiring, admin observer/announcement UX, long-distance/espionage mechanics, history/search, load/stress, acceptance matrix.
 
 **Git:** do not commit or push unless directors authorize.

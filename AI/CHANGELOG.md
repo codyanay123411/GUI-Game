@@ -224,3 +224,87 @@ Director issued final acceptance after the completed Local Server verification r
 **Director-verified PASS preserved:** multiplayer start 150 Gold and synchronized global 6s payout clock; direct-ownership income scaling across 1/2/3 territories; Warfare conquest ownership handoff; treasury not stolen on conquest; landless ruler income at +0; subject/vassal personal Gold and direct-land income; no automatic liege Gold share; admin ownership-transfer income redirect; unclaimed pays nobody; valid spend exact deduction; overspend rejection with zero deduction / no partial spend / no negative; disconnect Gold destruction with no transfer; Kohl raw-target autocomplete previously Director-verified; existing accepted systems exercised without an Economy-blocking regression.
 
 This acceptance does **not** include landless-liege political consequences, title loss, realm collapse, succession/usurpation, wealth inheritance, reconnect/persistence, taxation, tribute, realm treasury, buildings, development, trade, debt, armies/upkeep, Prestige/Influence economies, Crowns, Lifetime Support, delegated permissions, or economic victory scoring. Documentation only; no Luau/gameplay. No Git commit.
+
+## 2026-08-24 — Future configurable keybinds / Settings Controls
+
+Recorded long-term public-product Settings / Controls: view and rebind supported gameplay and GUI **logical actions** (Physical Input → configurable action → controller). Compatible with the existing future UI shell (centralized bindings; no keys assigned; controllers must not invent private keys). Configurable remapping is **not** automatically required for the first published playtest. No Settings GUI, remapping, persistence, Luau, or Git.
+
+## 2026-08-24 — Military same-target supersession, root commitment actors, agent-first verification
+
+Director-authorized documentation only (no Military implementation). **Warfare V0.1 same-target multiplicity is superseded** by Military / Armies V0.1: at most one active war per territory; first valid declaration wins CONTESTED; later same-target declarations rejected; 10s post-war territory cooldown; simultaneous wars remain allowed on different territories. Historical competing same-target PASS records remain history. **Commitment actors** are the two war **roots** only (personal Troop pools; no subject/liege/Alliance pooling). Recorded **project-wide Agent-first verification** in `.cursor/rules/project.mdc`. Military hidden-state testability required at later implementation. No Luau, Studio, or Git.
+
+## 2026-08-24 — Military / Armies V0.1 design phase authorized
+
+Director chose **Military Expansion** as the next major gameplay direction. Authorized work is **Military / Armies V0.1 design only** (not implementation). Recorded favored unlocked direction (simple numeric troop/army-strength; commit to wars; simple real battles; casualties; feed Warfare’s existing resolution path) without locking names, numbers, Gold costs, or combat math. Recorded future **public-product** lobby/hub, world/map selection, join/queue, and matchmaking (not required for the first published playtest; not Military V0.1). Landless-liege remains a separate unresolved hierarchy/title case. No Luau, Studio, or Git.
+
+## 2026-08-24 — Military / Armies V0.1 design freeze-readiness lock
+
+Recorded remaining Director locks (still **not implemented** at that time): interaction = server-accepted commitment intent; cancel-before-mechanical-resolution Troop unwind with zero casualties; battle mechanically final at dual-lock with 5s presentation-only; admin `resolvewar` unwinds if pre-resolution and is rejected after mechanical resolution. Consolidated the full V0.1 Military contract into `AI/GAME_DESIGN.md`. No Luau, Studio, or Git.
+
+## 2026-08-24 — Military / Armies V0.1 implemented (not Director-accepted)
+
+Implemented the frozen Military / Armies V0.1 contract: `MilitaryService` Troop pools/recruit/commit/battle/casualties; Warfare same-target contest + 10s cooldown; `ApplyMilitaryOutcome`; privileged `resolvewar` unwind vs reject; `MilitaryPanel` / remotes / AdminBridge troop+engagement inspect. Agent Play Solo verification recorded. **Not** Director-verified. **Not** Director-accepted. No Git.
+
+## 2026-08-24 — Military commitment UX: remove Set Forces
+
+Director-authorized UX revision: commitment amount field auto-submits SetCommit intents; no player-facing Set Forces button; Ready/Lock still early-locks the latest **server-accepted** value. Invalid input does not replace last accepted intent. Status remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. No Git.
+
+## 2026-08-24 — Director multiplayer note (commitment window)
+
+Director Local Server testing: revised commitment UX feels substantially better; the **15-second** active decision window currently feels appropriate after Set Forces removal. **Do not change the 15-second timer.** Battle presentation redundancy (toast + map banner) was observed for participants only; third party did not receive battle presentation. Audit only; no presentation code change in this note.
+
+## 2026-08-24 — Military battle-presentation cleanup
+
+Director-authorized: stop sending dual-lock `Notice` “Battle in progress: <territory>” to ResultToast. `MapStage.BattleBanner` remains the primary 5s participant presentation. ResultToast still used for final BattleResult and other notices. Status remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. No Git.
+
+## 2026-08-24 — Military commitment TextBox reset
+
+Client UX: when the local player has no active commitment session, `CommitBox` clears to blank with placeholder `Troops to commit` so a prior war’s amount is not left visible. Server ledger/timers/combat unchanged. Status remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. No Git.
+
+## 2026-08-24 — Military commitment timer revision (40s / 55s)
+
+Director-authorized V0.1 pacing: active decision window **40s**, nonresponsive grace **40–55s**, hard timeout **55s**. Interacted players auto-lock at 40s; completely nonresponsive attacker cancels / defender locks 0 at 55s. Ready/dual-Ready still immediate. Historical 15s/30s notes left as history. Status remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. No Git.
+
+## 2026-08-24 — Military maximum recruit (M)
+
+Director-authorized: compact green **M** beside Recruit sends `RecruitMax` with no client Gold/Troop amount. Server reads current Gold and recruits Gold×3 via existing `EconomyService.TrySpend`. Manual Recruit unchanged. Status remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. No Git.
+
+## 2026-08-24 — Deferred multiplayer verification / V0.5 playtest backlog
+
+Director-approved standing rule (all future systems): cumbersome multiplayer/emergent/manual tests may be **DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG** after reasonable Agent-first verification. Deferred ≠ PASS. Canonical rule in `.cursor/rules/project.mdc` rule 29; backlog `AI/PLAYTEST_BACKLOG.md`. Recorded V0.1–V0.5–V1.0 development-stage intent. No gameplay, Luau, Studio, or Git.
+
+## 2026-08-24 — Military Last Battle summary
+
+Director-authorized readability UX: after a battle, the participant Military panel shows a ~20s Last Battle summary (territory, VICTORY/DEFEAT, own/enemy fielded committed, own casualties/survivors). Active war always overrides. ResultToast kept as the brief “this just happened” notice. Status remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. No Git.
+
+## 2026-08-24 — Attacker zero-commit cancellation notice
+
+Director-authorized UX: locking attacker commitment 0 still cancels with no battle; the attacker is told `Attack cancelled: you committed 0 Troops.` instead of only `Forces locked.` Status remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. No Git.
+
+## 2026-08-24 — Pre-V0.5 player communications requirement (docs only)
+
+Director-required infrastructure **before** serious V0.5 multiplayer playtesting: usable player text communication (General/Public, Council, Ally direction; dynamic current-title identity; later viewer-relative tags; Roblox filtering). **PRE-V0.5 REQUIRED — NOT YET DESIGNED / IMPLEMENTED.** Not a Military V0.1 blocker; not a playtest-verification-backlog item. No Luau, Studio, remotes, GUI, or Git.
+
+## 2026-08-24 — Post-war cooldown Territory panel live refresh
+
+Director-found V0.1 UX bug: selected Territory panel kept `Post-war cooldown` / `Territory is on post-war cooldown.` after the 10s window expired until deselect/reselect. Client now rerenders at replicated `endsAt`. Cooldown duration and declaration rules unchanged. Military remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. Cooldown live UI is **not** Director-PASS. No Git.
+
+## 2026-08-24 — Selected-territory Military war context
+
+Director-found UX/context bug: with two simultaneous wars, the Military panel used the first `wars[]` entry (sorted by warId) and ignored map selection. Panel/Ready/commit field now follow the selected territory’s war. Selection does not mutate commitments. **MULTI-WAR AUTHORITATIVE MECHANICS: DIRECTOR PASS. SELECTED-TERRITORY MILITARY CONTEXT: DIRECTOR PASS** (Director retest: Stoneford 600 / Ironlea 300 independent switch, timers, presentation). Military remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. No Git.
+
+## 2026-08-24 — Territory-contextual Last Battle
+
+Last Battle is per selected territory (independent ~20s cache). Another battle does not overwrite a still-valid other-territory summary. Active war on a land supersedes that land’s old summary. Unrelated land shows no other fight’s summary. Battle History / War Chronicle recorded as future optional, not implemented. Military remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. Territory Last Battle is **not** Director-PASS. No Git.
+
+## 2026-08-24 — Military V0.1 Director acceptance test sync (docs only)
+
+Reconciled Director manual PASSes (Last Battle readability; attacker 0 cancel; unopposed defender 0; commitment editing; over-Available auto-submit accepted as-is; recruit-after-lock; timeout/AFK defender-0; cooldown + live UI refresh; casualty ledger; multi-war overextension; selected-territory war context; contextual Last Battle; duplicate contest; defender/attacker victory; pre-battle commitment secrecy). System remains **IMPLEMENTED — NOT DIRECTOR-ACCEPTED**. One ordinary remaining Director check: never-interacted attacker 55s cancel. Communications/chat still PRE-V0.5 required / not designed. Battle History still optional future. No Luau, Studio, or Git.
+
+## 2026-08-24 — Military / Armies V0.1 Director-accepted (ordinary scope)
+
+Director PASS #18: never-interacted attacker 55s cancel (Brightfen; `War cancelled (attacker did not commit).`; no battle; no Last Battle; ownership unchanged; Troops idle; post-war cooldown). Ordinary remaining Director checks: **none**. Status is now **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** for ordinary V0.1 scope only. Eight MIL-MP overlay/race cases remain **DEFERRED ≠ PASS** in `AI/PLAYTEST_BACKLOG.md` and do not block V0.x development. Integrity caveat preserved. No Luau, Studio, or Git.
+
+## 2026-08-24 — Communications V0.x design freeze (docs only)
+
+Recorded Director Communications freeze: **PRE-V0.5 REQUIRED — DESIGN FREEZE IN PROGRESS — NOT IMPLEMENTED.** Current authorized design milestone. Implementation not authorized. **General** retired; **Diplomatic** is public nearby-realm chat (graph distance ≤ 2 from sender; asymmetric delivery desired). Council = ruler + direct subjects. Allies = per Alliance (no NAP, no subject inherit). Direct = 1:1 with current adjacency; send cut immediately if border lost. Admin/Observer separate. TextChatService direction. No speech censorship. Military V0.1 remains Director-accepted. No Luau, Studio, remotes, GUI, TextChatService, Kohl, or Git.

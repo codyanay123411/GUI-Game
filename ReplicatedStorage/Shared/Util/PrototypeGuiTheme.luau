@@ -43,6 +43,7 @@ local PRIMARY_PANELS = {
 	DiplomacyOfferOverlay = true,
 	AdminInspectPanel = true,
 	EconomyPanel = true,
+	MilitaryPanel = true,
 }
 
 local function ensureCorner(inst: GuiObject, radius: number)
@@ -338,6 +339,44 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 		if body and body:IsA("TextLabel") then
 			styleBody(body)
 			body.TextYAlignment = Enum.TextYAlignment.Top
+		end
+	end
+
+	local military = gui:FindFirstChild("MilitaryPanel")
+	if military and military:IsA("GuiObject") then
+		military.BackgroundColor3 = C.panel
+		military.BorderSizePixel = 0
+		ensureCorner(military, 8)
+		ensureStroke(military, 1, C.stroke)
+		ensurePad(military, 10)
+		local header = military:FindFirstChild("Header")
+		if header and header:IsA("TextLabel") then
+			stylePanelTitle(header)
+			header.Size = UDim2.new(1, 0, 0, 20)
+			header.Text = "Military"
+		end
+		for _, name in { "Stats", "CostLabel", "CommitBody" } do
+			local label = military:FindFirstChild(name)
+			if label and label:IsA("TextLabel") then
+				styleBody(label)
+				label.TextYAlignment = Enum.TextYAlignment.Top
+			end
+		end
+		local recruitButton = military:FindFirstChild("RecruitButton")
+		if recruitButton and recruitButton:IsA("TextButton") then
+			PrototypeGuiTheme.applyPrimaryButton(recruitButton, true)
+			recruitButton.TextSize = 12
+		end
+		local maxRecruit = military:FindFirstChild("MaxRecruitButton")
+		if maxRecruit and maxRecruit:IsA("TextButton") then
+			PrototypeGuiTheme.applyPrimaryButton(maxRecruit, true)
+			maxRecruit.Text = "M"
+			maxRecruit.TextSize = 12
+		end
+		local lockButton = military:FindFirstChild("LockButton")
+		if lockButton and lockButton:IsA("TextButton") then
+			PrototypeGuiTheme.applyPrimaryButton(lockButton, true)
+			lockButton.TextSize = 12
 		end
 	end
 

@@ -377,7 +377,7 @@ function TerritoryMapController.Start()
 
 	-- Map is the lowest input layer. Higher project GUI at this point owns the pointer.
 	-- ResultToast is informational and is not treated as a blocking layer.
-	-- AdminInspectPanel, EconomyPanel, and visible Kohl command/dashboard chrome block the map.
+	-- AdminInspectPanel, EconomyPanel, MilitaryPanel, and visible Kohl command/dashboard chrome block the map.
 	local function isKohlBlockingGui(obj: GuiObject): boolean
 		local screenGui = obj:FindFirstAncestorWhichIsA("ScreenGui")
 		if not screenGui then
@@ -420,7 +420,7 @@ function TerritoryMapController.Start()
 		while current and current ~= gui do
 			if current:IsA("GuiObject") and current.Parent == gui then
 				local name = current.Name
-				if name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" or name == "EconomyPanel" then
+				if name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" or name == "EconomyPanel" or name == "MilitaryPanel" then
 					return current
 				end
 			end

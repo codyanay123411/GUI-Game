@@ -215,6 +215,66 @@ return function(_K)
 	})
 
 	register({
+		name = "inspecttroops",
+		description = "Inspect Military V0.1 Troop state for a ruler.",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+		},
+		run = function(context, who)
+			runOp(context, "InspectTroops", who)
+		end,
+	})
+
+	register({
+		name = "settroops",
+		description = "Set Military V0.1 Total Troops (whole number >= committed).",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Troops" },
+		},
+		run = function(context, who, value)
+			runOp(context, "SetTroops", who, value)
+		end,
+	})
+
+	register({
+		name = "addtroops",
+		description = "Add Military V0.1 Troops.",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Troops to add" },
+		},
+		run = function(context, who, value)
+			runOp(context, "AddTroops", who, value)
+		end,
+	})
+
+	register({
+		name = "inspectmilitary",
+		description = "Inspect hidden Military commitment/battle state for a warId.",
+		group = "Creator",
+		args = {
+			{ type = "rawString", name = "warId", description = "warId from inspectwars" },
+		},
+		run = function(context, warId)
+			runOp(context, "InspectMilitary", warId)
+		end,
+	})
+
+	register({
+		name = "inspectcontest",
+		description = "Inspect Warfare contest and post-war cooldown state.",
+		group = "Creator",
+		args = {},
+		run = function(context)
+			runOp(context, "InspectContest")
+		end,
+	})
+
+	register({
 		name = "resolvewar",
 		aliases = { "warresolve" },
 		description = "Resolve a war via WarfareService.DebugResolveWar.",

@@ -4,8 +4,9 @@
 	Warfare / Conquest V0.1.
 
 	Server-authoritative external wars between independent roots.
-	One enemy-controlled territory per war. No armies or battles.
-	Resolution is server-only debug. Consumes Hierarchy, Territory, Diplomacy.
+	One enemy-controlled territory per war. Military / Armies V0.1 owns
+	Troops and battle; this service owns lifecycle, contest/cooldown, and
+	Attacker/Defender outcome application. Privileged DebugResolveWar remains.
 ]]
 
 local HttpService = game:GetService("HttpService")
@@ -30,9 +31,44 @@ type War = {
 
 local started = false
 local warsById: { [string]: War } = {}
+local cooldownUntil: { [string]: number } = {}
 local clientIntent: RemoteEvent
 local serverPush: RemoteEvent
 local debugSnapshot: StringValue?
+local TERRITORY_COOLDOWN_SECONDS = 10
+
+local function militaryModule()
+	return require(ServerScriptService.Services.MilitaryService)
+end
+
+local function serverNow(): number
+	return workspace:GetServerTimeNow()
+end
+
+local function pruneCooldown(territoryId: string)
+	local untilAt = cooldownUntil[territoryId]
+	if untilAt ~= nil and serverNow() >= untilAt then
+		cooldownUntil[territoryId] = nil
+	end
+end
+
+local function isTerritoryOnCooldown(territoryId: string): boolean
+	pruneCooldown(territoryId)
+	return cooldownUntil[territoryId] ~= nil
+end
+
+local function beginTerritoryCooldown(territoryId: string)
+	cooldownUntil[territoryId] = serverNow() + TERRITORY_COOLDOWN_SECONDS
+end
+
+local function activeWarOnTerritory(territoryId: string): War?
+	for _, war in warsById do
+		if war.status == "Active" and war.targetTerritoryId == territoryId then
+			return war
+		end
+	end
+	return nil
+end
 
 local function findRuler(rulerId: string): any?
 	for _, ruler in Hierarchy.GetSnapshot().rulers do
@@ -161,7 +197,21 @@ local function buildSnapshot()
 	table.sort(wars, function(a, b)
 		return a.warId < b.warId
 	end)
-	return { wars = wars }
+	local cooldowns = {}
+	for territoryId, untilAt in cooldownUntil do
+		pruneCooldown(territoryId)
+		local remaining = cooldownUntil[territoryId]
+		if remaining ~= nil then
+			table.insert(cooldowns, {
+				territoryId = territoryId,
+				endsAt = remaining,
+			})
+		end
+	end
+	table.sort(cooldowns, function(a, b)
+		return a.territoryId < b.territoryId
+	end)
+	return { wars = wars, cooldowns = cooldowns }
 end
 
 local function pushState(toPlayer: Player?)
@@ -185,6 +235,7 @@ local function endWar(war: War, reason: string)
 	end
 	war.status = "Resolved"
 	warsById[war.warId] = nil
+	beginTerritoryCooldown(war.targetTerritoryId)
 	print("[Warfare] ended", war.warId, reason)
 end
 
@@ -237,6 +288,12 @@ function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: st
 	if Diplomacy.HasNonAggressionPact(attackerRootId, defenderRoot) then
 		return false, "Cannot declare war: Non-Aggression Pact active."
 	end
+	if activeWarOnTerritory(targetTerritoryId) then
+		return false, "Territory is already contested."
+	end
+	if isTerritoryOnCooldown(targetTerritoryId) then
+		return false, "Territory is on post-war cooldown."
+	end
 	for _, war in warsById do
 		if war.status == "Active" and war.attackerRootId == attackerRootId and war.targetTerritoryId == targetTerritoryId then
 			return false, "Cannot declare war: a matching war is already active."
@@ -251,10 +308,67 @@ function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: st
 		status = "Active",
 	}
 	warsById[warId] = created
+	militaryModule().OnWarCreated(created)
 	pushState()
 	noticeRulerId(attackerRootId, "War declared.")
 	noticeRulerId(defenderRoot, "War declared against your realm.")
 	return true, warId
+end
+
+function WarfareService.CancelWar(warId: string, reason: string)
+	local war = warsById[warId]
+	if not war or war.status ~= "Active" then
+		return
+	end
+	local attacker = war.attackerRootId
+	local defender = war.defenderRootId
+	endWar(war, reason)
+	pushState()
+	noticeRulerId(attacker, "War cancelled (" .. reason .. ").")
+	noticeRulerId(defender, "War cancelled (" .. reason .. ").")
+end
+
+function WarfareService.ApplyMilitaryOutcome(warId: string, outcome: string): (boolean, string)
+	local war = warsById[warId]
+	if not war or war.status ~= "Active" then
+		return false, "War is no longer active."
+	end
+	if outcome ~= "Attacker" and outcome ~= "Defender" then
+		return false, "Unknown resolution."
+	end
+	if outcome == "Defender" then
+		local attacker = war.attackerRootId
+		local defender = war.defenderRootId
+		endWar(war, "defender victory")
+		pushState()
+		noticeRulerId(attacker, "War ended: defender victory. Ownership unchanged.")
+		noticeRulerId(defender, "War ended: defender victory. Ownership unchanged.")
+		return true, "Defender victory."
+	end
+	local attackerId = war.attackerRootId
+	local defenderId = war.defenderRootId
+	local targetId = war.targetTerritoryId
+	if not targetStillOriginalDefender(war) then
+		endWar(war, "attacker victory stale target")
+		pushState()
+		noticeRulerId(attackerId, "War ended: attacker victory. Target no longer belongs to the original defender.")
+		noticeRulerId(defenderId, "War ended: attacker victory. Target no longer belongs to the original defender.")
+		return true, "Attacker victory recorded; territory was not transferred."
+	end
+	endWar(war, "attacker victory")
+	local ok, err = Territory.SetOwner(targetId, attackerId)
+	if not ok then
+		pushState()
+		return false, err
+	end
+	pushState()
+	noticeRulerId(attackerId, "War ended: attacker victory. You now hold " .. targetId .. ".")
+	noticeRulerId(defenderId, "War ended: attacker victory. " .. targetId .. " was lost.")
+	return true, "Attacker victory."
+end
+
+function WarfareService.GetContestInspect()
+	return buildSnapshot()
 end
 
 function WarfareService.DebugResolveWar(warId: string, outcome: string): (boolean, string)
@@ -265,6 +379,11 @@ function WarfareService.DebugResolveWar(warId: string, outcome: string): (boolea
 	if outcome ~= "Attacker" and outcome ~= "Defender" then
 		return false, "Unknown resolution."
 	end
+	local Military = militaryModule()
+	if Military.IsMechanicallyResolved(warId) then
+		return false, "War is already resolving."
+	end
+	Military.UnwindPreResolution(warId)
 	if outcome == "Defender" then
 		local attacker = war.attackerRootId
 		local defender = war.defenderRootId
@@ -310,11 +429,17 @@ local function cancelInvolving(rulerId: string, reason: string)
 			table.insert(toEnd, war)
 		end
 	end
+	local Military = militaryModule()
 	for _, war in toEnd do
-		local other = if war.attackerRootId == rulerId then war.defenderRootId else war.attackerRootId
-		endWar(war, reason)
-		noticeRulerId(other, "War cancelled (" .. reason .. ").")
-		removed = true
+		if Military.IsMechanicallyResolved(war.warId) then
+			-- Mechanical result stays authoritative through presentation.
+		else
+			Military.UnwindPreResolution(war.warId)
+			local other = if war.attackerRootId == rulerId then war.defenderRootId else war.attackerRootId
+			endWar(war, reason)
+			noticeRulerId(other, "War cancelled (" .. reason .. ").")
+			removed = true
+		end
 	end
 	if removed then
 		noticeRulerId(rulerId, "External wars ended (" .. reason .. ").")
@@ -324,12 +449,18 @@ end
 
 local function invalidateStaleWars()
 	local removed = false
+	local Military = militaryModule()
 	for _, war in warsById do
 		if war.status == "Active" and not targetStillOriginalDefender(war) then
-			endWar(war, "stale after ownership change")
-			noticeRulerId(war.attackerRootId, "War ended: target no longer belongs to the original defender.")
-			noticeRulerId(war.defenderRootId, "War ended: target no longer belongs to the original defender.")
-			removed = true
+			if Military.IsMechanicallyResolved(war.warId) then
+				-- Do not reopen a mechanically final battle.
+			else
+				Military.UnwindPreResolution(war.warId)
+				endWar(war, "stale after ownership change")
+				noticeRulerId(war.attackerRootId, "War ended: target no longer belongs to the original defender.")
+				noticeRulerId(war.defenderRootId, "War ended: target no longer belongs to the original defender.")
+				removed = true
+			end
 		end
 	end
 	if removed then
@@ -412,6 +543,10 @@ function WarfareService.Start()
 			local ok, result = WarfareService.DebugResolveWar(a, b)
 			print("[Warfare] debug Invoke Resolve", ok, result)
 			return ok, result
+		elseif action == "Contest" then
+			local snap = WarfareService.GetContestInspect()
+			print("[Warfare] debug Contest", snap)
+			return true, snap
 		end
 		return false, "Unknown debug action."
 	end
