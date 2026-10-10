@@ -1,0 +1,247 @@
+00:29:40.329  [Hierarchy] push State all clients rulers= 0 requests= 0  -  Server - PoliticalHierarchyService:180
+  00:29:40.329  [Title] push State all clients  -  Server - TitleProgressionService:146
+  00:29:40.329  [Diplomacy] push State all clients agreements= 0 requests= 0  -  Server - DiplomacyService:210
+  00:29:40.329  [Diplomacy] service started  -  Server - DiplomacyService:606
+  00:29:40.329  [Warfare] push State all clients wars= 0  -  Server - WarfareService:227
+  00:29:40.329  [Warfare] service started  -  Server - WarfareService:571
+  00:29:40.330  [Economy] started. StartingGold 150 interval 6  -  Server - EconomyService:336
+  00:29:40.330  [Military] service started  -  Server - MilitaryService:887
+  00:29:40.330  [Communications] NativeDeliveryV01 started.  -  Server - CommunicationsService:304
+  00:29:40.330  [Admin] Created AdminFeedbackEvent (server to client only).  -  Server - AdminService:302
+  00:29:40.330  [Admin] Cloned AdminKohlThemeClient into ServerScriptService.Kohl's Admin.Config.Addons  -  Server - AdminService:154
+  00:29:40.331  [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:248
+  00:29:40.331  [Admin] Kohl addon already present under ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:257
+  00:29:40.331  [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:248
+  00:29:40.331  [Admin] AdminBridge started. GameTester UserIds only for live commands.  -  Server - AdminService:342
+  00:29:40.334  Requiring asset 1868400649. Callstack: ServerScriptService.Kohl's Admin.Loader, line 59   -  Server - Loader:59
+  00:29:41.530  [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:248
+  00:29:44.275  [Kohl's Admin] Initializing DataStore _KData...  -  Server - Store:45
+  00:29:44.275  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  00:29:44.275  Overriding Kohl's Admin command: adminhelp  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: inspectwars  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: inspectterritory  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: inspectruler  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: setowner  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: setprestige  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: inspectgold  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: setgold  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: addgold  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: spendgold  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: inspecttroops  -  Server - Registry:163
+  00:29:44.275  Overriding Kohl's Admin command: settroops  -  Server - Registry:163
+  00:29:44.276  Overriding Kohl's Admin command: addtroops  -  Server - Registry:163
+  00:29:44.276  Overriding Kohl's Admin command: inspectmilitary  -  Server - Registry:163
+  00:29:44.276  Overriding Kohl's Admin command: inspectcomms  -  Server - Registry:163
+  00:29:44.276  Overriding Kohl's Admin command: inspectcontest  -  Server - Registry:163
+  00:29:44.276  Overriding Kohl's Admin command: resolvewar  -  Server - Registry:163
+  00:29:44.435  Unable to load plugin icon: rbxassetid://68073628  -  Studio
+  00:29:44.540  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  00:29:44.540  Overriding Kohl's Admin command: adminhelp  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: inspectwars  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: inspectterritory  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: inspectruler  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: setowner  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: setprestige  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: inspectgold  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: setgold  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: addgold  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: spendgold  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: inspecttroops  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: settroops  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: addtroops  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: inspectmilitary  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: inspectcomms  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: inspectcontest  -  Server - Registry:163
+  00:29:44.541  Overriding Kohl's Admin command: resolvewar  -  Server - Registry:163
+  00:29:44.570  DataStoreService: StudioAccessToApisNotAllowed: Studio access to APIs is not allowed. API: GetAsync, Data Store: _KData  -  Studio
+  00:29:44.570  Enable Studio access to API services in Experience Settings for full features.  -  Server - Store:70
+  00:29:44.570  [Kohl's Admin] Data failed to load: Enable Studio access to API services in Experience Settings for full features.  -  Server - Data:555
+  00:29:44.804  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  00:29:44.805  Overriding Kohl's Admin command: adminhelp  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: inspectwars  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: inspectterritory  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: inspectruler  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: setowner  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: setprestige  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: inspectgold  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: setgold  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: addgold  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: spendgold  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: inspecttroops  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: settroops  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: addtroops  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: inspectmilitary  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: inspectcomms  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: inspectcontest  -  Server - Registry:163
+  00:29:44.805  Overriding Kohl's Admin command: resolvewar  -  Server - Registry:163
+  00:29:44.805  [Admin] Registered AdminKohlAddon with Kohl _K_INTERFACE.  -  Server - AdminService:218
+  00:30:23.844  [Hierarchy] ruler created Player1 userId= -1 id= Player_-1  -  Server - PoliticalHierarchyService:289
+  00:30:23.844  [Hierarchy] push State all clients rulers= 1 requests= 0  -  Server - PoliticalHierarchyService:180
+  00:30:23.844  [Hierarchy] push State to Player1 rulers= 1 requests= 0  -  Server - PoliticalHierarchyService:177
+  00:30:23.844  [Warfare] push State to Player1  -  Server - WarfareService:224
+  00:30:23.844  [Diplomacy] push State to Player1  -  Server - DiplomacyService:207
+  00:30:23.844  [Title] push State to Player1  -  Server - TitleProgressionService:143
+  00:30:23.844  [Title] push State all clients  -  Server - TitleProgressionService:146
+  00:30:23.844  [Territory] assigned ironlea to Player_-1  -  Server - TerritoryMapService:138
+  00:30:23.845  [Territory] push State all clients  -  Server - TerritoryMapService:101
+  00:30:23.845   ▶ [Title] push State all clients (x3)  -  Server - TitleProgressionService:146
+
+
+  00:30:28.753  [Hierarchy] Ready from Player1  -  Server - PoliticalHierarchyService:465
+  00:30:28.753  [Hierarchy] push State to Player1 rulers= 1 requests= 0  -  Server - PoliticalHierarchyService:177
+  00:30:28.753  [Territory] Ready from Player1  -  Server - TerritoryMapService:248
+  00:30:28.753  [Territory] push State to Player1  -  Server - TerritoryMapService:98
+  00:30:28.753  [Title] Ready from Player1  -  Server - TitleProgressionService:216
+  00:30:28.753  [Title] push State to Player1  -  Server - TitleProgressionService:143
+  00:30:28.754  [Diplomacy] Ready from Player1  -  Server - DiplomacyService:444
+  00:30:28.754  [Diplomacy] push State to Player1  -  Server - DiplomacyService:207
+  00:30:28.754  [Warfare] Ready from Player1  -  Server - WarfareService:485
+  00:30:28.754  [Warfare] push State to Player1  -  Server - WarfareService:224
+  00:30:28.754  [Hierarchy] Ready from Player1  -  Server - PoliticalHierarchyService:465
+  00:30:28.754  [Hierarchy] push State to Player1 rulers= 1 requests= 0  -  Server - PoliticalHierarchyService:177
+  00:30:28.754  [Territory] Ready from Player1  -  Server - TerritoryMapService:248
+  00:30:28.754  [Territory] push State to Player1  -  Server - TerritoryMapService:98
+  00:30:28.754  [Diplomacy] Ready from Player1  -  Server - DiplomacyService:444
+  00:30:28.754  [Diplomacy] push State to Player1  -  Server - DiplomacyService:207
+  00:30:28.754  [Warfare] Ready from Player1  -  Server - WarfareService:485
+  00:30:28.754  [Warfare] push State to Player1  -  Server - WarfareService:224
+  00:30:28.754   ▶ [Title] push State all clients (x4)  -  Server - TitleProgressionService:146
+
+
+
+  00:30:48.955  [Hierarchy] ruler created Player2 userId= -2 id= Player_-2  -  Server - PoliticalHierarchyService:289
+  00:30:48.955  [Hierarchy] push State all clients rulers= 2 requests= 0  -  Server - PoliticalHierarchyService:180
+  00:30:48.955  [Hierarchy] push State to Player2 rulers= 2 requests= 0  -  Server - PoliticalHierarchyService:177
+  00:30:48.955  [Warfare] push State to Player2  -  Server - WarfareService:224
+  00:30:48.955  [Diplomacy] push State to Player2  -  Server - DiplomacyService:207
+  00:30:48.956  [Title] push State to Player2  -  Server - TitleProgressionService:143
+  00:30:48.956  [Title] push State all clients  -  Server - TitleProgressionService:146
+  00:30:48.956  [Territory] assigned lowmarsh to Player_-2  -  Server - TerritoryMapService:138
+  00:30:48.956  [Territory] push State all clients  -  Server - TerritoryMapService:101
+  00:30:48.956   ▶ [Title] push State all clients (x3)  -  Server - TitleProgressionService:146
+
+
+  00:30:53.285  [Hierarchy] Ready from Player2  -  Server - PoliticalHierarchyService:465
+  00:30:53.285  [Hierarchy] push State to Player2 rulers= 2 requests= 0  -  Server - PoliticalHierarchyService:177
+  00:30:53.285  [Territory] Ready from Player2  -  Server - TerritoryMapService:248
+  00:30:53.285  [Territory] push State to Player2  -  Server - TerritoryMapService:98
+  00:30:53.285  [Title] Ready from Player2  -  Server - TitleProgressionService:216
+  00:30:53.285  [Title] push State to Player2  -  Server - TitleProgressionService:143
+  00:30:53.285  [Diplomacy] Ready from Player2  -  Server - DiplomacyService:444
+  00:30:53.285  [Diplomacy] push State to Player2  -  Server - DiplomacyService:207
+  00:30:53.286  [Warfare] Ready from Player2  -  Server - WarfareService:485
+  00:30:53.286  [Warfare] push State to Player2  -  Server - WarfareService:224
+  00:30:53.286  [Hierarchy] Ready from Player2  -  Server - PoliticalHierarchyService:465
+  00:30:53.286  [Hierarchy] push State to Player2 rulers= 2 requests= 0  -  Server - PoliticalHierarchyService:177
+  00:30:53.286  [Territory] Ready from Player2  -  Server - TerritoryMapService:248
+  00:30:53.286  [Territory] push State to Player2  -  Server - TerritoryMapService:98
+  00:30:53.286  [Diplomacy] Ready from Player2  -  Server - DiplomacyService:444
+  00:30:53.286  [Diplomacy] push State to Player2  -  Server - DiplomacyService:207
+  00:30:53.286  [Warfare] Ready from Player2  -  Server - WarfareService:485
+  00:30:53.286  [Warfare] push State to Player2  -  Server - WarfareService:224
+  00:30:53.286   ▶ [Title] push State all clients (x4)  -  Server - TitleProgressionService:146
+
+
+
+  00:31:29.772  [Hierarchy] ruler created Player3 userId= -3 id= Player_-3  -  Server - PoliticalHierarchyService:289
+  00:31:29.772  [Hierarchy] push State all clients rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:180
+  00:31:29.772  [Hierarchy] push State to Player3 rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:177
+  00:31:29.772  [Warfare] push State to Player3  -  Server - WarfareService:224
+  00:31:29.772  [Diplomacy] push State to Player3  -  Server - DiplomacyService:207
+  00:31:29.772  [Title] push State to Player3  -  Server - TitleProgressionService:143
+  00:31:29.772  [Title] push State all clients  -  Server - TitleProgressionService:146
+  00:31:29.772  [Territory] assigned westmere to Player_-3  -  Server - TerritoryMapService:138
+  00:31:29.772  [Territory] push State all clients  -  Server - TerritoryMapService:101
+  00:31:29.773   ▶ [Title] push State all clients (x3)  -  Server - TitleProgressionService:146
+
+
+  00:31:34.568  [Hierarchy] Ready from Player3  -  Server - PoliticalHierarchyService:465
+  00:31:34.568  [Hierarchy] push State to Player3 rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:177
+  00:31:34.568  [Territory] Ready from Player3  -  Server - TerritoryMapService:248
+  00:31:34.568  [Territory] push State to Player3  -  Server - TerritoryMapService:98
+  00:31:34.568  [Title] Ready from Player3  -  Server - TitleProgressionService:216
+  00:31:34.568  [Title] push State to Player3  -  Server - TitleProgressionService:143
+  00:31:34.568  [Diplomacy] Ready from Player3  -  Server - DiplomacyService:444
+  00:31:34.568  [Diplomacy] push State to Player3  -  Server - DiplomacyService:207
+  00:31:34.568  [Warfare] Ready from Player3  -  Server - WarfareService:485
+  00:31:34.568  [Warfare] push State to Player3  -  Server - WarfareService:224
+  00:31:34.569  [Hierarchy] Ready from Player3  -  Server - PoliticalHierarchyService:465
+  00:31:34.569  [Hierarchy] push State to Player3 rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:177
+  00:31:34.569  [Territory] Ready from Player3  -  Server - TerritoryMapService:248
+  00:31:34.569  [Territory] push State to Player3  -  Server - TerritoryMapService:98
+  00:31:34.569  [Diplomacy] Ready from Player3  -  Server - DiplomacyService:444
+  00:31:34.569  [Diplomacy] push State to Player3  -  Server - DiplomacyService:207
+  00:31:34.569  [Warfare] Ready from Player3  -  Server - WarfareService:485
+  00:31:34.569  [Warfare] push State to Player3  -  Server - WarfareService:224
+  00:31:34.569   ▶ [Title] push State all clients (x4)  -  Server - TitleProgressionService:146
+
+
+
+  00:32:11.122  > print("OVERVIEW_CONNECTED",#game.Players:GetPlayers())  -  Studio
+  00:32:11.132  OVERVIEW_CONNECTED 3  -  Server
+  00:32:25.830  > local s=Instance.new("Script");s.Name="RealmOverviewVerification";s.Source=[========[local S=game.ServerScriptService.Services local H=require(S.PoliticalHierarchyService);local T=require(S.TerritoryMapService);local D=require(S.DiplomacyService);local W=require(S.WarfareService) local a,b,c=H.GetRulerIdForUserId(-1),H.GetRulerIdForUserId(-2),H.GetRulerIdForUserId(-3);assert(a and b and c) assert(H.SetTitleRank(a,2)) for _,land in T.GetSnapshot().territories do T.SetOwner(land.territoryId,nil) end assert(T.SetOwner("westmere",a));assert(T.SetOwner("ashwood",b));assert(T.SetOwner("northvale",c)) local ok,id=D.Offer(a,b,"Alliance");assert(ok,id);assert(D.Accept(id,b)) ok,id=D.Offer(a,b,"NAP");assert(ok,id);assert(D.Accept(id,b)) local warOk,warId=W.DeclareWar(a,"northvale");assert(warOk,warId) print("OVERVIEW_MP_STAGE_ONE",a,b,c,warId) ]========];s.Parent=game.ServerScriptService  -  Studio
+  00:32:25.835  [Hierarchy] rank set Player1 Duke  -  Server - PoliticalHierarchyService:432
+  00:32:25.835  [Hierarchy] push State all clients rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:180
+  00:32:25.835   ▶ [Territory] push State all clients (x19)  -  Server - TerritoryMapService:101
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  00:32:25.835  [Diplomacy] push State all clients agreements= 0 requests= 1  -  Server - DiplomacyService:210
+  00:32:25.835  [Diplomacy] notice -> Player2 Alliance offered.  -  Server - DiplomacyService:89
+  00:32:25.836  [Diplomacy] push State all clients agreements= 1 requests= 0  -  Server - DiplomacyService:210
+  00:32:25.836  [Diplomacy] notice -> Player2 Alliance accepted.  -  Server - DiplomacyService:89
+  00:32:25.836  [Diplomacy] notice -> Player1 Alliance accepted.  -  Server - DiplomacyService:89
+  00:32:25.836  [Diplomacy] push State all clients agreements= 1 requests= 1  -  Server - DiplomacyService:210
+  00:32:25.836  [Diplomacy] notice -> Player2 Non-Aggression Pact offered.  -  Server - DiplomacyService:89
+  00:32:25.836  [Diplomacy] push State all clients agreements= 1 requests= 0  -  Server - DiplomacyService:210
+  00:32:25.836  [Diplomacy] notice -> Player2 Non-Aggression Pact accepted.  -  Server - DiplomacyService:89
+  00:32:25.836  [Diplomacy] notice -> Player1 Non-Aggression Pact accepted.  -  Server - DiplomacyService:89
+  00:32:25.836  [Warfare] push State all clients wars= 1  -  Server - WarfareService:227
+  00:32:25.836  [Warfare] notice -> Player1 War declared.  -  Server - WarfareService:169
+  00:32:25.836  [Warfare] notice -> Player3 War declared against your realm.  -  Server - WarfareService:169
+  00:32:25.836  OVERVIEW_MP_STAGE_ONE Player_-1 Player_-2 Player_-3 c4085b78-319f-4e08-938d-1634f6b5db1c  -  Server - RealmOverviewVerification:10
+  00:32:25.836  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  00:32:25.836   ▶ [Title] push State all clients (x20)  -  Server - TitleProgressionService:146
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  00:33:07.054  > local s=Instance.new("Script");s.Name="RealmOverviewVerificationTwo";s.Source=[========[local S=game.ServerScriptService.Services;local H=require(S.PoliticalHierarchyService);local T=require(S.TerritoryMapService);local D=require(S.DiplomacyService);local W=require(S.WarfareService) local a,b=H.GetRulerIdForUserId(-1),H.GetRulerIdForUserId(-2) for _,war in W.GetSnapshot().wars do W.CancelWar(war.warId,"Overview verification") end assert(D.Break(a,b,"Alliance"));assert(D.Break(a,b,"NAP"));assert(T.SetOwner("greyfen",a)) local ok,id=H.OfferFealty(b,a);assert(ok,id);assert(H.AcceptFealty(id,a));print("OVERVIEW_MP_STAGE_TWO") ]========];s.Parent=game.ServerScriptService  -  Studio
+  00:33:07.064  [Warfare] ended c4085b78-319f-4e08-938d-1634f6b5db1c Overview verification  -  Server - WarfareService:239
+  00:33:07.064  [Warfare] push State all clients wars= 0  -  Server - WarfareService:227
+  00:33:07.064  [Warfare] notice -> Player1 War cancelled (Overview verification).  -  Server - WarfareService:169
+  00:33:07.064  [Warfare] notice -> Player3 War cancelled (Overview verification).  -  Server - WarfareService:169
+  00:33:07.064  [Diplomacy] push State all clients agreements= 1 requests= 0  -  Server - DiplomacyService:210
+  00:33:07.064  [Diplomacy] notice -> Player1 Alliance broken.  -  Server - DiplomacyService:89
+  00:33:07.064  [Diplomacy] notice -> Player2 Alliance broken.  -  Server - DiplomacyService:89
+  00:33:07.064  [Diplomacy] push State all clients agre

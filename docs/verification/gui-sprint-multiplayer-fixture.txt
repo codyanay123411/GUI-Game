@@ -1,0 +1,7 @@
+local S=game.ServerScriptService.Services
+local H,T,Title=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.TitleProgressionService)
+repeat task.wait() until #game.Players:GetPlayers()==3
+for _,t in T.GetMapDefinition().territories do T.DebugSetOwner(t.id,nil) end
+T.DebugSetOwner("westmere","Player_-1");T.DebugSetOwner("northvale","Player_-1");T.DebugSetOwner("greyfen","Player_-3");T.DebugSetOwner("brightfen","Player_-2")
+Title.DebugSetPrestige("Player_-1",100)
+print("GUI_FIXTURE_READY")

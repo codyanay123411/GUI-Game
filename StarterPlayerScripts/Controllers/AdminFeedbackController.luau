@@ -7,6 +7,7 @@
 
 local HttpService = game:GetService("HttpService")
 local Players = game:GetService("Players")
+local TextService = game:GetService("TextService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local PrototypeGuiTheme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Util"):WaitForChild("PrototypeGuiTheme"))
@@ -22,6 +23,13 @@ local INSPECT = {
 	InspectTerritory = true,
 	InspectRuler = true,
 	InspectGold = true,
+	InspectTroops = true,
+	InspectMilitary = true,
+	InspectComms = true,
+	InspectContest = true,
+	InspectVictory = true,
+	CheckVictory = true,
+	InspectNeutral = true,
 }
 
 local TITLES = {
@@ -30,6 +38,13 @@ local TITLES = {
 	InspectTerritory = "Territory",
 	InspectRuler = "Ruler",
 	InspectGold = "Gold",
+	InspectTroops = "Troops",
+	InspectMilitary = "Military",
+	InspectComms = "Communications",
+	InspectContest = "War contest",
+	InspectVictory = "Match victory",
+	CheckVictory = "Match victory",
+	InspectNeutral = "Unclaimed militia",
 	SetOwner = "Territory owner",
 	SetPrestige = "Prestige",
 	SetGold = "Gold",
@@ -47,10 +62,22 @@ local function prettyMessage(raw: string): string
 		end)
 		if ok and typeof(decoded) == "table" then
 			local lines = {}
-			for key, value in decoded do
-				table.insert(lines, string.format("%s: %s", tostring(key), tostring(value)))
+			local function expand(values: any, depth: number)
+				local keys = {}
+				for key in values do table.insert(keys, key) end
+				table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+				for _, key in keys do
+					local value = values[key]
+					local prefix = string.rep("  ", depth) .. tostring(key) .. ": "
+					if typeof(value) == "table" and depth < 12 then
+						table.insert(lines, prefix)
+						expand(value, depth + 1)
+					else
+						table.insert(lines, prefix .. tostring(value))
+					end
+				end
 			end
-			table.sort(lines)
+			expand(decoded, 0)
 			return table.concat(lines, "\n")
 		end
 	end
@@ -132,6 +159,21 @@ function AdminFeedbackController.Start()
 	local resultToastLabel = resultToast:WaitForChild("Label") :: TextLabel
 	PrototypeGuiTheme.ApplyScreen(gui)
 
+	local inspectScroll = inspectBody.Parent :: ScrollingFrame
+	inspectScroll.Active = true
+	inspectScroll.ScrollingDirection = Enum.ScrollingDirection.Y
+	inspectScroll.AutomaticCanvasSize = Enum.AutomaticSize.None
+	inspectBody.AutomaticSize = Enum.AutomaticSize.None
+	local function fitInspect()
+		local width = math.max(1, inspectScroll.AbsoluteSize.X - 8)
+		local height = TextService:GetTextSize(inspectBody.Text, inspectBody.TextSize, inspectBody.Font, Vector2.new(width, 100000)).Y
+		inspectBody.Size = UDim2.new(1, -8, 0, height)
+		inspectScroll.CanvasSize = UDim2.fromOffset(0, height + 8)
+	end
+	inspectBody:GetPropertyChangedSignal("Text"):Connect(fitInspect)
+	inspectScroll:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitInspect)
+	fitInspect()
+
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	local feedbackWait = remotes:WaitForChild("AdminFeedbackEvent", 20)
 	if not (feedbackWait and feedbackWait:IsA("RemoteEvent")) then
@@ -175,6 +217,7 @@ function AdminFeedbackController.Start()
 		end
 		if INSPECT[operation] then
 			inspectHeader.Text = TITLES[operation] or "Inspect"
+			inspectScroll.CanvasPosition = Vector2.zero
 			inspectBody.Text = message
 			inspect.Visible = true
 		else

@@ -1,0 +1,1146 @@
+--!strict
+
+--[[
+	Communications V0.x — first implementation pass.
+
+	Authoritative membership, delivery, Direct eligibility, match-scoped logs.
+	TextChatService: custom channels, ShouldDeliverCallback, CanUsersDirectChatAsync.
+	Does not own Hierarchy, Territory, Title, or Diplomacy.
+]]
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local ServerScriptService = game:GetService("ServerScriptService")
+local TextChatService = game:GetService("TextChatService")
+local TextService = game:GetService("TextService")
+
+local CommunicationsConfig = require(ReplicatedStorage.Shared.Config.CommunicationsConfig)
+local RankRules = require(ReplicatedStorage.Shared.Util.PoliticalRankRules)
+local RealmGraph = require(ReplicatedStorage.Shared.Util.RealmGraph)
+local AdminConfig = require(ServerScriptService.Services.AdminConfig)
+local Hierarchy = require(ServerScriptService.Services.PoliticalHierarchyService)
+local Territory = require(ServerScriptService.Services.TerritoryMapService)
+local Diplomacy = require(ServerScriptService.Services.DiplomacyService)
+
+local CommunicationsService = {}
+
+type ConvKind = "diplomatic" | "council" | "alliance" | "direct"
+
+type Conversation = {
+	id: string,
+	kind: ConvKind,
+	channel: TextChannel,
+	labelKey: string,
+	presidingRulerId: string?,
+	partyA: string?,
+	partyB: string?,
+	allianceInstanceId: string?,
+	active: boolean,
+	canSend: boolean,
+	hasHistory: boolean,
+	everHadSubjects: boolean,
+	recipientArmed: boolean,
+	helpShown: { [string]: boolean },
+}
+
+local started = false
+local clientIntent: RemoteEvent
+local serverPush: RemoteEvent
+local debugSnapshot: StringValue?
+
+local conversations: { [string]: Conversation } = {}
+local diplomatic: Conversation?
+local channelsFolder: Folder
+local observerSeq = 0
+
+local function encode(payload: any): string
+	return HttpService:JSONEncode(payload)
+end
+
+local function findRuler(rulerId: string): any?
+	for _, ruler in Hierarchy.GetSnapshot().rulers do
+		if ruler.rulerId == rulerId then
+			return ruler
+		end
+	end
+	return nil
+end
+
+local function playerForRuler(rulerId: string): Player?
+	local ruler = findRuler(rulerId)
+	local userId = ruler and tonumber(ruler.userId)
+	if typeof(userId) == "number" and userId ~= 0 then
+		return Players:GetPlayerByUserId(userId)
+	end
+	return nil
+end
+
+local function rulerIdForPlayer(player: Player): string?
+	return Hierarchy.GetRulerIdForUserId(player.UserId)
+end
+
+local function displayName(rulerId: string): string
+	local ruler = findRuler(rulerId)
+	if ruler and typeof(ruler.displayName) == "string" then
+		return ruler.displayName
+	end
+	return rulerId
+end
+
+local function titleName(rulerId: string): string
+	local ruler = findRuler(rulerId)
+	if ruler and typeof(ruler.titleRank) == "number" then
+		return RankRules.Name(ruler.titleRank)
+	end
+	return "Lord"
+end
+
+local function titleLabel(rulerId: string): string
+	return string.format("%s %s", titleName(rulerId), displayName(rulerId))
+end
+
+local function pairKey(a: string, b: string): string
+	if a < b then
+		return a .. "|" .. b
+	end
+	return b .. "|" .. a
+end
+
+local function graphBundle()
+	local rulers = Hierarchy.GetSnapshot().rulers
+	local lands = RealmGraph.LandsByRoot(rulers, function(rulerId)
+		return Territory.GetOwnedTerritoryIds(rulerId)
+	end)
+	local neighbors = RealmGraph.BuildNeighborSet(lands, function(a, b)
+		return Territory.AreAdjacent(a, b)
+	end)
+	return rulers, lands, neighbors
+end
+
+local function realmDistance(fromRulerId: string, toRulerId: string): number?
+	local fromR = findRuler(fromRulerId)
+	local toR = findRuler(toRulerId)
+	if not fromR or not toR then
+		return nil
+	end
+	local _, _, neighbors = graphBundle()
+	return RealmGraph.Distance(fromR.rootRulerId, toR.rootRulerId, neighbors)
+end
+
+local function canDirectPlatform(userA: number, userB: number): boolean
+	local ok, result = pcall(function()
+		return TextChatService:CanUsersDirectChatAsync(userA, { userB })
+	end)
+	if ok and typeof(result) == "table" then
+		for _, id in result do
+			if id == userB then
+				return true
+			end
+		end
+	end
+	if RunService:IsStudio() and (userA < 0 or userB < 0) then
+		return true
+	end
+	return false
+end
+
+local function viewerRel(viewerId: string, speakerId: string): string?
+	if viewerId == speakerId then
+		return nil
+	end
+	local viewer = findRuler(viewerId)
+	local speaker = findRuler(speakerId)
+	if not viewer or not speaker then
+		return nil
+	end
+	if viewer.liegeId == speakerId then
+		return "Liege"
+	end
+	if speaker.liegeId == viewerId then
+		return "Subject"
+	end
+	if Diplomacy.AreAllied(viewerId, speakerId) then
+		return "Ally"
+	end
+	return nil
+end
+
+local function prefixFor(kind: ConvKind, viewerId: string, speakerId: string): string
+	local title = titleName(speakerId)
+	local name = displayName(speakerId)
+	if kind == "council" or kind == "alliance" then
+		return string.format("[%s] %s", title, name)
+	end
+	local tag = viewerRel(viewerId, speakerId)
+	if tag then
+		return string.format("[%s] [%s] %s", title, tag, name)
+	end
+	return string.format("[%s] %s", title, name)
+end
+
+local function adminRel(a: string, b: string): string
+	local aR = findRuler(a)
+	local bR = findRuler(b)
+	if aR and bR then
+		if aR.liegeId == b then
+			return "Liege ↔ Subject"
+		end
+		if bR.liegeId == a then
+			return "Liege ↔ Subject"
+		end
+	end
+	if Diplomacy.AreAllied(a, b) then
+		return "Allies"
+	end
+	return "Unrelated / other"
+end
+
+local function firePlayer(player: Player, kind: string, payload: any)
+	serverPush:FireClient(player, kind, encode(payload))
+end
+
+local function fireRuler(rulerId: string, kind: string, payload: any)
+	local player = playerForRuler(rulerId)
+	if player then
+		firePlayer(player, kind, payload)
+	end
+end
+
+local function observerPush(payload: any)
+	observerSeq += 1
+	payload.seq = observerSeq
+	for _, player in Players:GetPlayers() do
+		if AdminConfig.IsGameTester(player.UserId) then
+			firePlayer(player, "Observer", payload)
+		end
+	end
+end
+
+local function sourceFor(channel: TextChannel, userId: number): TextSource?
+	for _, child in channel:GetChildren() do
+		if child:IsA("TextSource") and child.UserId == userId then
+			return child
+		end
+	end
+	return nil
+end
+
+local function addPlayer(channel: TextChannel, player: Player, canSend: boolean)
+	local source = sourceFor(channel, player.UserId)
+	if not source then
+		local ok, result = pcall(function()
+			return channel:AddUserAsync(player.UserId)
+		end)
+		if ok and result and result:IsA("TextSource") then
+			source = result
+		end
+	end
+	if source then
+		source.CanSend = canSend
+	end
+end
+
+local function setCanSend(channel: TextChannel, player: Player, canSend: boolean)
+	local source = sourceFor(channel, player.UserId)
+	if source then
+		source.CanSend = canSend
+	end
+end
+
+local function bindDelivery(conv: Conversation)
+	conv.channel.ShouldDeliverCallback = function(message: TextChatMessage, dest: TextSource)
+		local senderSource = message.TextSource
+		if senderSource == nil then
+			return dest.UserId == dest.UserId
+		end
+		local fromPlayer = Players:GetPlayerByUserId(senderSource.UserId)
+		local toPlayer = Players:GetPlayerByUserId(dest.UserId)
+		if not fromPlayer or not toPlayer then
+			return false
+		end
+		local fromId = rulerIdForPlayer(fromPlayer)
+		local toId = rulerIdForPlayer(toPlayer)
+		if not fromId or not toId then
+			return false
+		end
+		if conv.kind == "diplomatic" then
+			if fromId == toId then
+				return true
+			end
+			local dist = realmDistance(fromId, toId)
+			return typeof(dist) == "number" and dist <= CommunicationsConfig.DiplomaticMaxDistance
+		end
+		if conv.kind == "council" or conv.kind == "alliance" then
+			if conv.active ~= true or conv.canSend ~= true then
+				return false
+			end
+			return true
+		end
+		if conv.kind == "direct" then
+			if conv.active ~= true or conv.canSend ~= true then
+				return false
+			end
+			if fromId == toId then
+				return true
+			end
+			if conv.recipientArmed ~= true then
+				return false
+			end
+			return true
+		end
+		return false
+	end
+end
+
+local function ensureFolder(): Folder
+	local existing = TextChatService:FindFirstChild("TextChannels")
+	if existing and existing:IsA("Folder") then
+		return existing
+	end
+	local folder = Instance.new("Folder")
+	folder.Name = "TextChannels"
+	folder.Parent = TextChatService
+	return folder
+end
+
+local function makeChannel(name: string): TextChannel
+	local ch = Instance.new("TextChannel")
+	ch.Name = name
+	ch.Parent = channelsFolder
+	return ch
+end
+
+local function conversationPayload(conv: Conversation, viewerId: string)
+	local label = "Diplomatic"
+	local status = "active"
+	if conv.kind == "council" then
+		if conv.presidingRulerId == viewerId then
+			label = "Your Council"
+		else
+			label = "Council — " .. titleLabel(conv.presidingRulerId or "")
+		end
+	elseif conv.kind == "alliance" then
+		local other = if conv.partyA == viewerId then conv.partyB else conv.partyA
+		label = "Alliance — " .. titleLabel(other or "")
+	elseif conv.kind == "direct" then
+		local other = if conv.partyA == viewerId then conv.partyB else conv.partyA
+		label = "Direct — " .. titleLabel(other or "")
+	end
+	if conv.active ~= true then
+		status = "inactive"
+	end
+	if conv.kind == "alliance" and conv.active ~= true then
+		status = "ended"
+	end
+	if conv.kind == "direct" and conv.active ~= true then
+		status = "unavailable"
+	end
+	return {
+		id = conv.id,
+		kind = conv.kind,
+		channelName = conv.channel.Name,
+		label = label,
+		status = status,
+		canSend = conv.active == true and conv.canSend == true,
+		help = CommunicationsConfig.Help[conv.kind],
+	}
+end
+
+local function listForRuler(rulerId: string): { any }
+	local list = {}
+	if diplomatic then
+		table.insert(list, conversationPayload(diplomatic, rulerId))
+	end
+	for _, conv in conversations do
+		if conv.kind == "diplomatic" then
+			continue
+		end
+		local include = false
+		if conv.kind == "council" then
+			if conv.presidingRulerId == rulerId then
+				include = conv.everHadSubjects == true or conv.hasHistory == true
+			else
+				local speaker = findRuler(rulerId)
+				include = speaker ~= nil and speaker.liegeId == conv.presidingRulerId
+				if include ~= true and conv.hasHistory == true then
+					-- kept readable after leave: client still has channel history if we kept CanSend false membership;
+					-- we include if they still have a TextSource
+					local player = playerForRuler(rulerId)
+					if player and sourceFor(conv.channel, player.UserId) then
+						include = true
+					end
+				end
+			end
+		elseif conv.kind == "alliance" then
+			include = conv.partyA == rulerId or conv.partyB == rulerId
+		elseif conv.kind == "direct" then
+			local isParty = conv.partyA == rulerId or conv.partyB == rulerId
+			if isParty and (conv.hasHistory == true or conv.recipientArmed == true) then
+				include = true
+			elseif isParty then
+				local player = playerForRuler(rulerId)
+				include = player ~= nil and sourceFor(conv.channel, player.UserId) ~= nil
+			end
+		end
+		if include then
+			table.insert(list, conversationPayload(conv, rulerId))
+		end
+	end
+	local kindOrder = { diplomatic = 1, council = 2, alliance = 3, direct = 4 }
+	table.sort(list, function(a, b)
+		local oa = kindOrder[a.kind] or 9
+		local ob = kindOrder[b.kind] or 9
+		if oa ~= ob then
+			return oa < ob
+		end
+		return a.label < b.label
+	end)
+	return list
+end
+
+local function directContacts(rulerId: string): { any }
+	local out = {}
+	local me = findRuler(rulerId)
+	local mePlayer = playerForRuler(rulerId)
+	if not me or not mePlayer then
+		return out
+	end
+	for _, other in Hierarchy.GetSnapshot().rulers do
+		if other.rulerId ~= rulerId and typeof(other.userId) == "number" and other.userId ~= 0 then
+			local dist = realmDistance(rulerId, other.rulerId)
+			local otherPlayer = Players:GetPlayerByUserId(other.userId)
+			if dist == 1 and otherPlayer and canDirectPlatform(mePlayer.UserId, otherPlayer.UserId) then
+				table.insert(out, {
+					rulerId = other.rulerId,
+					label = titleLabel(other.rulerId),
+				})
+			end
+		end
+	end
+	table.sort(out, function(a, b)
+		return a.label < b.label
+	end)
+	return out
+end
+
+local function pushState(toPlayer: Player?)
+	local function pushOne(player: Player)
+		local rulerId = rulerIdForPlayer(player)
+		if not rulerId then
+			return
+		end
+		firePlayer(player, "State", {
+			conversations = listForRuler(rulerId),
+			directContacts = directContacts(rulerId),
+			isAdmin = AdminConfig.IsGameTester(player.UserId),
+		})
+	end
+	if toPlayer then
+		pushOne(toPlayer)
+		return
+	end
+	for _, player in Players:GetPlayers() do
+		pushOne(player)
+	end
+end
+
+local function systemTo(conv: Conversation, rulerId: string, text: string)
+	local player = playerForRuler(rulerId)
+	if not player then
+		return
+	end
+	pcall(function()
+		conv.channel:DisplaySystemMessage(text, "System")
+	end)
+	fireRuler(rulerId, "System", {
+		conversationId = conv.id,
+		text = text,
+	})
+end
+
+local function deliverPlayerMessage(conv: Conversation, fromId: string, recipients: { string }, filteredByUser: { [number]: string }, rawPreview: string)
+	conv.hasHistory = true
+	local speakerPrefixBase = titleName(fromId)
+	local speakerPlayer = playerForRuler(fromId)
+	local observerText = rawPreview
+	for _, toId in recipients do
+		local player = playerForRuler(toId)
+		if player then
+			local filtered = filteredByUser[player.UserId] or ""
+			if filtered ~= "" then
+				observerText = filtered
+				fireRuler(toId, "Message", {
+					conversationId = conv.id,
+					kind = conv.kind,
+					speakerRulerId = fromId,
+					speakerUserId = if speakerPlayer then speakerPlayer.UserId else 0,
+					toastLabel = titleLabel(fromId),
+					prefix = prefixFor(conv.kind, toId, fromId),
+					text = filtered,
+					system = false,
+				})
+			end
+		end
+	end
+	observerPush({
+		kind = conv.kind,
+		conversationId = conv.id,
+		context = if conv.kind == "direct"
+			then string.format("Direct: %s ↔ %s", displayName(conv.partyA or ""), displayName(conv.partyB or ""))
+			elseif conv.kind == "alliance"
+			then string.format("Alliance: %s ↔ %s", displayName(conv.partyA or ""), displayName(conv.partyB or ""))
+			elseif conv.kind == "council"
+			then string.format("Council of %s", titleLabel(conv.presidingRulerId or ""))
+			else "Diplomatic",
+		relationship = if conv.kind == "direct" or conv.kind == "alliance"
+			then adminRel(conv.partyA or "", conv.partyB or "")
+			elseif conv.kind == "council"
+			then "Liege ↔ Subject"
+			else "Geographic / public-political",
+		speakerTitle = speakerPrefixBase,
+		speaker = displayName(fromId),
+		text = observerText,
+	})
+end
+
+local function filterForUsers(fromUserId: number, text: string, userIds: { number }): { [number]: string }
+	local out: { [number]: string } = {}
+	local ok, result = pcall(function()
+		return TextService:FilterStringAsync(text, fromUserId)
+	end)
+	if not ok or result == nil then
+		if RunService:IsStudio() then
+			for _, userId in userIds do
+				out[userId] = text
+			end
+		end
+		return out
+	end
+	for _, userId in userIds do
+		local ok2, filtered = pcall(function()
+			return result:GetChatForUserAsync(userId)
+		end)
+		if ok2 and typeof(filtered) == "string" and filtered ~= "" then
+			out[userId] = filtered
+		elseif RunService:IsStudio() then
+			out[userId] = text
+		end
+	end
+	return out
+end
+
+local function diplomaticRecipients(fromId: string): { string }
+	local ids = { fromId }
+	local seen = { [fromId] = true }
+	for _, ruler in Hierarchy.GetSnapshot().rulers do
+		if seen[ruler.rulerId] ~= true then
+			local dist = realmDistance(fromId, ruler.rulerId)
+			if typeof(dist) == "number" and dist <= CommunicationsConfig.DiplomaticMaxDistance then
+				seen[ruler.rulerId] = true
+				table.insert(ids, ruler.rulerId)
+			end
+		end
+	end
+	return ids
+end
+
+function CommunicationsService.GetInspect(): any
+	local rows = {}
+	for _, conv in conversations do
+		table.insert(rows, {
+			id = conv.id,
+			kind = conv.kind,
+			active = conv.active,
+			canSend = conv.canSend,
+			hasHistory = conv.hasHistory,
+			recipientArmed = conv.recipientArmed,
+			presidingRulerId = conv.presidingRulerId,
+			partyA = conv.partyA,
+			partyB = conv.partyB,
+			allianceInstanceId = conv.allianceInstanceId,
+			channel = conv.channel.Name,
+		})
+	end
+	return rows
+end
+
+local function councilMembers(presidingId: string): { string }
+	local members = { presidingId }
+	local liege = findRuler(presidingId)
+	if liege and typeof(liege.vassalIds) == "table" then
+		for _, vassalId in liege.vassalIds do
+			if typeof(vassalId) == "string" then
+				table.insert(members, vassalId)
+			end
+		end
+	end
+	return members
+end
+
+local function ensureDiplomatic()
+	if diplomatic then
+		return
+	end
+	local ch = makeChannel("Diplomatic")
+	local conv: Conversation = {
+		id = "diplomatic",
+		kind = "diplomatic",
+		channel = ch,
+		labelKey = "diplomatic",
+		active = true,
+		canSend = true,
+		hasHistory = false,
+		everHadSubjects = false,
+		recipientArmed = true,
+		helpShown = {},
+	}
+	diplomatic = conv
+	conversations[conv.id] = conv
+	bindDelivery(conv)
+end
+
+local function ensureCouncil(presidingId: string): Conversation
+	local id = "council:" .. presidingId
+	local existing = conversations[id]
+	if existing then
+		return existing
+	end
+	local ch = makeChannel("Council_" .. string.gsub(presidingId, "[^%w]", "_"))
+	local conv: Conversation = {
+		id = id,
+		kind = "council",
+		channel = ch,
+		labelKey = presidingId,
+		presidingRulerId = presidingId,
+		active = false,
+		canSend = false,
+		hasHistory = false,
+		everHadSubjects = false,
+		recipientArmed = true,
+		helpShown = {},
+	}
+	conversations[id] = conv
+	bindDelivery(conv)
+	return conv
+end
+
+local function syncCouncils()
+	for _, ruler in Hierarchy.GetSnapshot().rulers do
+		local members = councilMembers(ruler.rulerId)
+		local subjectCount = #members - 1
+		if subjectCount > 0 then
+			local conv = ensureCouncil(ruler.rulerId)
+			local wasActive = conv.active
+			conv.everHadSubjects = true
+			conv.active = true
+			conv.canSend = true
+			local want: { [string]: boolean } = {}
+			for _, memberId in members do
+				want[memberId] = true
+				local player = playerForRuler(memberId)
+				if player then
+					local wasMember = sourceFor(conv.channel, player.UserId) ~= nil
+					addPlayer(conv.channel, player, true)
+					if wasMember ~= true then
+						systemTo(conv, memberId, "You joined this Council.")
+					end
+				end
+			end
+			for _, child in conv.channel:GetChildren() do
+				if child:IsA("TextSource") then
+					local player = Players:GetPlayerByUserId(child.UserId)
+					local memberId = player and rulerIdForPlayer(player)
+					if memberId and want[memberId] ~= true then
+						child.CanSend = false
+						systemTo(conv, memberId, "You left this Council. Previous messages remain readable.")
+					end
+				end
+			end
+			if wasActive ~= true then
+				for _, memberId in members do
+					systemTo(conv, memberId, "Council is active.")
+				end
+			end
+		else
+			local conv = conversations["council:" .. ruler.rulerId]
+			if conv and (conv.everHadSubjects == true or conv.hasHistory == true) then
+				if conv.active == true then
+					conv.active = false
+					conv.canSend = false
+					for _, child in conv.channel:GetChildren() do
+						if child:IsA("TextSource") then
+							child.CanSend = false
+							local player = Players:GetPlayerByUserId(child.UserId)
+							local memberId = player and rulerIdForPlayer(player)
+							if memberId then
+								systemTo(conv, memberId, "Council inactive.")
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+local function ensureAlliance(instanceId: string, a: string, b: string): Conversation
+	local id = "alliance:" .. instanceId
+	local existing = conversations[id]
+	if existing then
+		return existing
+	end
+	local ch = makeChannel("Alliance_" .. string.sub(instanceId, 1, 8))
+	local conv: Conversation = {
+		id = id,
+		kind = "alliance",
+		channel = ch,
+		labelKey = instanceId,
+		partyA = a,
+		partyB = b,
+		allianceInstanceId = instanceId,
+		active = true,
+		canSend = true,
+		hasHistory = false,
+		everHadSubjects = false,
+		recipientArmed = true,
+		helpShown = {},
+	}
+	conversations[id] = conv
+	bindDelivery(conv)
+	for _, rulerId in { a, b } do
+		local player = playerForRuler(rulerId)
+		if player then
+			addPlayer(ch, player, true)
+			systemTo(conv, rulerId, "Alliance established.")
+		end
+	end
+	return conv
+end
+
+local function syncAlliances()
+	local live: { [string]: boolean } = {}
+	for _, agreement in Diplomacy.GetSnapshot().agreements do
+		if agreement.alliance == true then
+			local instanceId = agreement.allianceInstanceId
+			if typeof(instanceId) ~= "string" or instanceId == "" then
+				continue
+			end
+			live[instanceId] = true
+			ensureAlliance(instanceId, agreement.leftRulerId, agreement.rightRulerId)
+			local conv = conversations["alliance:" .. instanceId]
+			if conv then
+				conv.active = true
+				conv.canSend = true
+				for _, rulerId in { conv.partyA, conv.partyB } do
+					local player = rulerId and playerForRuler(rulerId)
+					if player then
+						addPlayer(conv.channel, player, true)
+					end
+				end
+			end
+		end
+	end
+	for _, conv in conversations do
+		if conv.kind == "alliance" and conv.allianceInstanceId and live[conv.allianceInstanceId] ~= true then
+			if conv.active == true then
+				conv.active = false
+				conv.canSend = false
+				for _, rulerId in { conv.partyA, conv.partyB } do
+					local player = rulerId and playerForRuler(rulerId)
+					if player then
+						setCanSend(conv.channel, player, false)
+						systemTo(conv, rulerId :: string, "Alliance ended. Previous messages remain readable.")
+					end
+				end
+			end
+		end
+	end
+end
+
+local function directId(a: string, b: string): string
+	return "direct:" .. pairKey(a, b)
+end
+
+local function ensureDirect(a: string, b: string): Conversation
+	local id = directId(a, b)
+	local existing = conversations[id]
+	if existing then
+		return existing
+	end
+	local ch = makeChannel("Direct_" .. string.gsub(pairKey(a, b), "|", "_"))
+	local conv: Conversation = {
+		id = id,
+		kind = "direct",
+		channel = ch,
+		labelKey = pairKey(a, b),
+		partyA = a,
+		partyB = b,
+		active = true,
+		canSend = true,
+		hasHistory = false,
+		everHadSubjects = false,
+		recipientArmed = false,
+		helpShown = {},
+	}
+	conversations[id] = conv
+	bindDelivery(conv)
+	pcall(function()
+		ch:SetDirectChatRequester(playerForRuler(a) or playerForRuler(b))
+	end)
+	return conv
+end
+
+local function syncDirects()
+	for _, conv in conversations do
+		if conv.kind == "direct" and conv.partyA and conv.partyB then
+			local dist = realmDistance(conv.partyA, conv.partyB)
+			local pA = playerForRuler(conv.partyA)
+			local pB = playerForRuler(conv.partyB)
+			local platformOk = pA and pB and canDirectPlatform(pA.UserId, pB.UserId)
+			local eligible = dist == 1 and platformOk == true
+			if eligible then
+				if conv.active ~= true then
+					conv.active = true
+					conv.canSend = true
+					if pA then
+						setCanSend(conv.channel, pA, true)
+						systemTo(conv, conv.partyA, "Direct communication restored. Your realms share a border again.")
+					end
+					if pB and conv.recipientArmed then
+						setCanSend(conv.channel, pB, true)
+						systemTo(conv, conv.partyB, "Direct communication restored. Your realms share a border again.")
+					end
+				end
+			else
+				if conv.active == true and (conv.hasHistory == true or conv.recipientArmed == true) then
+					conv.active = false
+					conv.canSend = false
+					if pA then
+						setCanSend(conv.channel, pA, false)
+						systemTo(conv, conv.partyA, "Direct communication unavailable. Your realms no longer share a border.")
+					end
+					if pB and conv.recipientArmed then
+						setCanSend(conv.channel, pB, false)
+						systemTo(conv, conv.partyB, "Direct communication unavailable. Your realms no longer share a border.")
+					end
+				elseif conv.recipientArmed ~= true and conv.hasHistory ~= true then
+					conv.active = eligible == true
+					conv.canSend = eligible == true
+				end
+			end
+		end
+	end
+end
+
+local function joinDiplomatic(player: Player)
+	ensureDiplomatic()
+	if diplomatic then
+		addPlayer(diplomatic.channel, player, true)
+	end
+end
+
+local function syncAll()
+	ensureDiplomatic()
+	for _, player in Players:GetPlayers() do
+		if rulerIdForPlayer(player) then
+			joinDiplomatic(player)
+		end
+	end
+	syncCouncils()
+	syncAlliances()
+	syncDirects()
+	pushState()
+end
+
+local function onSend(player: Player, conversationId: any, textAny: any): (boolean, string)
+	if typeof(conversationId) ~= "string" or typeof(textAny) ~= "string" then
+		firePlayer(player, "Notice", { text = "Invalid message." })
+		return false, "Invalid message."
+	end
+	local text = string.gsub(textAny, "^%s+", "")
+	text = string.gsub(text, "%s+$", "")
+	if text == "" or #text > 200 then
+		return false, "Rejected length."
+	end
+	local fromId = rulerIdForPlayer(player)
+	if not fromId then
+		return false, "No ruler."
+	end
+	local conv = conversations[conversationId]
+	if not conv then
+		firePlayer(player, "Notice", { text = "Unknown conversation." })
+		return false, "Unknown conversation."
+	end
+	if conv.active ~= true or conv.canSend ~= true then
+		firePlayer(player, "Notice", { text = "You cannot send in this conversation." })
+		return false, "Cannot send."
+	end
+
+	local recipients: { string } = {}
+	if conv.kind == "diplomatic" then
+		recipients = diplomaticRecipients(fromId)
+	elseif conv.kind == "council" then
+		if conv.presidingRulerId == fromId then
+			recipients = councilMembers(fromId)
+		else
+			local me = findRuler(fromId)
+			if not me or me.liegeId ~= conv.presidingRulerId then
+				firePlayer(player, "Notice", { text = "You are not in this Council." })
+				return false, "Not in Council."
+			end
+			recipients = councilMembers(conv.presidingRulerId or "")
+		end
+	elseif conv.kind == "alliance" then
+		if fromId ~= conv.partyA and fromId ~= conv.partyB then
+			return false, "Not a party."
+		end
+		recipients = { conv.partyA or "", conv.partyB or "" }
+	elseif conv.kind == "direct" then
+		if fromId ~= conv.partyA and fromId ~= conv.partyB then
+			return false, "Not a party."
+		end
+		local other = if conv.partyA == fromId then conv.partyB else conv.partyA
+		if typeof(other) ~= "string" then
+			return false, "No peer."
+		end
+		if realmDistance(fromId, other) ~= 1 then
+			firePlayer(player, "Notice", { text = "Direct communication requires a shared border." })
+			return false, "No border."
+		end
+		local otherPlayer = playerForRuler(other)
+		if not otherPlayer or not canDirectPlatform(player.UserId, otherPlayer.UserId) then
+			firePlayer(player, "Notice", { text = "Direct chat is not available." })
+			return false, "Platform Direct denied."
+		end
+		if conv.recipientArmed ~= true then
+			addPlayer(conv.channel, otherPlayer, true)
+			conv.recipientArmed = true
+			conv.hasHistory = true
+		end
+		recipients = { fromId, other }
+	end
+
+	local userIds = {}
+	for _, rulerId in recipients do
+		local p = playerForRuler(rulerId)
+		if p then
+			table.insert(userIds, p.UserId)
+		end
+	end
+	local filtered = filterForUsers(player.UserId, text, userIds)
+	deliverPlayerMessage(conv, fromId, recipients, filtered, text)
+	firePlayer(player, "TcsEcho", {
+		channelName = conv.channel.Name,
+		text = text,
+	})
+	return true, "sent"
+end
+
+local function onOpenDirect(player: Player, targetRulerId: any): (boolean, string)
+	local fromId = rulerIdForPlayer(player)
+	if not fromId or typeof(targetRulerId) ~= "string" then
+		return false, "Invalid Direct target."
+	end
+	if realmDistance(fromId, targetRulerId) ~= 1 then
+		firePlayer(player, "Notice", { text = "That ruler is not a neighboring realm." })
+		return false, "Not neighboring."
+	end
+	local otherPlayer = playerForRuler(targetRulerId)
+	if not otherPlayer or not canDirectPlatform(player.UserId, otherPlayer.UserId) then
+		firePlayer(player, "Notice", { text = "Direct chat is not available." })
+		return false, "Platform Direct denied."
+	end
+	local conv = ensureDirect(fromId, targetRulerId)
+	addPlayer(conv.channel, player, conv.canSend)
+	pushState(player)
+	firePlayer(player, "Opened", { conversationId = conv.id })
+	return true, conv.id
+end
+
+local function onHelp(player: Player, conversationId: any)
+	local conv = typeof(conversationId) == "string" and conversations[conversationId] or nil
+	if not conv then
+		firePlayer(player, "Notice", { text = "No conversation selected." })
+		return
+	end
+	local help = CommunicationsConfig.Help[conv.kind]
+	systemTo(conv, rulerIdForPlayer(player) or "", help)
+end
+
+local function onMarkRead(_player: Player, _conversationId: any)
+	-- unread is client-side
+end
+
+local function onClientIntent(player: Player, action: any, a: any, b: any)
+	if typeof(action) ~= "string" then
+		return
+	end
+	if action == "Ready" then
+		joinDiplomatic(player)
+		syncAll()
+		pushState(player)
+		return
+	end
+	if action == "Send" then
+		onSend(player, a, b)
+		return
+	end
+	if action == "OpenDirect" then
+		onOpenDirect(player, a)
+		return
+	end
+	if action == "Help" then
+		onHelp(player, a)
+		return
+	end
+	if action == "MarkRead" then
+		onMarkRead(player, a)
+		return
+	end
+end
+
+function CommunicationsService.Announce(text: string): (boolean, string)
+	if typeof(text) ~= "string" or text == "" then
+		return false, "Need announcement text."
+	end
+	local msg = "[ADMIN] " .. text
+	for _, player in Players:GetPlayers() do
+		firePlayer(player, "Announce", { text = msg })
+	end
+	return true, msg
+end
+
+function CommunicationsService.DebugDistance(fromRulerId: string, toRulerId: string): number?
+	return realmDistance(fromRulerId, toRulerId)
+end
+
+function CommunicationsService.DebugDiplomaticRecipients(fromRulerId: string): { string }
+	return diplomaticRecipients(fromRulerId)
+end
+
+function CommunicationsService.Start()
+	if started then
+		return
+	end
+	started = true
+
+	channelsFolder = ensureFolder()
+	ensureDiplomatic()
+
+	local remotes = ReplicatedStorage:WaitForChild("Remotes") :: Folder
+	clientIntent = remotes:WaitForChild("CommunicationsClientEvent") :: RemoteEvent
+	serverPush = remotes:WaitForChild("CommunicationsServerEvent") :: RemoteEvent
+	clientIntent.OnServerEvent:Connect(onClientIntent)
+
+	Hierarchy.RulerCreated:Connect(function(_rulerId: string)
+		task.defer(syncAll)
+	end)
+	Hierarchy.RulerRemoving:Connect(function(_rulerId: string)
+		task.defer(syncAll)
+	end)
+	Players.PlayerAdded:Connect(function(player)
+		task.defer(function()
+			joinDiplomatic(player)
+			syncAll()
+		end)
+	end)
+
+	task.spawn(function()
+		while started do
+			syncAll()
+			task.wait(0.35)
+		end
+	end)
+
+	local inputBar = TextChatService:FindFirstChildOfClass("ChatInputBarConfiguration")
+	if inputBar then
+		inputBar.Enabled = false
+	end
+	local windowConfig = TextChatService:FindFirstChildOfClass("ChatWindowConfiguration")
+	if windowConfig then
+		windowConfig.Enabled = false
+	end
+	local tabs = TextChatService:FindFirstChildOfClass("ChannelTabsConfiguration")
+	if tabs then
+		tabs.Enabled = false
+	end
+
+	local helpCmd = Instance.new("TextChatCommand")
+	helpCmd.Name = "CommunicationsHelp"
+	helpCmd.PrimaryAlias = "/commshelp"
+	helpCmd.Parent = TextChatService
+	helpCmd.Triggered:Connect(function(originTextSource: TextSource)
+		local player = Players:GetPlayerByUserId(originTextSource.UserId)
+		if player then
+			firePlayer(player, "HelpHint", { text = "Select a conversation and press Help in the Communications panel." })
+		end
+	end)
+
+	local rbxGeneral = channelsFolder:FindFirstChild("RBXGeneral")
+	if rbxGeneral and rbxGeneral:IsA("TextChannel") then
+		rbxGeneral.ShouldDeliverCallback = function(_message, _dest)
+			return false
+		end
+	end
+
+	_G.__CommunicationsV01 = CommunicationsService
+	local debugFolder = ServerScriptService:FindFirstChild("CommunicationsDebug")
+	if not debugFolder then
+		debugFolder = Instance.new("Folder")
+		debugFolder.Name = "CommunicationsDebug"
+		debugFolder.Parent = ServerScriptService
+	end
+	debugSnapshot = debugFolder:FindFirstChild("Snapshot") :: StringValue
+	if not debugSnapshot then
+		debugSnapshot = Instance.new("StringValue")
+		debugSnapshot.Name = "Snapshot"
+		debugSnapshot.Parent = debugFolder
+	end
+	local invoke = debugFolder:FindFirstChild("Invoke")
+	if not (invoke and invoke:IsA("BindableFunction")) then
+		invoke = Instance.new("BindableFunction")
+		invoke.Name = "Invoke"
+		invoke.Parent = debugFolder
+	end
+	;(invoke :: BindableFunction).OnInvoke = function(operation: any, a: any, b: any, c: any)
+		if operation == "Inspect" then
+			return true, encode(CommunicationsService.GetInspect())
+		end
+		if operation == "Sync" then
+			syncAll()
+			return true, "synced"
+		end
+		if operation == "Distance" then
+			return true, tostring(realmDistance(tostring(a), tostring(b)))
+		end
+		if operation == "DiplomaticRecipients" then
+			return true, encode(diplomaticRecipients(tostring(a)))
+		end
+		if operation == "Announce" then
+			return CommunicationsService.Announce(tostring(a))
+		end
+		if operation == "SendAs" then
+			local userId = tonumber(a)
+			local player = if typeof(userId) == "number" then Players:GetPlayerByUserId(userId) else nil
+			if not player then
+				return false, "No player"
+			end
+			return onSend(player, b, c)
+		end
+		if operation == "OpenDirectAs" then
+			local userId = tonumber(a)
+			local player = if typeof(userId) == "number" then Players:GetPlayerByUserId(userId) else nil
+			if not player then
+				return false, "No player"
+			end
+			return onOpenDirect(player, b)
+		end
+		return false, "Unknown"
+	end
+
+	print("[Communications] V0.x started")
+end
+
+return CommunicationsService

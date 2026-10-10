@@ -15,7 +15,10 @@ local MapCatalog = require(ReplicatedStorage.Shared.Config.MapCatalog)
 local MapAdjacency = require(ReplicatedStorage.Shared.Util.MapAdjacency)
 local Hierarchy = require(ServerScriptService.Services.PoliticalHierarchyService)
 
+local MatchState = require(script.Parent.MatchState)
+local Neutral = require(script.Parent.NeutralDefenseService)
 local TerritoryMapService = {}
+local revisionByTerritory: { [string]: number } = {}
 
 local ownerChangedBindable = Instance.new("BindableEvent")
 TerritoryMapService.OwnershipChanged = ownerChangedBindable.Event
@@ -66,6 +69,7 @@ local function buildSnapshot()
 			territoryId = t.id,
 			ownerRulerId = owner or "",
 			hasOwner = owner ~= nil,
+			neutralDefense = if not owner then Neutral.Get(t.id) else nil,
 		})
 	end
 	table.sort(territories, function(a, b)
@@ -105,6 +109,7 @@ local function pushState(toPlayer: Player?)
 end
 
 local function unclaimRuler(rulerId: string)
+	if MatchState.IsEnded() then return end
 	local owned = territoriesByRuler[rulerId]
 	if not owned then
 		colorIndexByRuler[rulerId] = nil
@@ -112,6 +117,7 @@ local function unclaimRuler(rulerId: string)
 	end
 	for _, territoryId in owned do
 		if ownerByTerritory[territoryId] == rulerId then
+			revisionByTerritory[territoryId] = (revisionByTerritory[territoryId] or 0) + 1
 			ownerByTerritory[territoryId] = nil
 			print("[Territory] unclaimed", territoryId, "from", rulerId)
 		end
@@ -122,6 +128,7 @@ local function unclaimRuler(rulerId: string)
 end
 
 local function assignStartingTerritory(rulerId: string)
+	if MatchState.IsEnded() then return end
 	local existing = territoriesByRuler[rulerId]
 	if existing and #existing > 0 then
 		return
@@ -133,9 +140,18 @@ local function assignStartingTerritory(rulerId: string)
 	end
 	local pick = free[math.random(1, #free)]
 	ensureColor(rulerId)
+	revisionByTerritory[pick] = (revisionByTerritory[pick] or 0) + 1
 	ownerByTerritory[pick] = rulerId
 	territoriesByRuler[rulerId] = { pick }
 	print("[Territory] assigned", pick, "to", rulerId)
+	pushState()
+end
+
+function TerritoryMapService.GetOwnershipRevision(territoryId: string): number
+	return revisionByTerritory[territoryId] or 0
+end
+
+function TerritoryMapService.RefreshPublicState()
 	pushState()
 end
 
@@ -198,10 +214,12 @@ end
 
 -- Authoritative ownership change for conquest / debug. Not a client remote.
 function TerritoryMapService.SetOwner(territoryId: string, rulerId: string?): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local byId = definitionById()
 	if not byId[territoryId] then
 		return false, "Unknown territory."
 	end
+	revisionByTerritory[territoryId] = (revisionByTerritory[territoryId] or 0) + 1
 	local previous = ownerByTerritory[territoryId]
 	if previous then
 		local list = territoriesByRuler[previous]
@@ -234,6 +252,7 @@ function TerritoryMapService.SetOwner(territoryId: string, rulerId: string?): (b
 		territoriesByRuler[rulerId] = list
 	end
 	pushState()
+	require(script.Parent.VictoryService).Evaluate()
 	return true, "Ownership updated."
 end
 

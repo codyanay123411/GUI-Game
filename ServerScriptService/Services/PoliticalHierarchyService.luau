@@ -39,6 +39,7 @@ type FealtyRequest = {
 	expireThread: thread?,
 }
 
+local MatchState = require(script.Parent.MatchState)
 local PoliticalHierarchyService = {}
 
 local started = false
@@ -181,6 +182,7 @@ local function pushState(toPlayer: Player?)
 		serverPush:FireAllClients("State", encoded)
 	end
 	stateChangedBindable:Fire()
+	require(script.Parent.VictoryService).Evaluate()
 end
 
 local function notice(player: Player, message: string)
@@ -241,6 +243,7 @@ local function attachVassal(liege: Ruler, vassal: Ruler)
 end
 
 local function removeRulerInternal(rulerId: string)
+	if MatchState.IsEnded() then return end
 	local ruler = rulersById[rulerId]
 	if not ruler then
 		return
@@ -313,6 +316,7 @@ local function validateFealty(fromRulerId: string, toRulerId: string): (boolean,
 end
 
 function PoliticalHierarchyService.OfferFealty(fromRulerId: string, toRulerId: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local ok, err = validateFealty(fromRulerId, toRulerId)
 	if not ok then
 		return false, err
@@ -348,6 +352,7 @@ function PoliticalHierarchyService.OfferFealty(fromRulerId: string, toRulerId: s
 end
 
 function PoliticalHierarchyService.DeclineFealty(requestId: string, actorRulerId: string?): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local request = requestsById[requestId]
 	if not request then
 		return false, "Request is no longer valid."
@@ -374,6 +379,7 @@ function PoliticalHierarchyService.DeclineFealty(requestId: string, actorRulerId
 end
 
 function PoliticalHierarchyService.AcceptFealty(requestId: string, actorRulerId: string?): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local request = requestsById[requestId]
 	if not request then
 		return false, "Request is no longer valid."
@@ -418,6 +424,7 @@ end
 -- Production rank mutation used by Title Progression after server revalidation.
 -- Does not change liege/vassal links or territory.
 function PoliticalHierarchyService.SetTitleRank(rulerId: string, titleRank: number): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if not RankRules.IsValidRank(titleRank) then
 		return false, "Invalid rank."
 	end
@@ -510,6 +517,7 @@ local function onClientIntent(player: Player, action: any, a: any, b: any)
 end
 
 local function onPlayerAdded(player: Player)
+	if MatchState.IsEnded() then pushState(player); return end
 	local existing = rulerIdByUserId[player.UserId]
 	if existing then
 		removeRulerInternal(existing)
@@ -527,6 +535,7 @@ local function onPlayerAdded(player: Player)
 end
 
 local function onPlayerRemoving(player: Player)
+	if MatchState.IsEnded() then return end
 	local rulerId = rulerIdByUserId[player.UserId]
 	if rulerId then
 		-- Temporary V0.1 disconnect: drop the runtime ruler; do not replace with AI.

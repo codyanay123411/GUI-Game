@@ -6,7 +6,7 @@ Canonical list of tests classified **DEFERRED — NON-BLOCKING — V0.5 PLAYTEST
 
 Standing rule: `.cursor/rules/project.mdc` rule 29. Do not mark Director-verified or Director-accepted from Agent-only tests. Do not rewrite “not tested” into “verified.”
 
-**Communications V0.x** is **not** listed here. It is **PRE-V0.5 REQUIRED — DESIGN FREEZE IN PROGRESS — NOT IMPLEMENTED** (`AI/GAME_DESIGN.md`). Design freeze is not PASS and is not an implementation acceptance.
+**Communications V0.x** is **PRE-V0.5 REQUIRED — IMPLEMENTED — PARTIALLY AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED**. Native real-account peer filtering/privacy and observer verification remain outstanding; see the Communications rows below and `AI/COMMUNICATIONS_IMPLEMENTATION.md`.
 
 ## How to use (including player bug reports)
 
@@ -162,3 +162,63 @@ System status: **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (ordi
 - Warfare V0.1 Director-PASS disconnect / loss-of-independence **lifecycle** (no conquest, no liege inheritance, no stale war) — already accepted; only Military overlays above are deferred.
 - Agent-verified arithmetic (casualty bands, 1 Gold = 3 Troops, RecruitMax Gold×3, ledger identity) unless a **multiplayer** remainder exists.
 - Cases the Director has already marked PASS for the same behavior (see `AI/PROGRESS.md` Military 2026-08-24 PASS list, 18 items). Do not re-ask: attacker 0 cancel, never-interacted attacker 55s cancel, defender-0 unopposed, commitment editing, recruit-after-lock, timeout/AFK defender-0, cooldown / live cooldown UI, casualty ledger, multi-war overextension, selected-territory war context, contextual Last Battle, duplicate contested territory, defender/attacker victory ownership, pre-battle enemy commitment secrecy.
+
+
+## Communications V0.x replacement — 2026-10-09
+
+Agent verification is not Director acceptance. Existing MIL rows are unchanged. Detailed actual results and evidence: AI/COMMUNICATIONS_IMPLEMENTATION.md.
+
+### COM-MP-01 — Real-account native peer delivery and privacy
+
+- **Status:** NOT VERIFIED; environment-limited.
+- **Performed:** three synthetic Local Server clients; political distance/Council/Allies/Direct authority checks, native sender receipts and denied stale Council send. Synthetic CanUsersChatAsync returned false; peer native Success absent, correctly no custom rendering.
+- **Remaining:** consenting real-account multi-client session, all four paths, permitted and blocked account/privacy combinations, platform filtering. No production privacy/filtering pass claimed.
+- **Priority:** High before Communications acceptance.
+
+### COM-MP-02 — Observer and ordinary membership lifecycle
+
+- **Status:** PARTIAL AGENT VERIFICATION; remaining manual cases unverified.
+- **Performed:** three Studio testers; distinct ordinary membership vs read-only tester sources, neutral context/title labels, Alliance break and border-loss political rejection before sync, Council/Direct ruler-removal rejection and settled cleanup. All synthetic clients are tester observers, so retained read-only sources are expected.
+- **Remaining:** non-admin native source destruction, actual disconnect/rejoin, fealty break/root transitions under queued sends; real-account authorized observer receipts, Direct platform restrictions and local mute while ordinary peers continue.
+- **Priority:** High before acceptance.
+
+### COM-DESIGN-01 — Direct personal-territory adjacency clarification
+
+- **Status:** DIRECTOR RULE RESOLVED; AGENT-VERIFIED implementation, not Director acceptance.
+- **Ruling:** adjacency between personally/directly owned territories of two different rulers. Same root or political relationship alone grants nothing; no root-graph Direct check.
+- **Performed:** three clients; same-root touching liege/subject allowed, same-root non-touching denied while Council works; coexistence; border loss/restoration before sync; roots adjacent only through subject holdings do not qualify; outsiders/self/malformed/landless rejected. Injected-snapshot policy checks cover fellow subjects/Allies/enemy/NAP/unrelated. 26/26 targeted checks passed; evidence communications-direct-clarification-results.json.
+- **Remaining:** real-account native end-to-end and Director acceptance remain covered by COM-MP-01/02, not an unresolved design question.
+
+### COM-UI-01 — Full presentation and sustained-load check
+
+- **Status:** PARTIAL AGENT VERIFICATION.
+- **Performed:** 1280x924 Local Server and 1150x936 Play Solo; exact help, wrapped native long message, measured scroll canvas, confirmed input clear, existing shell geometry and pointer block observed.
+- **Remaining:** chosen smaller supported viewport/long names, many conversations, unread/context switches under peer receipts, match-scoped ended-context retention/load.
+- **Priority:** Medium; no stress or Director acceptance claim.
+
+## GUI / UX sprint visual follow-up — 2026-10-09
+
+- **UX-DIR-01 — DIRECTOR VISUAL APPROVAL REQUIRED:** evaluate map-first navigation, slate/gold palette, province names, drawer widths, priority offer prominence and battle/readiness presentation. Agent evidence in `GUI_UX_SPRINT.md`.
+- **UX-MP-01 — DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG:** many/long ruler names, large lists, multiple offers within one category and extended real-player multiplayer UX. Deferred is not PASS.
+- **UX-COM-01 — NOT TESTABLE IN CURRENT ENVIRONMENT:** native peer filtering/privacy with production accounts; negative Studio test UserIds are ineligible. Solo native sender Success verified. Existing Communications acceptance requirements remain.
+
+## Realm Overview visual follow-up — 2026-10-10
+
+- **ROV-DIR-01 — DIRECTOR VISUAL APPROVAL REQUIRED:** evaluate sustained physical hold-Tab feel, typography, political details and return to prior drawer. Solo/three-client matrix in REALM_OVERVIEW.md is agent verification.
+- **ROV-LOAD-01 — NOT TESTED:** 50 real connected players / prolonged network load. A 50-row projection and scrolling GUI diagnostic passed; this does not establish 50-client behavior.
+- **ROV-TOUCH-01 — NOT TESTED:** physical touch/mobile navigation and list interaction. Players entry point implemented; optional gamepad bindings omitted.
+
+## Unclaimed conquest / Domination — 2026-10-10
+
+These rows record Agent verification separately from Director playtesting. Detailed scenario IDs and evidence are in [CONQUEST_VICTORY.md](CONQUEST_VICTORY.md). Existing deferred rows are unchanged.
+
+| Scenarios | Agent evidence | Director status |
+| --- | --- | --- |
+| UC-MP-01 through UC-MP-04: militia, rejected requests, locks/cooldown, survivors, stale ownership, disconnects and subject-border root authority | PASS in actual three-client Local Server | Pending |
+| VIC-MP-01 through VIC-MP-05: threshold, outcomes, pending battle freeze, fealty/independence, winner disconnect and late join | PASS in actual multiplayer sessions | Pending |
+| UC-SOLO-01/02, VIC-SOLO-01: setup authorization and normal mouse conquest/title/victory flow | PASS | Pending |
+| VIC-UI-01/02: HD720/VGA bounds, modal input block and post-end inspection | PASS | Pending |
+| UC-BAL-01: complete human match, 300 militia and 70% pacing | Not tested; deferred to human playtest | DEFERRED |
+| VIC-PROD-01: published server, touch interaction and larger-player performance | Not tested | DEFERRED |
+
+No deferred scenario is a pass or Director acceptance. Neutral regeneration is deferred implementation, not a failed or passed test. Communications production transport/filtering acceptance remains governed by its existing backlog.

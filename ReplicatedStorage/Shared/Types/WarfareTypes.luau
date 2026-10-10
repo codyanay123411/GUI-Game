@@ -10,6 +10,8 @@ export type WarSnapshot = {
 	defenderRootId: string,
 	targetTerritoryId: string,
 	status: string,
+	targetKind: string,
+	neutralDefenders: number?,
 }
 
 export type WarfareSnapshot = {

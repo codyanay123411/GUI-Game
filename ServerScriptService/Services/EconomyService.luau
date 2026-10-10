@@ -17,6 +17,7 @@ local EconomyPayout = require(ReplicatedStorage.Shared.Util.EconomyPayout)
 local Hierarchy = require(ServerScriptService.Services.PoliticalHierarchyService)
 local Territory = require(ServerScriptService.Services.TerritoryMapService)
 
+local MatchState = require(script.Parent.MatchState)
 local EconomyService = {}
 
 local started = false
@@ -150,6 +151,7 @@ function EconomyService.GetInspect(rulerId: string): any?
 end
 
 function EconomyService.AddGold(rulerId: string, amount: number): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if goldByRuler[rulerId] == nil then
 		return false, "No economy state."
 	end
@@ -165,6 +167,7 @@ function EconomyService.AddGold(rulerId: string, amount: number): (boolean, stri
 end
 
 function EconomyService.TrySpend(rulerId: string, amount: number): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if goldByRuler[rulerId] == nil then
 		return false, "No economy state."
 	end
@@ -181,6 +184,7 @@ function EconomyService.TrySpend(rulerId: string, amount: number): (boolean, str
 end
 
 function EconomyService.DebugSetGold(rulerId: string, value: number): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if goldByRuler[rulerId] == nil then
 		return false, "No economy state."
 	end
@@ -193,6 +197,7 @@ function EconomyService.DebugSetGold(rulerId: string, value: number): (boolean, 
 end
 
 local function payoutTick()
+	if MatchState.IsEnded() then return end
 	local byId = definitionById()
 	local credit: { [string]: number } = {}
 	for _, t in Territory.GetMapDefinition().territories do

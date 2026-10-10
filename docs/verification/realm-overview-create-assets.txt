@@ -1,0 +1,39 @@
+assert(game:GetService("RunService"):IsEdit(),"Edit only")
+local g=game.StarterGui.HierarchyPrototypeGui
+assert(not g:FindFirstChild("RealmOverviewOverlay"),"Already exists")
+local C=require(game.ReplicatedStorage.Shared.Util.PrototypeGuiTheme).Colors
+local function box(class,name,parent,pos,size,z)
+ local i=Instance.new(class);i.Name=name;i.Position=pos;i.Size=size;i.BorderSizePixel=0;i.BackgroundColor3=C.panel;i.ZIndex=z;i.Parent=parent;return i
+end
+local function label(name,parent,text,pos,size,z)
+ local i=box("TextLabel",name,parent,pos,size,z);i.BackgroundTransparency=1;i.Font=Enum.Font.Gotham;i.TextSize=13;i.TextColor3=C.textSecondary;i.TextXAlignment=Enum.TextXAlignment.Left;i.TextYAlignment=Enum.TextYAlignment.Top;i.TextTruncate=Enum.TextTruncate.AtEnd;i.Text=text;return i
+end
+local function button(name,parent,text,pos,size,z)
+ local i=box("TextButton",name,parent,pos,size,z);i.BackgroundColor3=C.well;i.Font=Enum.Font.Gotham;i.TextSize=13;i.TextColor3=C.textPrimary;i.Text=text;local c=Instance.new("UICorner",i);c.CornerRadius=UDim.new(0,6);return i
+end
+local overlay=box("Frame","RealmOverviewOverlay",g,UDim2.fromScale(0,0),UDim2.fromScale(1,1),80);overlay.Active=true;overlay.BackgroundColor3=Color3.fromRGB(5,10,15);overlay.BackgroundTransparency=0.25;overlay.Visible=false
+local panel=box("Frame","Panel",overlay,UDim2.fromScale(0.5,0.5),UDim2.new(1,-32,1,-32),81);panel.AnchorPoint=Vector2.new(0.5,0.5);panel.Active=true
+local corner=Instance.new("UICorner",panel);corner.CornerRadius=UDim.new(0,10);local stroke=Instance.new("UIStroke",panel);stroke.Color=C.stroke
+local head=label("Header",panel,"REALM OVERVIEW",UDim2.fromOffset(16,14),UDim2.new(1,-116,0,26),82);head.Font=Enum.Font.GothamBold;head.TextSize=20;head.TextColor3=C.section
+label("Subtitle",panel,"Players — connecting",UDim2.fromOffset(16,48),UDim2.new(1,-32,0,22),82)
+button("Close",panel,"Close",UDim2.new(1,-88,0,14),UDim2.fromOffset(72,32),82)
+local sorts=box("Frame","Sorts",panel,UDim2.fromOffset(16,78),UDim2.new(1,-32,0,30),82);sorts.BackgroundTransparency=1
+local sortLayout=Instance.new("UIListLayout",sorts);sortLayout.FillDirection=Enum.FillDirection.Horizontal;sortLayout.Padding=UDim.new(0,8);sortLayout.SortOrder=Enum.SortOrder.LayoutOrder
+for n,name in {"Realm","Title","Territory","Name"} do local b=button(name,sorts,name,UDim2.new(),UDim2.fromOffset(80,30),83);b.LayoutOrder=n;if n==1 then b.BackgroundColor3=C.action end end
+local columns=box("Frame","Columns",panel,UDim2.fromOffset(16,116),UDim2.new(1,-32,0,18),82);columns.BackgroundTransparency=1
+for _,entry in {{"RULER",0,.25},{"TITLE / STATUS",.25,.18},{"REALM / LIEGE",.43,.27},{"LAND",.70,.12},{"TO YOU",.82,.18}} do local t=label(entry[1],columns,entry[1],UDim2.new(entry[2],14,0,0),UDim2.new(entry[3],-14,1,0),83);t.TextSize=10;t.TextColor3=C.textMuted end
+local list=box("ScrollingFrame","List",panel,UDim2.fromOffset(16,134),UDim2.new(1,-32,1,-180),82);list.BackgroundTransparency=1;list.Active=true;list.ScrollBarThickness=5;list.ScrollBarImageColor3=C.section;list.CanvasSize=UDim2.new();list.AutomaticCanvasSize=Enum.AutomaticSize.Y;list.ScrollingDirection=Enum.ScrollingDirection.Y
+local layout=Instance.new("UIListLayout",list);layout.SortOrder=Enum.SortOrder.LayoutOrder;layout.Padding=UDim.new(0,6)
+local detail=label("Detail",panel,"Select a ruler for details.",UDim2.new(0,16,1,-42),UDim2.new(1,-32,0,30),82);detail.TextWrapped=true;detail.TextTruncate=Enum.TextTruncate.None
+local row=button("RealmOverviewRow",g.Templates,"",UDim2.new(),UDim2.new(1,-8,0,74),83);row.Visible=false;row.AutoButtonColor=true;row.ClipsDescendants=true
+box("Frame","Accent",row,UDim2.fromOffset(0,8),UDim2.new(0,3,1,-16),84)
+local identity=label("Identity",row,"",UDim2.fromOffset(14,10),UDim2.new(.25,-18,0,24),84);identity.TextSize=14;identity.Font=Enum.Font.GothamBold
+label("Username",row,"",UDim2.fromOffset(14,36),UDim2.new(.25,-18,0,24),84).TextSize=11
+label("Politics",row,"",UDim2.new(.25,0,0,10),UDim2.new(.18,-8,0,52),84)
+label("Realm",row,"",UDim2.new(.43,0,0,10),UDim2.new(.27,-12,0,52),84)
+label("Holdings",row,"",UDim2.new(.70,0,0,10),UDim2.new(.12,-8,0,52),84)
+label("Relation",row,"",UDim2.new(.82,0,0,10),UDim2.new(.18,-10,0,52),84)
+local nav=g.StrategyNavigation
+local players=nav.Map:Clone();players.Name="Players";players.Text="Players";players.Position=UDim2.fromOffset(6,384);players.Parent=nav
+nav.RequestNotice.Position=UDim2.fromOffset(6,444);nav.CanvasSize=UDim2.fromOffset(0,488)
+print("OVERVIEW_ASSETS_CREATED")

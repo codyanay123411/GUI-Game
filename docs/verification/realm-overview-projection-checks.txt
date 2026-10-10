@@ -1,0 +1,19 @@
+local V=require(game.ReplicatedStorage.Shared.Util.RealmOverviewView)
+local p={{UserId=1,DisplayName="Zed",Name="Zed"},{UserId=2,DisplayName="Ada",Name="Ada"},{UserId=3,DisplayName="Ben",Name="Ben"}}
+local h={rulers={{rulerId="a",userId=1,displayName="Zed",titleName="Lord",titleRank=1,independent=true,rootRulerId="a",vassalIds={"b"},gold=999,troops=999},{rulerId="b",userId=2,displayName="Ada",titleName="Lord",titleRank=1,independent=false,liegeId="a",rootRulerId="a",vassalIds={}},{rulerId="c",userId=3,displayName="Ben",titleName="Duke",titleRank=2,independent=true,rootRulerId="c",vassalIds={}}}}
+local s={Hierarchy=h,Territory={territories={{ownerRulerId="a"},{ownerRulerId="b"},{ownerRulerId="c"}}},Diplomacy={agreements={{leftRulerId="a",rightRulerId="c",alliance=true,nap=true}}},Warfare={wars={{attackerRootId="a",defenderRootId="c"}}},Communications={contacts={{userId=2}}}}
+local function index(list,id) for _,r in list do if r.userId==id then return r end end end
+local r=V.Build(p,1,s,"Realm");assert(r[1].userId==3 and r[2].userId==1 and r[3].userId==2,"Default sort")
+assert(index(r,1).personal==1 and index(r,1).realm==2,"Counts")
+assert(index(r,2).relation=="Your subject" and index(r,2).direct=="Available","Same-root direct")
+assert(index(r,3).war and index(r,3).allied and index(r,3).nap and index(r,3).relation=="At war","Relationships")
+assert(index(r,1).gold==nil and index(r,1).troops==nil and index(r,1).requests==nil,"Privacy")
+assert(V.Build(p,1,s,"Name")[1].userId==2,"Name sort")
+assert(V.Build(p,1,s,"Title")[1].userId==3,"Title sort")
+s.Communications.contacts={};assert(index(V.Build(p,1,s,"Realm"),2).direct=="Unavailable","Direct revocation")
+s.Diplomacy.agreements={};s.Warfare.wars={};assert(index(V.Build(p,1,s,"Realm"),3).relation=="Unrelated","Relation cleanup")
+h.rulers[2].independent=true;h.rulers[2].rootRulerId="b";h.rulers[2].liegeId=nil;assert(index(V.Build(p,1,s,"Realm"),2).realm==1,"Root update")
+assert(#V.Build({p[1],p[3]},1,s,"Realm")==2,"Disconnected snapshot filtered")
+local pending=V.Build(p,1,{},"Name");assert(#pending==3 and pending[1].personal==nil,"Join pending")
+local many={};for n=1,50 do table.insert(many,{UserId=n,DisplayName="Ruler "..n,Name="Ruler"..n}) end;assert(#V.Build(many,1,s,"Realm")==50,"Population")
+print("OVERVIEW_PROJECTION_CHECKS_PASS 12")

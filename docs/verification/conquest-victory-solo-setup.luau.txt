@@ -1,0 +1,21 @@
+local S=game.ServerScriptService.Services
+local H,T,M,N,Title,Admin=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.MilitaryService),require(S.NeutralDefenseService),require(S.TitleProgressionService),require(S.AdminBridge)
+local p=game.Players:GetPlayers()[1];assert(p and #game.Players:GetPlayers()==1)
+local a=H.GetRulerIdForUserId(p.UserId);assert(a)
+for _,land in T.GetMapDefinition().territories do assert(T.SetOwner(land.id,nil)) end
+assert(T.SetOwner("westmere",a))
+local map=T.GetMapDefinition();local ash
+for _,land in map.territories do if land.id=="ashwood" then ash=land end end
+local originalMap,originalProvince=map.unclaimedDefenders,ash.unclaimedDefenders
+ash.unclaimedDefenders=17;assert(T.SetOwner("ashwood",nil));assert(N.Get("ashwood").maximum==17)
+ash.unclaimedDefenders=nil;map.unclaimedDefenders=23;assert(T.SetOwner("ashwood",nil));assert(N.Get("ashwood").maximum==23)
+map.unclaimedDefenders=nil;assert(T.SetOwner("ashwood",nil));assert(N.Get("ashwood").maximum==300)
+map.unclaimedDefenders=originalMap;ash.unclaimedDefenders=originalProvince;assert(T.SetOwner("ashwood",nil))
+for _,bad in {-1,1.5,math.huge,0/0,301} do assert(not N.DebugSet("ashwood",bad)) end
+assert(not N.ApplySurvivors("ashwood",T.GetOwnershipRevision("ashwood"),-1))
+assert(not N.ApplySurvivors("ashwood",T.GetOwnershipRevision("ashwood")-1,0))
+assert(not Admin.Execute(123456789,"SetNeutralDefense","ashwood",1))
+assert(Admin.Execute(p.UserId,"InspectNeutral","ashwood"));assert(Admin.Execute(p.UserId,"SetNeutralDefense","ashwood",250));assert(N.Get("ashwood").current==250)
+assert(Admin.Execute(p.UserId,"SetNeutralDefense","ashwood",300));assert(Admin.Execute(p.UserId,"InspectVictory"));assert(Admin.Execute(p.UserId,"CheckVictory"))
+Title.DebugSetPrestige(a,100);assert(M.DebugSetSeed(42));assert(M.DebugSetTroops(a,1000))
+print("UC_VIC_SOLO_CONFIG_ADMIN_SETUP_PASS")

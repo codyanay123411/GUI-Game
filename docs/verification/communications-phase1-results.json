@@ -1,0 +1,163 @@
+{
+  "conversations": [
+    {
+      "active": false,
+      "id": "alliance:c1e59b5d-1d88-416f-a8ad-afb83e664100",
+      "partyA": "Player_-1",
+      "channel": "Alliance_c1e59b5d",
+      "hasHistory": true,
+      "partyB": "Player_-2",
+      "canSend": false,
+      "allianceInstanceId": "c1e59b5d-1d88-416f-a8ad-afb83e664100",
+      "kind": "alliance",
+      "recipientArmed": true
+    },
+    {
+      "active": true,
+      "id": "direct:Player_-1|Player_-2",
+      "partyA": "Player_-1",
+      "channel": "Direct_Player_-1_Player_-2",
+      "hasHistory": true,
+      "partyB": "Player_-2",
+      "canSend": true,
+      "kind": "direct",
+      "recipientArmed": true
+    },
+    {
+      "active": true,
+      "id": "diplomatic",
+      "channel": "Diplomatic",
+      "hasHistory": true,
+      "canSend": true,
+      "kind": "diplomatic",
+      "recipientArmed": true
+    },
+    {
+      "active": true,
+      "id": "alliance:27460854-c3c1-4b1b-a4f5-af0468743f88",
+      "partyA": "Player_-1",
+      "channel": "Alliance_27460854",
+      "hasHistory": true,
+      "partyB": "Player_-3",
+      "canSend": true,
+      "allianceInstanceId": "27460854-c3c1-4b1b-a4f5-af0468743f88",
+      "kind": "alliance",
+      "recipientArmed": true
+    }
+  ],
+  "results": [
+    {
+      "id": "COMMS-GRAPH-01",
+      "values": [
+        3
+      ]
+    },
+    {
+      "id": "COMMS-GRAPH-02",
+      "values": [
+        "Player_-1,Player_-2,Player_-3"
+      ]
+    },
+    {
+      "id": "COMMS-GRAPH-03",
+      "values": [
+        "Player_-3,Player_-1,Player_-2,Mock_0261ffb2-d6cd-47d7-b04b-c1be659ae8fa"
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-OFFER12",
+      "values": [
+        true
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-ACCEPT12",
+      "values": [
+        true,
+        "Alliance accepted."
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-OFFER13",
+      "values": [
+        true
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-ACCEPT13",
+      "values": [
+        true,
+        "Alliance accepted."
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-IDS",
+      "values": [
+        "alliance:c1e59b5d-1d88-416f-a8ad-afb83e664100",
+        "alliance:27460854-c3c1-4b1b-a4f5-af0468743f88",
+        true
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-SEND12",
+      "values": [
+        true,
+        "sent"
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-OUTSIDER",
+      "values": [
+        false,
+        "Not a party."
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-SEND13",
+      "values": [
+        true,
+        "sent"
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-BREAK12",
+      "values": [
+        true,
+        "Alliance broken."
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-BREAK-WINDOW",
+      "values": [
+        true,
+        "sent"
+      ]
+    },
+    {
+      "id": "COMMS-ALLY-END-REJECT",
+      "values": [
+        false,
+        "Cannot send."
+      ]
+    },
+    {
+      "id": "COMMS-NAP-OFFER",
+      "values": [
+        true
+      ]
+    },
+    {
+      "id": "COMMS-NAP-ACCEPT",
+      "values": [
+        true,
+        "Non-Aggression Pact accepted."
+      ]
+    },
+    {
+      "id": "COMMS-NAP-NO-NEW-ROOM",
+      "values": [
+        2
+      ]
+    }
+  ]
+}

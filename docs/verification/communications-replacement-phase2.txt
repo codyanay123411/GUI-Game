@@ -1,0 +1,46 @@
+-- Disposable server-only Council + accepted-system regression fixture.
+local S = game.ServerScriptService.Services
+local H,T,D,C = require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.DiplomacyService),require(S.CommunicationsService)
+local E,M,W = require(S.EconomyService),require(S.MilitaryService),require(S.WarfareService)
+local P = require(S.CommunicationsPolicy)
+local results={}
+local function record(id,...) table.insert(results,{id=id,values={...}}) end
+E.DebugSetGold("Player_-1",100)
+local before=E.GetBalance("Player_-1")
+record("REG_RECRUIT",M.Recruit("Player_-1",3))
+record("REG_RECRUIT_SPEND",before-E.GetBalance("Player_-1"),M.GetInspect("Player_-1"))
+record("REG_BAD_RECRUIT",M.Recruit("Player_-1",2))
+record("REG_GOLD_OVESPEND",E.TrySpend("Player_-1",1000000))
+record("REG_WAR_TOO_FAR",W.DeclareWar("Player_-1","highmarch"))
+local warOk,warId=W.DeclareWar("Player_-1","northvale")
+record("REG_WAR_VALID",warOk,warId)
+if warOk then
+	record("REG_WAR_DUPLICATE",W.DeclareWar("Player_-1","northvale"))
+	record("REG_COMMIT",M.SetCommit("Player_-1",warId,9))
+	W.CancelWar(warId,"Communications regression fixture")
+	record("REG_CANCEL_UNWIND",M.GetInspect("Player_-1"))
+end
+H.DebugSetRank("Player_-1",4)
+H.DebugSetRank("Player_-2",3)
+H.DebugSetRank("Player_-3",2)
+local ok3,req3=H.OfferFealty("Player_-3","Player_-2")
+record("COUNCIL_FEALTY32",ok3,H.AcceptFealty(req3,"Player_-2"))
+local ok2,req2=H.OfferFealty("Player_-2","Player_-1")
+record("COUNCIL_FEALTY21",ok2,H.AcceptFealty(req2,"Player_-1"))
+game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync")
+record("COUNCIL_VALID_UP",C.DebugCanDeliver("council:Player_-1",-2,-1))
+record("COUNCIL_VALID_DOWN",C.DebugCanDeliver("council:Player_-2",-2,-3))
+record("COUNCIL_NONRECURSIVE",C.DebugCanDeliver("council:Player_-1",-3,-1))
+local w=P.World(H.GetSnapshot().rulers,D.GetSnapshot().agreements,T.GetOwnedTerritoryIds,T.AreAdjacent)
+record("IDENTITY_LIEGE",P.Prefix(w,{kind="diplomatic"},-2,-3,false))
+record("IDENTITY_SUBJECT",P.Prefix(w,{kind="direct"},-3,-2,false))
+record("IDENTITY_COUNCIL",P.Prefix(w,{kind="council"},-3,-2,false))
+record("IDENTITY_OBSERVER",P.Prefix(w,{kind="direct"},-3,-2,true))
+record("REG_TERRITORY",T.GetOwnerRulerId("northvale"))
+record("REG_HIERARCHY",H.GetSnapshot())
+record("REG_DIPLOMACY_CLEANUP",D.GetSnapshot())
+local v=Instance.new("StringValue")
+v.Name="ReplacementPhase2Results"
+v.Value=game.HttpService:JSONEncode({results=results,inspect=C.DebugInspect()})
+v.Parent=game.ServerScriptService
+print("REPLACEMENT_PHASE2="..v.Value)

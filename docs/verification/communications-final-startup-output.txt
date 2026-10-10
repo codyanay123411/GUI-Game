@@ -1,0 +1,153 @@
+22:19:57.994  [Hierarchy] push State all clients rulers= 0 requests= 0  -  Server - PoliticalHierarchyService:180
+  22:19:57.994  [Title] push State all clients  -  Server - TitleProgressionService:146
+  22:19:57.994  [Diplomacy] push State all clients agreements= 0 requests= 0  -  Server - DiplomacyService:210
+  22:19:57.994  [Diplomacy] service started  -  Server - DiplomacyService:606
+  22:19:57.994  [Warfare] push State all clients wars= 0  -  Server - WarfareService:227
+  22:19:57.994  [Warfare] service started  -  Server - WarfareService:571
+  22:19:57.995  [Economy] started. StartingGold 150 interval 6  -  Server - EconomyService:336
+  22:19:57.995  [Military] service started  -  Server - MilitaryService:887
+  22:19:57.995  [Communications] NativeDeliveryV01 started.  -  Server - CommunicationsService:304
+  22:19:57.995  [Admin] Created AdminFeedbackEvent (server to client only).  -  Server - AdminService:302
+  22:19:57.995  [Admin] Cloned AdminKohlThemeClient into ServerScriptService.Kohl's Admin.Config.Addons  -  Server - AdminService:154
+  22:19:57.995  [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:248
+  22:19:57.995  [Admin] Kohl addon already present under ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:257
+  22:19:57.996  [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:248
+  22:19:57.996  [Admin] AdminBridge started. GameTester UserIds only for live commands.  -  Server - AdminService:342
+  22:19:57.997  Requiring asset 1868400649. Callstack: ServerScriptService.Kohl's Admin.Loader, line 59   -  Server - Loader:59
+  22:19:58.218  [Hierarchy] ruler created Akuma_Ackermna userId= 106676397 id= Player_106676397  -  Server - PoliticalHierarchyService:289
+  22:19:58.218  [Hierarchy] push State all clients rulers= 1 requests= 0  -  Server - PoliticalHierarchyService:180
+  22:19:58.218  [Hierarchy] push State to Akuma_Ackermna rulers= 1 requests= 0  -  Server - PoliticalHierarchyService:177
+  22:19:58.218  [Warfare] push State to Akuma_Ackermna  -  Server - WarfareService:224
+  22:19:58.218  [Diplomacy] push State to Akuma_Ackermna  -  Server - DiplomacyService:207
+  22:19:58.218  [Title] push State to Akuma_Ackermna  -  Server - TitleProgressionService:143
+  22:19:58.218  [Title] push State all clients  -  Server - TitleProgressionService:146
+  22:19:58.218  [Territory] assigned stoneford to Player_106676397  -  Server - TerritoryMapService:138
+  22:19:58.218  [Territory] push State all clients  -  Server - TerritoryMapService:101
+  22:19:58.218   ▶ [Title] push State all clients (x3)  -  Server - TitleProgressionService:146
+
+
+  22:19:58.273   ▶ [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon (x2)  -  Server - AdminService:248
+
+  22:19:59.648  Overriding Kohl's Admin command: adminhelp  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: inspectwars  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: inspectterritory  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: inspectruler  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: setowner  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: setprestige  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: inspectgold  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: setgold  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: addgold  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: spendgold  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: inspecttroops  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: settroops  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: addtroops  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: inspectmilitary  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: inspectcomms  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: inspectcontest  -  Server - Registry:163
+  22:19:59.648  Overriding Kohl's Admin command: resolvewar  -  Server - Registry:163
+  22:19:59.663  [Kohl's Admin] Initializing DataStore _KData...  -  Server - Store:45
+  22:19:59.951  DataStoreService: StudioAccessToApisNotAllowed: Studio access to APIs is not allowed. API: GetAsync, Data Store: _KData  -  Studio
+  22:19:59.961  Enable Studio access to API services in Experience Settings for full features.  -  Server - Store:70
+  22:19:59.961  [Kohl's Admin] Data failed to load: Enable Studio access to API services in Experience Settings for full features.  -  Server - Data:555
+  22:20:05.515  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  22:20:05.515  Overriding Kohl's Admin command: adminhelp  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: inspectwars  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: inspectterritory  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: inspectruler  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: setowner  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: setprestige  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: inspectgold  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: setgold  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: addgold  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: spendgold  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: inspecttroops  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: settroops  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: addtroops  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: inspectmilitary  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: inspectcomms  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: inspectcontest  -  Server - Registry:163
+  22:20:05.515  Overriding Kohl's Admin command: resolvewar  -  Server - Registry:163
+  22:20:05.822  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  22:20:05.822  Overriding Kohl's Admin command: adminhelp  -  Server - Registry:163
+  22:20:05.822  Overriding Kohl's Admin command: inspectwars  -  Server - Registry:163
+  22:20:05.822  Overriding Kohl's Admin command: inspectterritory  -  Server - Registry:163
+  22:20:05.822  Overriding Kohl's Admin command: inspectruler  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: setowner  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: setprestige  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: inspectgold  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: setgold  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: addgold  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: spendgold  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: inspecttroops  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: settroops  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: addtroops  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: inspectmilitary  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: inspectcomms  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: inspectcontest  -  Server - Registry:163
+  22:20:05.823  Overriding Kohl's Admin command: resolvewar  -  Server - Registry:163
+  22:20:06.073  [Hierarchy] controller started listening Akuma_Ackermna  -  Client - PoliticalHierarchyController:67
+  22:20:06.073  [Hierarchy] render Akuma_Ackermna rulers= 0 otherRows= 0 incoming= 0  -  Client - PoliticalHierarchyController:288
+  22:20:06.073  [Hierarchy] remote Ready sent Akuma_Ackermna  -  Client - PoliticalHierarchyController:333
+  22:20:06.077  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  22:20:06.077  Overriding Kohl's Admin command: adminhelp  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: inspectwars  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: inspectterritory  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: inspectruler  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: setowner  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: setprestige  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: inspectgold  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: setgold  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: addgold  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: spendgold  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: inspecttroops  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: settroops  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: addtroops  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: inspectmilitary  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: inspectcomms  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: inspectcontest  -  Server - Registry:163
+  22:20:06.077  Overriding Kohl's Admin command: resolvewar  -  Server - Registry:163
+  22:20:06.077  [Admin] Registered AdminKohlAddon with Kohl _K_INTERFACE.  -  Server - AdminService:218
+  22:20:06.081  [Territory] controller started; Ready sent  -  Client - TerritoryMapController:534
+  22:20:06.082  [Title] controller started; Ready sent  -  Client - TitleProgressionController:144
+  22:20:06.082  [Diplomacy] controller started; Ready sent  -  Client - DiplomacyController:306
+  22:20:06.082  [Warfare] controller started; Ready sent  -  Client - WarfareController:463
+  22:20:06.084  [Admin] feedback controller started.  -  Client - AdminFeedbackController:186
+  22:20:06.084  [Hierarchy] State received Akuma_Ackermna rulers= 1 requests= 0  -  Client - PoliticalHierarchyController:324
+  22:20:06.084  [Hierarchy] render Akuma_Ackermna rulers= 1 otherRows= 0 incoming= 0  -  Client - PoliticalHierarchyController:288
+  22:20:06.084  [Hierarchy] State received Akuma_Ackermna rulers= 1 requests= 0  -  Client - PoliticalHierarchyController:324
+  22:20:06.084  [Hierarchy] render Akuma_Ackermna rulers= 1 otherRows= 0 incoming= 0  -  Client - PoliticalHierarchyController:288
+  22:20:06.085  [Territory] State received map= vale_prototype_16  -  Client - TerritoryMapController:332
+  22:20:06.115  [Hierarchy] Ready from Akuma_Ackermna  -  Server - PoliticalHierarchyService:465
+  22:20:06.115  [Hierarchy] push State to Akuma_Ackermna rulers= 1 requests= 0  -  Server - PoliticalHierarchyService:177
+  22:20:06.115  [Territory] Ready from Akuma_Ackermna  -  Server - TerritoryMapService:248
+  22:20:06.115  [Territory] push State to Akuma_Ackermna  -  Server - TerritoryMapService:98
+  22:20:06.115  [Title] Ready from Akuma_Ackermna  -  Server - TitleProgressionService:216
+  22:20:06.115  [Title] push State to Akuma_Ackermna  -  Server - TitleProgressionService:143
+  22:20:06.115  [Diplomacy] Ready from Akuma_Ackermna  -  Server - DiplomacyService:444
+  22:20:06.115  [Diplomacy] push State to Akuma_Ackermna  -  Server - DiplomacyService:207
+  22:20:06.115  [Warfare] Ready from Akuma_Ackermna  -  Server - WarfareService:485
+  22:20:06.115  [Warfare] push State to Akuma_Ackermna  -  Server - WarfareService:224
+  22:20:06.115   ▶ [Title] push State all clients (x2)  -  Server - TitleProgressionService:146
+
+  22:20:06.179  [Hierarchy] State received Akuma_Ackermna rulers= 1 requests= 0  -  Client - PoliticalHierarchyController:324
+  22:20:06.179  [Hierarchy] render Akuma_Ackermna rulers= 1 otherRows= 0 incoming= 0  -  Client - PoliticalHierarchyController:288
+  22:20:06.179  [Territory] State received map= vale_prototype_16  -  Client - TerritoryMapController:332
+  22:20:06.507  Overriding Kohl's Admin command: adminhelp  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: inspectwars  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: inspectterritory  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: inspectruler  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: setowner  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: setprestige  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: inspectgold  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: setgold  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: addgold  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: spendgold  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: inspecttroops  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: settroops  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: addtroops  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: inspectmilitary  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: inspectcomms  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: inspectcontest  -  Client - Registry:163
+  22:20:06.507  Overriding Kohl's Admin command: resolvewar  -  Client - Registry:163
+  22:21:00.266  > local p=game.Players.LocalPlayer.PlayerGui.HierarchyPrototypeGui.CommunicationsPanel; print("FINAL_GUI_METRICS="..game.HttpService:JSONEncode({input=p.Input.Text,bodyHeight=p.Transcript.Body.AbsoluteSize.Y,canvasHeight=p.Transcript.CanvasSize.Y.Offset,windowHeight=p.Transcript.AbsoluteWindowSize.Y,scroll=p.Transcript.CanvasPosition.Y,nativeMessage=string.find(p.Transcript.Body.Text,"Final native receipt check",1,true)~=nil}));  -  Studio
+  22:21:00.278  FINAL_GUI_METRICS={"windowHeight":126,"nativeMessage":true,"input":"","scroll":0,"bodyHeight":274,"canvasHeight":274}  -  Client

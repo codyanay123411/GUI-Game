@@ -1,0 +1,11 @@
+00:03:48.563  > local g=game.Players.LocalPlayer.PlayerGui.HierarchyPrototypeGui;local s=g.AdminInspectPanel.BodyScroll;print("FINAL_INSPECT_BOOT",s.AutomaticCanvasSize,s.Active);g.AdminInspectPanel.Visible=true;s.Body.Text=string.rep("Final scroll verification line\n",120);print("FINAL_HD",g.AbsoluteSize,workspace.CurrentCamera.ViewportSize)  -  Studio
+  00:03:48.575  FINAL_INSPECT_BOOT Enum.AutomaticSize.None true  -  Client
+  00:03:48.575  FINAL_HD 1280, 661 1280, 719  -  Client
+  00:04:01.347  > local s=game.Players.LocalPlayer.PlayerGui.HierarchyPrototypeGui.AdminInspectPanel.BodyScroll;print("FINAL_INSPECT_SCROLL",s.CanvasPosition,s.AbsoluteCanvasSize)  -  Studio
+  00:04:01.356  FINAL_INSPECT_SCROLL 0, 500 620, 1581  -  Client
+  00:04:39.330  > local s=Instance.new("Script");s.Name="GuiInspectVerification";s.Source=[=[local p=game.Players:GetPlayers()[1];print("FINAL_BRIDGE",require(game.ServerScriptService.Services.AdminBridge).Execute(p.UserId,"InspectComms"))]=];s.Parent=game.ServerScriptService  -  Studio
+  00:04:39.339  [Admin] Execute 106676397 InspectComms nil nil nil  -  Server - AdminBridge:389
+  00:04:39.339  FINAL_BRIDGE true {"implementation":"NativeDeliveryV01","contexts":[{"id":"diplomatic","kind":"diplomatic","members":[106676397],"sources":[{"userId":106676397,"canSend":true}]}]}  -  Server - GuiInspectVerification:1
+  00:04:39.340  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  00:04:57.003  > local p=game.Players.LocalPlayer.PlayerGui.HierarchyPrototypeGui.AdminInspectPanel;print("FINAL_FEEDBACK_RENDER",p.Visible,p.Header.Text,p.BodyScroll.CanvasPosition)  -  Studio
+  00:04:57.020  FINAL_FEEDBACK_RENDER true Communications 0, 0  -  Client

@@ -1,0 +1,49 @@
+{
+  "date": "2026-10-10",
+  "status": "AGENT_VERIFIED_NOT_DIRECTOR_ACCEPTED",
+  "syntax": {
+    "files": 65,
+    "compiler": "Luau 0.740",
+    "result": "PASS"
+  },
+  "pure": {
+    "checks": 24,
+    "result": "PASS"
+  },
+  "multiplayerStageOne": {
+    "assertions": 32,
+    "actualClients": 3,
+    "result": "PASS"
+  },
+  "otherPassed": [
+    "stale mechanical capture",
+    "subject-border root conquest",
+    "exactly-once final freeze",
+    "root realm defeat UI",
+    "fealty threshold",
+    "live independence recount",
+    "pending and resolved attacker disconnect",
+    "winner disconnect preservation",
+    "late join no free land",
+    "Solo mouse conquest and title",
+    "Solo mouse final victory",
+    "defense configuration and admin authorization",
+    "no loot",
+    "HD720 and VGA bounds",
+    "modal map input block and resumed zoom",
+    "post-end Messages and Ready replay",
+    "25-source disk/Studio equality and runtime cleanup"
+  ],
+  "snapshot": {
+    "path": "docs/verification/conquest-victory-2026-10-10.rbxl",
+    "bytes": 738547,
+    "published": false
+  },
+  "limitations": [
+    "Director acceptance pending",
+    "Human balance match not tested",
+    "Published-server/performance and touch not tested",
+    "Communications production peer transport/filtering not newly verified",
+    "Late-join spectator wording final minor change not rerun with late client"
+  ]
+}

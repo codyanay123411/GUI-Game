@@ -1,0 +1,10 @@
+local S=game.ServerScriptService.Services
+local H=require(S.PoliticalHierarchyService);local T=require(S.TerritoryMapService);local D=require(S.DiplomacyService);local W=require(S.WarfareService)
+local a,b,c=H.GetRulerIdForUserId(-1),H.GetRulerIdForUserId(-2),H.GetRulerIdForUserId(-3);assert(a and b and c)
+assert(H.SetTitleRank(a,2))
+for _,land in T.GetSnapshot().territories do T.SetOwner(land.territoryId,nil) end
+assert(T.SetOwner("westmere",a));assert(T.SetOwner("ashwood",b));assert(T.SetOwner("northvale",c))
+local ok,id=D.Offer(a,b,"Alliance");assert(ok,id);assert(D.Accept(id,b))
+ok,id=D.Offer(a,b,"NAP");assert(ok,id);assert(D.Accept(id,b))
+local warOk,warId=W.DeclareWar(a,"northvale");assert(warOk,warId)
+print("OVERVIEW_MP_STAGE_ONE",a,b,c,warId)

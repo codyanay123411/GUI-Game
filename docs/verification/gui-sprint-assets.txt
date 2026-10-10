@@ -1,0 +1,59 @@
+local g=game.StarterGui.HierarchyPrototypeGui
+local function corner(p,r) local c=p:FindFirstChildOfClass("UICorner") or Instance.new("UICorner");c.CornerRadius=UDim.new(0,r or 7);c.Parent=p end
+local function stroke(p) local c=p:FindFirstChildOfClass("UIStroke") or Instance.new("UIStroke");c.Color=Color3.fromRGB(66,77,86);c.Thickness=1;c.Parent=p end
+local function box(class,name,parent,x,y,w,h)
+ local p=Instance.new(class);p.Name=name;p.Position=UDim2.fromOffset(x,y);p.Size=UDim2.fromOffset(w,h);p.BackgroundColor3=Color3.fromRGB(19,28,37);p.BorderSizePixel=0;p.Parent=parent;return p
+end
+local function label(name,parent,text,x,y,w,h,size)
+ local p=box("TextLabel",name,parent,x,y,w,h);p.BackgroundTransparency=1;p.Text=text;p.Font=Enum.Font.Gotham;p.TextSize=size or 14;p.TextColor3=Color3.fromRGB(235,231,219);p.TextXAlignment=Enum.TextXAlignment.Left;p.TextYAlignment=Enum.TextYAlignment.Center;p.TextWrapped=true;return p
+end
+local function scrolling(name)
+ local old=g[name];if old:IsA("ScrollingFrame") then return old end
+ local p=Instance.new("ScrollingFrame");p.Name=name;p.Size=old.Size;p.Position=old.Position;p.BackgroundColor3=old.BackgroundColor3;p.Visible=old.Visible;p.Active=true;p.ScrollingDirection=Enum.ScrollingDirection.Y;p.AutomaticCanvasSize=Enum.AutomaticSize.Y;p.CanvasSize=UDim2.new();p.ScrollBarThickness=5;p.BorderSizePixel=0
+ for _,c in old:GetChildren() do c.Parent=p end
+ old:Destroy();p.Parent=g;return p
+end
+scrolling("Main");scrolling("TerritoryInfo");scrolling("DiplomacyPanel");scrolling("MilitaryPanel")
+g.MilitaryPanel.AutomaticCanvasSize=Enum.AutomaticSize.None
+for _,n in {"StrategyTopbar","StrategyNavigation","MapHint"} do if g:FindFirstChild(n) then g[n]:Destroy() end end
+local bg=game.StarterGui:FindFirstChild("StrategyBackground")
+if not bg then bg=Instance.new("ScreenGui");bg.Name="StrategyBackground";bg.IgnoreGuiInset=true;bg.ResetOnSpawn=false;bg.DisplayOrder=g.DisplayOrder-10;bg.Parent=game.StarterGui end
+bg:ClearAllChildren()
+local surface=box("Frame","Surface",bg,0,0,1,1);surface.Size=UDim2.fromScale(1,1);surface.Active=false;surface.Selectable=false;surface.BackgroundColor3=Color3.fromRGB(11,19,27)
+local gradient=Instance.new("UIGradient");gradient.Color=ColorSequence.new(Color3.fromRGB(28,40,50),Color3.fromRGB(9,16,23));gradient.Rotation=70;gradient.Parent=surface
+local top=box("Frame","StrategyTopbar",g,8,4,900,64);top.ZIndex=30;top.Active=true;corner(top);stroke(top)
+local brand=label("Brand",top,"THE VALE",16,7,190,24,20);brand.Font=Enum.Font.GothamBold;brand.TextColor3=Color3.fromRGB(199,177,125)
+local ruler=label("Ruler",top,"Connecting to your realm",16,32,260,22,12);ruler.TextTruncate=Enum.TextTruncate.AtEnd;ruler.TextWrapped=false
+local gold=label("Gold",top,"GOLD  —",0,8,210,48,14);gold.Position=UDim2.new(0.42,0,0,8);gold.TextColor3=Color3.fromRGB(230,197,126)
+local troops=label("Troops",top,"TROOPS  —",0,8,220,48,14);troops.Position=UDim2.new(0.72,0,0,8)
+for _,p in top:GetDescendants() do if p:IsA("GuiObject") then p.ZIndex=31 end end
+local nav=box("ScrollingFrame","StrategyNavigation",g,8,76,100,430);nav.CanvasSize=UDim2.fromOffset(0,410);nav.ScrollingDirection=Enum.ScrollingDirection.Y;nav.ScrollBarThickness=3;nav.ZIndex=30;corner(nav);stroke(nav)
+for i,n in {"Map","Realm","Titles","Territory","Diplomacy","Military","Economy","Communications"} do
+ local b=box("TextButton",n,nav,6,(i-1)*48+6,88,42);b.Size=UDim2.new(1,-12,0,42);b.Text=if n=="Communications" then [=[Council
+& chat]=] else n;b.Font=Enum.Font.GothamMedium;b.TextSize=12;b.TextColor3=Color3.fromRGB(181,194,201);b.TextWrapped=true;b.ZIndex=31;corner(b,5)
+end
+local request=label("RequestNotice",nav,[=[OFFER
+RECEIVED]=],6,396,88,40,11);request.Visible=false;request.TextColor3=Color3.fromRGB(232,186,72);request.ZIndex=31
+local hint=label("MapHint",g,"Drag to pan · Wheel to zoom · Select a territory",120,520,650,20,12);hint.TextColor3=Color3.fromRGB(140,163,173);hint.TextXAlignment=Enum.TextXAlignment.Center;hint.ZIndex=2
+for _,n in {"Main","TerritoryInfo","DiplomacyPanel","MilitaryPanel","TitlePanel","EconomyPanel","CommunicationsPanel"} do local p=g[n];corner(p);stroke(p);p.ClipsDescendants=true;p.Active=true end
+g.Main.Title.Text="Realm & court";g.Main.PlayersHeader.Text="Rulers in this match";g.Main.TreeHeader.Text="Chain of allegiance"
+g.TitlePanel.Header.Text="Crown & rank"
+g.TerritoryInfo.Header.Text="Province intelligence"
+g.CommunicationsPanel.Header.Text="Political correspondence"
+-- Existing labels and events remain in place; no mechanical authority moves.
+g.TerritoryInfo.DeclareWar.Size=UDim2.new(1,0,0,36)
+g.TerritoryInfo.Body.Size=UDim2.new(1,0,0,140)
+g.TerritoryInfo.WarStatus.Size=UDim2.new(1,0,0,110)
+g.EconomyPanel.Body.Size=UDim2.new(1,0,0,92);g.EconomyPanel.Body.TextSize=18
+local context=label("Context",g.EconomyPanel,[=[Income follows your directly owned holdings.
+
+Gold funds recruitment. Check the displayed cost before confirming.]=],0,138,300,150,14);context.Size=UDim2.new(1,0,0,150);context.TextYAlignment=Enum.TextYAlignment.Top;context.TextColor3=Color3.fromRGB(181,194,201)
+local comms=g.CommunicationsPanel
+for _,c in comms:GetDescendants() do if c:IsA("TextLabel") or c:IsA("TextButton") or c:IsA("TextBox") then c.Font=Enum.Font.Gotham;c.TextSize=14;c.TextColor3=Color3.fromRGB(235,231,219) end end
+comms.Header.Font=Enum.Font.GothamBold;comms.Header.TextSize=16
+comms.Transcript.Body.Font=Enum.Font.Gotham;comms.Transcript.Body.TextSize=14
+comms.Input.PlaceholderText="Write a message…"
+comms.DirectButton.Text="Direct contacts"
+local viewport=g.MapStage:FindFirstChild("MapView");if viewport then viewport.BackgroundColor3=Color3.fromRGB(21,33,43);viewport.Ambient=Color3.fromRGB(190,195,195) end
+g.MapStage.BackgroundColor3=Color3.fromRGB(21,33,43);corner(g.MapStage);stroke(g.MapStage)
+print("STRATEGY_GUI_ASSETS_READY")

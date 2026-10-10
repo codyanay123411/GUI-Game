@@ -1,0 +1,340 @@
+Window: "Server - Roblox Studio", App: RobloxStudioBeta.exe.
+	0 window (settable, string) Server - Roblox Studio Secondary Actions: Raise ID: RBXMainWindow
+		1 title bar (settable, string) Value: Server - Roblox Studio
+			2 menu bar System ID: MenuBar
+				227 menu item System
+			4 button Minimize
+			5 button Maximize
+			6 button Close
+		47 status bar ID: RBXMainWindow.statusbar
+			48 text
+			49 text
+			50 text
+			51 text
+			52 text
+			53 group (settable, string)
+				54 group (settable, string) ID: rplg_sabuiltin_Footer.rbxm_FooterStatusBarQueue
+		100 tool bar (settable, string) Command ID: RBXMainWindow.commandToolBar
+			101 group (settable, string)
+				102 edit (settable, string) Value: local r=Instance.new("RemoteEvent"); r.Name="CommunicationsReceiptAudit"; r.Parent=game.ReplicatedStorage.Remotes; r.OnServerEvent:Connect(function(p,data) print("NATIVE_RECEIPT_AUDIT="..game.HttpService:JSONEncode({userId=p.UserId,data=data})) end); for _,p in game.Players:GetPlayers() do local s=Instance.new("LocalScript"); s.Name="CommunicationsReceiptAudit"; s.Source=[====[local R=game.ReplicatedStorage.Remotes; game.TextChatService.MessageReceived:Connect(function(m) R.CommunicationsReceiptAudit:FireServer({event="Native",id=m.MessageId,status=tostring(m.Status),channel=m.TextChannel and m.TextChannel.Name or "",sender=m.TextSource and m.TextSource.UserId or 0}) end); R.CommunicationsServerEvent.OnClientEvent:Connect(function(a,d) if a=="Identity" then R.CommunicationsReceiptAudit:FireServer({event="Identity",id=d.messageId,ordinary=d.ordinary,observing=d.observing}) end end)]====]; s.Parent=p.PlayerGui end; print("RECEIPT_TRACE_INSTALLED") ID: commandBarScriptEditor
+					103 group (settable, string) ID: commandBarScriptEditor.qt_scrollarea_viewport
+				104 custom (settable, string) ID: multiLineRunButtonContainer
+					105 button (settable, string) ID: multiLineRunButtonContainer.commandBarContainerSaveButton
+					106 button (settable, string) ID: multiLineRunButtonContainer.commandBarContainerHistoryButton
+					107 button (settable, string) Run ID: multiLineRunButtonContainer.commandBarRunButton
+		93 group (settable, string) ID: RBXMainWindow.studioTopBar
+			98 group (settable, string) ID: RBXMainWindow.studioTopBar.rplg_sabuiltin_Ribbon.rbxm_Ribbon
+				99 group (settable, string) ID: RBXMainWindow.studioTopBar.rplg_sabuiltin_Ribbon.rbxm_Ribbon.rplg_sabuiltin_Ribbon.rbxm_Ribbon
+			108 menu bar (settable, string)
+				109 menu item (settable, string) File
+				110 menu item (settable, string) Edit
+				111 menu item (settable, string) View
+				112 menu item (settable, string) Plugins
+				113 menu item (settable, string) Test
+				114 menu item (settable, string) Window
+				115 menu item (settable, string) Help
+		59 group (settable, string) ID: RBXMainWindow.RootWidget
+			116 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel
+				117 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3
+					118 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6
+						209 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest0
+							210 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest0.Layout5
+								211 tab (settable, string)
+							212 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest0.Layout28
+								213 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest0.Layout28.pserv_cloud_174577307_ToolGripEditor
+									214 group (settable, string)
+										215 group (settable, string)
+											216 button (settable, string) Collapse
+											217 button (settable, string) Close
+									218 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest0.Layout28.pserv_cloud_174577307_ToolGripEditor.pserv_cloud_174577307_ToolGripEditor
+						124 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest1
+							125 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest1.Layout8
+								126 tab (settable, string)
+						127 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15
+							128 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutNorth0
+								129 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutNorth0.Layout14
+									130 tab (settable, string)
+							131 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutNorth1
+								132 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutNorth1.Layout17
+									133 tab (settable, string)
+							134 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.Layout1
+								135 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.Layout1.Layout21
+									136 tab (settable, string)
+								137 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.Layout1.Layout22
+									138 tab (settable, string) Server
+										139 tab item (settable, string) Server
+									140 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.Layout1.Layout22.ideDocDocumentPanel
+										141 group (settable, string)
+										142 custom (settable, string)
+											143 group (settable, string)
+												144 group (settable, string) ID: WrapperScrollArea
+													145 group (settable, string) ID: WrapperScrollArea.qt_scrollarea_viewport
+														146 group (settable, string)
+															147 group (settable, string)
+																148 group (settable, string) ID: QEngineWidget
+												149 group (settable, string) ID: mainViewToolbar
+													150 group (settable, string) ID: mainViewToolbar.rplg_sabuiltin_DeviceSimulatorToolbar.rbxm_DeviceSimulatorToolbar
+														151 group (settable, string) ID: mainViewToolbar.rplg_sabuiltin_DeviceSimulatorToolbar.rbxm_DeviceSimulatorToolbar.rplg_sabuiltin_DeviceSimulatorToolbar.rbxm_DeviceSimulatorToolbar
+									152 group (settable, string)
+										153 tool bar (settable, string)
+											154 check box (settable, string) Visualization Modes
+							155 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutSouth1
+								156 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutSouth1.Layout19
+									157 tab (settable, string)
+						158 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast1
+							159 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast1.Layout12
+								160 tab (settable, string)
+						161 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0
+							162 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout10
+								163 tab (settable, string)
+							164 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout23
+								165 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout23.rplg_sabuiltin_ExplorerPlugin.rbxm_ExplorerPlugin
+									166 group (settable, string)
+										167 group (settable, string)
+											168 button (settable, string) Collapse
+											169 button (settable, string) Close
+									170 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout23.rplg_sabuiltin_ExplorerPlugin.rbxm_ExplorerPlugin.rplg_sabuiltin_ExplorerPlugin.rbxm_ExplorerPlugin
+							171 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout24
+								172 tab (settable, string)
+							173 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout25
+								174 tab (settable, string)
+						219 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.DockPanelSplitter_54
+						220 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.DockPanelSplitter_55
+					176 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.FixedSplitLayoutSouth0
+						177 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.FixedSplitLayoutSouth0.Layout2
+							178 tab (settable, string)
+						179 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.FixedSplitLayoutSouth0.Layout26
+							180 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.FixedSplitLayoutSouth0.Layout26.outputWidgetPanel
+								181 group (settable, string)
+									182 group (settable, string)
+										183 button (settable, string) Collapse
+										184 button (settable, string) Close
+								185 group (settable, string)
+									186 group (settable, string)
+										187 edit Value: 21:52:03.555 [Hierarchy] push State all clients rulers= 0 requests= 0 - Server - PoliticalHierarchyService:180 21:52:03.555 [Title] push State all clients - Server - TitleProgressionService:146 21:52:03.556 [Diplomacy] push State all clients agreements= 0 requests= 0 - Server - DiplomacyService:210 21:52:03.556 [Diplomacy] service started - Server - DiplomacyService:606 21:52:03.556 [Warfare] push State all clients wars= 0 - Server - WarfareService:227 21:52:03.556 [Warfare] service started - Server - WarfareService:571 21:52:03.556 [Economy] started. StartingGold 150 interval 6 - Server - EconomyService:336 21:52:03.556 [Military] service started - Server - MilitaryService:887 21:52:03.556 [Communications] NativeDeliveryV01 started. - Server - CommunicationsService:301 21:52:03.556 [Admin] Created AdminFeedbackEvent (server to client only). - Server - AdminService:302 21:52:03.557 [Admin] Cloned AdminKohlThemeClient into ServerScriptService.Kohl's Admin.Config.Addons - Server - AdminService:154 21:52:03.557 [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon - Server - AdminService:248 21:52:03.557 [Admin] Kohl addon already present under ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon - Server - AdminService:257 21:52:03.557 [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon - Server - AdminService:248 21:52:03.557 [Admin] AdminBridge started. GameTester UserIds only for live commands. - Server - AdminService:342 21:52:03.559 Requiring asset 1868400649. Callstack: ServerScriptService.Kohl's Admin.Loader, line 59 - Server - Loader:59 21:52:04.999 [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon - Server - AdminService:248 21:52:06.938 [Kohl's Admin] Initializing DataStore _KData... - Server - Store:45 21:52:06.939 [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon - Server - AdminService:248 21:52:06.939 Overriding Kohl's Admin command: adminhelp - Server - Registry:163 21:52:06.939 Overriding Kohl's Admin command: inspectwars - Server - Registry:163 21:52:06.939 Overriding Kohl's Admin command: inspectterritory - Server - Registry:163 21:52:06.939 Overriding Kohl's Admin command: inspectruler - Server - Registry:163 21:52:06.939 Overriding Kohl's Admin command: setowner - Server - Registry:163 21:52:06.939 Overriding Kohl's Admin command: setprestige - Server - Registry:163 21:52:06.939 Overriding Kohl's Admin command: inspectgold - Server - Registry:163 21:52:06.939 Overriding Kohl's Admin command: setgold - Server - Registry:163 21:52:06.939 Overriding Kohl's Admin command: addgold - Server - Registry:163 21:52:06.940 Overriding Kohl's Admin command: spendgold - Server - Registry:163 21:52:06.940 Overriding Kohl's Admin command: inspecttroops - Server - Registry:163 21:52:06.940 Overriding Kohl's Admin command: settroops - Server - Registry:163 21:52:06.940 Overriding Kohl's Admin command: addtroops - Server - Registry:163 21:52:06.940 Overriding Kohl's Admin command: inspectmilitary - Server - Registry:163 21:52:06.940 Overriding Kohl's Admin command: inspectcomms - Server - Registry:163 21:52:06.940 Overriding Kohl's Admin command: inspectcontest - Server - Registry:163 21:52:06.940 Overriding Kohl's Admin command: resolvewar - Server - Registry:163 21:52:07.055 Unable to load plugin icon: rbxassetid://68073628 - Studio 21:52:07.222 [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon - Server - AdminService:248 21:52:07.223 Overriding Kohl's Admin command: adminhelp - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: inspectwars - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: inspectterritory - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: inspectruler - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: setowner - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: setprestige - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: inspectgold - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: setgold - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: addgold - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: spendgold - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: inspecttroops - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: settroops - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: addtroops - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: inspectmilitary - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: inspectcomms - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: inspectcontest - Server - Registry:163 21:52:07.223 Overriding Kohl's Admin command: resolvewar - Server - Registry:163 21:52:07.287 DataStoreService: StudioAccessToApisNotAllowed: Studio access to APIs is not allowed. API: GetAsync, Data Store: _KData - Studio 21:52:07.291 Enable Studio access to API services in Experience Settings for full features. - Server - Store:70 21:52:07.291 [Kohl's Admin] Data failed to load: Enable Studio access to API services in Experience Settings for full features. - Server - Data:555 21:52:07.490 [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon - Server - AdminService:248 21:52:07.490 Overriding Kohl's Admin command: adminhelp - Server - Registry:163 21:52:07.490 Overriding Kohl's Admin command: inspectwars - Server - Registry:163 21:52:07.490 Overriding Kohl's Admin command: inspectterritory - Server - Registry:163 21:52:07.490 Overriding Kohl's Admin command: inspectruler - Server - Registry:163 21:52:07.490 Overriding Kohl's Admin command: setowner - Server - Registry:163 21:52:07.490 Overriding Kohl's Admin command: setprestige - Server - Registry:163 21:52:07.490 Overriding Kohl's Admin command: inspectgold - Server - Registry:163 21:52:07.490 Overriding Kohl's Admin command: setgold - Server - Registry:163 21:52:07.490 Overriding Kohl's Admin command: addgold - Server - Registry:163 21:52:07.490 Overriding Kohl's Admin command: spendgold - Server - Registry:163 21:52:07.490 Overriding Kohl's Admin command: inspecttroops - Server - Registry:163 21:52:07.491 Overriding Kohl's Admin command: settroops - Server - Registry:163 21:52:07.491 Overriding Kohl's Admin command: addtroops - Server - Registry:163 21:52:07.491 Overriding Kohl's Admin command: inspectmilitary - Server - Registry:163 21:52:07.491 Overriding Kohl's Admin command: inspectcomms - Server - Registry:163 21:52:07.491 Overriding Kohl's Admin command: inspectcontest - Server - Registry:163 21:52:07.491 Overriding Kohl's Admin command: resolvewar - Server - Registry:163 21:52:07.491 [Admin] Registered AdminKohlAddon with Kohl _K_INTERFACE. - Server - AdminService:218 21:53:26.415 [Hierarchy] ruler created Player1 userId= -1 id= Player_-1 - Server - PoliticalHierarchyService:289 21:53:26.416 [Hierarchy] push State all clients rulers= 1 requests= 0 - Server - PoliticalHierarchyService:180 21:53:26.416 [Hierarchy] push State to Player1 rulers= 1 requests= 0 - Server - PoliticalHierarchyService:177 21:53:26.416 [Warfare] push State to Player1 - Server - WarfareService:224 21:53:26.416 [Diplomacy] push State to Player1 - Server - DiplomacyService:207 21:53:26.416 [Title] push State to Player1 - Server - TitleProgressionService:143 21:53:26.416 [Title] push State all clients - Server - TitleProgressionService:146 21:53:26.416 [Territory] assigned ravenreach to Player_-1 - Server - TerritoryMapService:138 21:53:26.416 [Territory] push State all clients - Server - TerritoryMapService:101 21:53:26.417 ▶ [Title] push State all clients (x3) - Server - TitleProgressionService:146 21:53:27.611 [Hierarchy] ruler created Player2 userId= -2 id= Player_-2 - Server - PoliticalHierarchyService:289 21:53:27.611 [Hierarchy] push State all clients rulers= 2 requests= 0 - Server - PoliticalHierarchyService:180 21:53:27.611 [Hierarchy] push State to Player2 rulers= 2 requests= 0 - Server - PoliticalHierarchyService:177 21:53:27.611 [Warfare] push State to Player2 - Server - WarfareService:224 21:53:27.611 [Diplomacy] push State to Player2 - Server - DiplomacyService:207 21:53:27.611 [Title] push State to Player2 - Server - TitleProgressionService:143 21:53:27.611 [Title] push State all clients - Server - TitleProgressionService:146 21:53:27.612 [Territory] assigned northvale to Player_-2 - Server - TerritoryMapService:138 21:53:27.612 [Territory] push State all clients - Server - TerritoryMapService:101 21:53:27.612 ▶ [Title] push State all clients (x3) - Server - TitleProgressionService:146 21:53:28.110 [Hierarchy] ruler created Player3 userId= -3 id= Player_-3 - Server - PoliticalHierarchyService:289 21:53:28.110 [Hierarchy] push State all clients rulers= 3 requests= 0 - Server - PoliticalHierarchyService:180 21:53:28.110 [Hierarchy] push State to Player3 rulers= 3 requests= 0 - Server - PoliticalHierarchyService:177 21:53:28.110 [Warfare] push State to Player3 - Server - WarfareService:224 21:53:28.110 [Diplomacy] push State to Player3 - Server - DiplomacyService:207 21:53:28.111 [Title] push State to Player3 - Server - TitleProgressionService:143 21:53:28.111 [Title] push State all clients - Server - TitleProgressionService:146 21:53:28.111 [Territory] assigned goldmere to Player_-3 - Server - TerritoryMapService:138 21:53:28.111 [Territory] push State all clients - Server - TerritoryMapService:101 21:53:28.111 ▶ [Title] push State all clients (x3) - Server - TitleProgressionService:146 21:53:30.036 [Hierarchy] Ready from Player2 - Server - PoliticalHierarchyService:465 21:53:30.036 [Hierarchy] push State to Player2 rulers= 3 requests= 0 - Server - PoliticalHierarchyService:177 21:53:30.037 [Territory] Ready from Player2 - Server - TerritoryMapService:248 21:53:30.037 [Territory] push State to Player2 - Server - TerritoryMapService:98 21:53:30.037 [Title] Ready from Player2 - Server - TitleProgressionService:216 21:53:30.037 [Title] push State to Player2 - Server - TitleProgressionService:143 21:53:30.037 [Diplomacy] Ready from Player2 - Server - DiplomacyService:444 21:53:30.037 [Diplomacy] push State to Player2 - Server - DiplomacyService:207 21:53:30.037 [Warfare] Ready from Player2 - Server - WarfareService:485 21:53:30.037 [Warfare] push State to Player2 - Server - WarfareService:224 21:53:30.037 ▶ [Title] push State all clients (x2) - Server - TitleProgressionService:146 21:53:31.003 [Hierarchy] Ready from Player1 - Server - PoliticalHierarchyService:465 21:53:31.003 [Hierarchy] push State to Player1 rulers= 3 requests= 0 - Server - PoliticalHierarchyService:177 21:53:31.003 [Territory] Ready from Player1 - Server - TerritoryMapService:248 21:53:31.003 [Territory] push State to Player1 - Server - TerritoryMapService:98 21:53:31.003 [Title] Ready from Player1 - Server - TitleProgressionService:216 21:53:31.003 [Title] push State to Player1 - Server - TitleProgressionService:143 21:53:31.003 [Diplomacy] Ready from Player1 - Server - DiplomacyService:444 21:53:31.004 [Diplomacy] push State to Player1 - Server - DiplomacyService:207 21:53:31.004 [Warfare] Ready from Player1 - Server - WarfareService:485 21:53:31.004 [Warfare] push State to Player1 - Server - WarfareService:224 21:53:31.004 ▶ [Title] push State all clients (x2) - Server - TitleProgressionService:146 21:53:32.752 [Hierarchy] Ready from Player3 - Server - PoliticalHierarchyService:465 21:53:32.752 [Hierarchy] push State to Player3 rulers= 3 requests= 0 - Server - PoliticalHierarchyService:177 21:53:32.752 [Territory] Ready from Player3 - Server - TerritoryMapService:248 21:53:32.752 [Territory] push State to Player3 - Server - TerritoryMapService:98 21:53:32.752 [Title] Ready from Player3 - Server - TitleProgressionService:216 21:53:32.752 [Title] push State to Player3 - Server - TitleProgressionService:143 21:53:32.752 [Diplomacy] Ready from Player3 - Server - DiplomacyService:444 21:53:32.752 [Diplomacy] push State to Player3 - Server - DiplomacyService:207 21:53:32.752 [Warfare] Ready from Player3 - Server - WarfareService:485 21:53:32.752 [Warfare] push State to Player3 - Server - WarfareService:224 21:53:32.753 ▶ [Title] push State all clients (x2) - Server - TitleProgressionService:146 21:54:48.242 > local test=Instance.new("Script"); test.Name="CommunicationsReplacementPhase1"; test.Source=[====[-- Temporary server-only fixture for the disposable Local Server. local S = game.ServerScriptService.Services local H, T, D = require(S.PoliticalHierarchyService), require(S.TerritoryMapService), require(S.DiplomacyService) local C = require(S.CommunicationsService) local P = require(S.CommunicationsPolicy) local results = {} local function record(id, ...) table.insert(results, {id=id, values={...}}) end local players = game.Players:GetPlayers() record("CLIENT_COUNT", #players) assert(#players == 3) local fourth = H.DebugCreateMockRuler("GraphIntermediate", 1) for _, territory in T.GetMapDefinition().territories do T.DebugSetOwner(territory.id, nil) end T.DebugSetOwner("westmere", "Player_-1") T.DebugSetOwner("northvale", "Player_-2") T.DebugSetOwner("greyfen", fourth) T.DebugSetOwner("highmarch", "Player_-3") game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync") record("DIP_VALID_12", C.DebugCanDeliver("diplomatic", -1, -2)) record("DIP_REJECT_13", C.DebugCanDeliver("diplomatic", -1, -3)) record("DIP_ASYMMETRIC_23", C.DebugCanDeliver("diplomatic", -2, -3)) record("DIRECT_VALID", C.OpenDirect(game.Players:GetPlayerByUserId(-1), -2)) record("DIRECT_TOO_FAR", C.OpenDirect(game.Players:GetPlayerByUserId(-1), -3)) record("DIRECT_MALFORMED", C.OpenDirect(game.Players:GetPlayerByUserId(-1), {})) record("DIRECT_TWO", C.DebugCanDeliver("direct:-2:-1", -1, -2), C.DebugCanDeliver("direct:-2:-1", -3, -2)) T.DebugSetOwner("northvale", nil) T.DebugSetOwner("brightfen", "Player_-2") record("DIRECT_LOST_IMMEDIATE", C.DebugCanDeliver("direct:-2:-1", -1, -2)) record("DIP_CHANGED_IMMEDIATE", C.DebugCanDeliver("diplomatic", -1, -2)) T.DebugSetOwner("brightfen", nil) T.DebugSetOwner("northvale", "Player_-2") record("DIRECT_RESTORED_IMMEDIATE", C.DebugCanDeliver("direct:-2:-1", -1, -2)) local ok12, req12 = D.Offer("Player_-1", "Player_-2", "Alliance") record("ALLY_ACCEPT12", ok12, D.Accept(req12, "Player_-2")) local ok13, req13 = D.Offer("Player_-1", "Player_-3", "Alliance") record("ALLY_ACCEPT13", ok13, D.Accept(req13, "Player_-3")) game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync") local id12, id13 for _, a in D.GetSnapshot().agreements do if a.alliance then if a.rightRulerId == "Player_-2" then id12 = "alliance:" .. a.allianceInstanceId end if a.rightRulerId == "Player_-3" then id13 = "alliance:" .. a.allianceInstanceId end end end assert(id12 and id13) record("ALLY_DISTINCT", id12 ~= id13, id12, id13) record("ALLY_VALID", C.DebugCanDeliver(id12, -1, -2)) record("ALLY_NONPARTY", C.DebugCanDeliver(id12, -3, -2)) record("ALLY_BREAK", D.Break("Player_-1", "Player_-2", "Alliance")) record("ALLY_BREAK_IMMEDIATE", C.DebugCanDeliver(id12, -1, -2), C.DebugCanDeliver(id12, -1, -1)) local okNew, reqNew = D.Offer("Player_-1", "Player_-2", "Alliance") record("ALLY_REACCEPT", okNew, D.Accept(reqNew, "Player_-2")) local newId for _, a in D.GetSnapshot().agreements do if a.rightRulerId == "Player_-2" and a.alliance then newId = "alliance:" .. a.allianceInstanceId end end record("ALLY_NEW_INSTANCE", newId ~= id12, C.DebugCanDeliver(id12, -1, -2)) local napOk, napReq = D.Offer("Player_-2", "Player_-3", "NAP") record("NAP_ACCEPT", napOk, D.Accept(napReq, "Player_-3")) local w = P.World(H.GetSnapshot().rulers, D.GetSnapshot().agreements, T.GetOwnedTerritoryIds, T.AreAdjacent) record("IDENTITY_ALLY", P.Prefix(w, {kind="diplomatic"}, -1, -2, false)) game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync") local value = Instance.new("StringValue") value.Name = "ReplacementPhase1Results" value.Value = game.HttpService:JSONEncode({results=results, inspect=C.DebugInspect(), fourth=fourth}) value.Parent = game.ServerScriptService print("REPLACEMENT_PHASE1=" .. value.Value) ]====]; test.Parent=game.ServerScriptService - Studio 21:54:48.250 [Hierarchy] ruler created GraphIntermediate userId= nil id= Mock_3b1145e3-4d15-45ee-8aed-a9d4a1b39b9c - Server - PoliticalHierarchyService:289 21:54:48.250 [Hierarchy] push State all clients rulers= 4 requests= 0 - Server - PoliticalHierarchyService:180 21:54:48.250 ▶ [Territory] push State all clients (x24) - Server - TerritoryMapService:101 21:54:48.253 [Diplomacy] push State all clients agreements= 0 requests= 1 - Server - DiplomacyService:210 21:54:48.253 [Diplomacy] notice -> Player2 Alliance offered. - Server - DiplomacyService:89 21:54:48.253 [Diplomacy] push State all clients agreements= 1 requests= 0 - Server - DiplomacyService:210 21:54:48.253 [Diplomacy] notice -> Player2 Alliance accepted. - Server - DiplomacyService:89 21:54:48.253 [Diplomacy] notice -> Player1 Alliance accepted. - Server - DiplomacyService:89 21:54:48.253 [Diplomacy] push State all clients agreements= 1 requests= 1 - Server - DiplomacyService:210 21:54:48.253 [Diplomacy] notice -> Player3 Alliance offered. - Server - DiplomacyService:89 21:54:48.253 [Diplomacy] push State all clients agreements= 2 requests= 0 - Server - DiplomacyService:210 21:54:48.254 [Diplomacy] notice -> Player3 Alliance accepted. - Server - DiplomacyService:89 21:54:48.254 [Diplomacy] notice -> Player1 Alliance accepted. - Server - DiplomacyService:89 21:54:48.255 [Diplomacy] push State all clients agreements= 1 requests= 0 - Server - DiplomacyService:210 21:54:48.255 [Diplomacy] notice -> Player1 Alliance broken. - Server - DiplomacyService:89 21:54:48.255 [Diplomacy] notice -> Player2 Alliance broken. - Server - DiplomacyService:89 21:54:48.255 [Diplomacy] push State all clients agreements= 1 requests= 1 - Server - DiplomacyService:210 21:54:48.255 [Diplomacy] notice -> Player2 Alliance offered. - Server - DiplomacyService:89 21:54:48.255 [Diplomacy] push State all clients agreements= 2 requests= 0 - Server - DiplomacyService:210 21:54:48.255 [Diplomacy] notice -> Player2 Alliance accepted. - Server - DiplomacyService:89 21:54:48.255 [Diplomacy] notice -> Player1 Alliance accepted. - Server - DiplomacyService:89 21:54:48.255 [Diplomacy] push State all clients agreements= 2 requests= 1 - Server - DiplomacyService:210 21:54:48.255 [Diplomacy] notice -> Player3 Non-Aggression Pact offered. - Server - DiplomacyService:89 21:54:48.255 [Diplomacy] push State all clients agreements= 3 requests= 0 - Server - DiplomacyService:210 21:54:48.255 [Diplomacy] notice -> Player3 Non-Aggression Pact accepted. - Server - DiplomacyService:89 21:54:48.255 [Diplomacy] notice -> Player2 Non-Aggression Pact accepted. - Server - DiplomacyService:89 21:54:48.256 REPLACEMENT_PHASE1={"fourth":"Mock_3b1145e3-4d15-45ee-8aed-a9d4a1b39b9c","inspect":{"implementation":"NativeDeliveryV01","contexts":[{"id":"alliance:ac704c1f-1e0e-49f5-ac1a-20ef3bdf5b45","kind":"alliance","members":[],"sources":[{"userId":-3,"canSend":false},{"userId":-2,"canSend":false},{"userId":-1,"canSend":false}]},{"id":"direct:-2:-1","kind":"direct","members":[-1,-2],"sources":[{"userId":-1,"canSend":true},{"userId":-3,"canSend":false},{"userId":-2,"canSend":true}]},{"id":"alliance:6f0e6224-40b7-49ea-85e9-1a0a2ca88ccd","kind":"alliance","members":[-1,-2],"sources":[{"userId":-3,"canSend":false},{"userId":-2,"canSend":true},{"userId":-1,"canSend":true}]},{"id":"diplomatic","kind":"diplomatic","members":[-1,-2,-3],"sources":[{"userId":-1,"canSend":true},{"userId":-2,"canSend":true},{"userId":-3,"canSend":true}]},{"id":"alliance:38f2e5e8-cb58-42a6-a46b-75a40833de29","kind":"alliance","members":[-1,-3],"sources":[{"userId":-3,"canSend":true},{"userId":-2,"canSend":false},{"userId":-1,"canSend":true}]}]},"results":[{"id":"CLIENT_COUNT","values":[3]},{"id":"DIP_VALID_12","values":[true]},{"id":"DIP_REJECT_13","values":[false]},{"id":"DIP_ASYMMETRIC_23","values":[true]},{"id":"DIRECT_VALID","values":[true,"direct:-2:-1"]},{"id":"DIRECT_TOO_FAR","values":[false,"Direct requires a current border."]},{"id":"DIRECT_MALFORMED","values":[false,"Invalid contact."]},{"id":"DIRECT_TWO","values":[true,false]},{"id":"DIRECT_LOST_IMMEDIATE","values":[false]},{"id":"DIP_CHANGED_IMMEDIATE","values":[false]},{"id":"DIRECT_RESTORED_IMMEDIATE","values":[true]},{"id":"ALLY_ACCEPT12","values":[true,true,"Alliance accepted."]},{"id":"ALLY_ACCEPT13","values":[true,true,"Alliance accepted."]},{"id":"ALLY_DISTINCT","values":[true,"alliance:ac704c1f-1e0e-49f5-ac1a-20ef3bdf5b45","alliance:38f2e5e8-cb58-42a6-a46b-75a40833de29"]},{"id":"ALLY_VALID","values":[true]},{"id":"ALLY_NONPARTY","values":[false]},{"id":"ALLY_BREAK","values":[true,"Alliance broken."]},{"id":"ALLY_BREAK_IMMEDIATE","values":[false,false]},{"id":"ALLY_REACCEPT","values":[true,true,"Alliance accepted."]},{"id":"ALLY_NEW_INSTANCE","values":[true,false]},{"id":"NAP_ACCEPT","values":[true,true,"Non-Aggression Pact accepted."]},{"id":"IDENTITY_ALLY","values":["[Lord] [Ally] Player1: "]}]} - Server - CommunicationsReplacementPhase1:64 21:54:48.257 [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon - Server - AdminService:248 21:54:48.257 ▶ [Title] push State all clients (x26) - Server - TitleProgressionService:146 21:54:48.260 [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon - Server - AdminService:248 21:58:04.179 > local r=Instance.new("RemoteEvent"); r.Name="CommunicationsReceiptAudi t"; r.Parent=game.ReplicatedStorage.Remotes; r.OnServerEvent:Connect(function(p,data) print("NATIVE_RECEIPT_AUDIT="..game.HttpService:JSONEncode({userId=p.UserId,data=data})) end); for _,p in game.Players:GetPlayers() do local s=Instance.new("LocalScript"); s.Name="CommunicationsReceiptAudit"; s.Source=[====[local R=game.ReplicatedStorage.Remotes; game.TextChatService.MessageReceived:Connect(function(m) R.CommunicationsReceiptAudit:FireServer({event="Native",id=m.MessageId,status=tostring(m.Status),channel=m.TextChannel and m.TextChannel.Name or "",sender=m.TextSource and m.TextSource.UserId or 0}) end); R.CommunicationsServerEvent.OnClientEvent:Connect(function(a,d) if a=="Identity" then R.CommunicationsReceiptAudit:FireServer({event="Identity",id=d.messageId,ordinary=d.ordinary,observing=d.observing}) end end)]====]; s.Parent=p.PlayerGui end; print("RECEIPT_TRACE_INSTALLED") - Studio 21:58:04.225 CommandBar:1: Malformed string; did you forget to finish it? - Studio 21:58:23.362 > local r=Instance.new("RemoteEvent"); r.Name="CommunicationsReceiptAudit"; r.Parent=game.ReplicatedStorage.Remotes; r.OnServerEvent:Connect(function(p,data) print("NATIVE_RECEIPT_AUDIT="..game.HttpService:JSONEncode({userId=p.UserId,data=data})) end); for _,p in game.Players:GetPlayers() do local s=Instance.new("LocalScript"); s.Name="CommunicationsReceiptAudit"; s.Source=[====[local R=game.ReplicatedStorage.Remotes; game.TextChatService.MessageReceived:Connect(function(m) R.CommunicationsReceiptAudit:FireServer({event="Native",id=m.MessageId,status=tostring(m.Status),channel=m.TextChannel and m.TextChannel.Name or "",sender=m.TextSource and m.TextSource.UserId or 0}) end); R.CommunicationsServerEvent.OnClientEvent:Connect(function(a,d) if a=="Identity" then R.CommunicationsReceiptAudit:FireServer({event="Identity",id=d.messageId,ordinary=d.ordinary,observing=d.observing}) end end)]====]; s.Parent=p.PlayerGui end; print("RECEIPT_TRACE_INSTALLED") - Studio 21:58:23.375 RECEIPT_TRACE_INSTALLED - Server 21:58:45.756 NATIVE_RECEIPT_AUDIT={"userId":-3,"data":{"id":"-2-{46EDF445-E5AE-45CB-AB6A-DB982B23A787}","ordinary":true,"observing":true,"event":"Identity"}} - Server 21:58:45.756 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{46EDF445-E5AE-45CB-AB6A-DB982B23A787}","ordinary":true,"observing":true,"event":"Identity"}} - Server 21:58:45.756 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"sender":-2,"channel":"Comms_diplomatic","id":"-2-{46EDF445-E5AE-45CB-AB6A-DB982B23A787}","event":"Native","status":"Enum.TextChatMessageStatus.Success"}} - Server 21:58:45.756 NATIVE_RECEIPT_AUDIT={"userId":-1,"data":{"id":"-2-{46EDF445-E5AE-45CB-AB6A-DB982B23A787}","ordinary":true,"observing":true,"event":"Identity"}} - Server
+											188 group (settable, string) ID: qt_scrollarea_viewport
+											221 group (settable, string) ID: qt_scrollarea_vcontainer
+												222 scroll bar (settable, float) Value: 181
+										189 group (settable, string)
+											190 custom (settable, string)
+												191 custom (settable, string)
+													192 group (settable, string) ID: MessageTypeDropdown
+														193 custom (settable, string)
+															194 button (settable, string) All Messages ID: OutputDropdown_MessageButton
+													195 group (settable, string) ID: ScriptContextDropdown
+														196 custom (settable, string)
+															197 button (settable, string) All Contexts ID: OutputDropdown_Data ModelButton
+												198 custom (settable, string)
+													199 combo box (settable, string) ID: OutputFilterBar_ComboBox
+														200 list (settable, string)
+														201 edit (settable, string) ID: OutputFilterBar_ComboBox.OutputFilterBar_FindLineEdit
+												202 button (settable, string) ID: ClearButton
+												203 group (settable, string) ID: MoreDropdown
+													204 custom (settable, string)
+														205 button (settable, string) ID: OutputDropdown_MoreButton
+						206 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.FixedSplitLayoutSouth0.Layout27
+							207 tab (settable, string)
+					223 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.DockPanelSplitter_53
+
+Document text: ```
+21:52:03.555  [Hierarchy] push State all clients rulers= 0 requests= 0  -  Server - PoliticalHierarchyService:180
+  21:52:03.555  [Title] push State all clients  -  Server - TitleProgressionService:146
+  21:52:03.556  [Diplomacy] push State all clients agreements= 0 requests= 0  -  Server - DiplomacyService:210
+  21:52:03.556  [Diplomacy] service started  -  Server - DiplomacyService:606
+  21:52:03.556  [Warfare] push State all clients wars= 0  -  Server - WarfareService:227
+  21:52:03.556  [Warfare] service started  -  Server - WarfareService:571
+  21:52:03.556  [Economy] started. StartingGold 150 interval 6  -  Server - EconomyService:336
+  21:52:03.556  [Military] service started  -  Server - MilitaryService:887
+  21:52:03.556  [Communications] NativeDeliveryV01 started.  -  Server - CommunicationsService:301
+  21:52:03.556  [Admin] Created AdminFeedbackEvent (server to client only).  -  Server - AdminService:302
+  21:52:03.557  [Admin] Cloned AdminKohlThemeClient into ServerScriptService.Kohl's Admin.Config.Addons  -  Server - AdminService:154
+  21:52:03.557  [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:248
+  21:52:03.557  [Admin] Kohl addon already present under ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:257
+  21:52:03.557  [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:248
+  21:52:03.557  [Admin] AdminBridge started. GameTester UserIds only for live commands.  -  Server - AdminService:342
+  21:52:03.559  Requiring asset 1868400649. Callstack: ServerScriptService.Kohl's Admin.Loader, line 59   -  Server - Loader:59
+  21:52:04.999  [Admin] Replaced stale AdminKohlAddon at ServerScriptService.Kohl's Admin.Config.Addons.AdminKohlAddon  -  Server - AdminService:248
+  21:52:06.938  [Kohl's Admin] Initializing DataStore _KData...  -  Server - Store:45
+  21:52:06.939  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  21:52:06.939  Overriding Kohl's Admin command: adminhelp  -  Server - Registry:163
+  21:52:06.939  Overriding Kohl's Admin command: inspectwars  -  Server - Registry:163
+  21:52:06.939  Overriding Kohl's Admin command: inspectterritory  -  Server - Registry:163
+  21:52:06.939  Overriding Kohl's Admin command: inspectruler  -  Server - Registry:163
+  21:52:06.939  Overriding Kohl's Admin command: setowner  -  Server - Registry:163
+  21:52:06.939  Overriding Kohl's Admin command: setprestige  -  Server - Registry:163
+  21:52:06.939  Overriding Kohl's Admin command: inspectgold  -  Server - Registry:163
+  21:52:06.939  Overriding Kohl's Admin command: setgold  -  Server - Registry:163
+  21:52:06.939  Overriding Kohl's Admin command: addgold  -  Server - Registry:163
+  21:52:06.940  Overriding Kohl's Admin command: spendgold  -  Server - Registry:163
+  21:52:06.940  Overriding Kohl's Admin command: inspecttroops  -  Server - Registry:163
+  21:52:06.940  Overriding Kohl's Admin command: settroops  -  Server - Registry:163
+  21:52:06.940  Overriding Kohl's Admin command: addtroops  -  Server - Registry:163
+  21:52:06.940  Overriding Kohl's Admin command: inspectmilitary  -  Server - Registry:163
+  21:52:06.940  Overriding Kohl's Admin command: inspectcomms  -  Server - Registry:163
+  21:52:06.940  Overriding Kohl's Admin command: inspectcontest  -  Server - Registry:163
+  21:52:06.940  Overriding Kohl's Admin command: resolvewar  -  Server - Registry:163
+  21:52:07.055  Unable to load plugin icon: rbxassetid://68073628  -  Studio
+  21:52:07.222  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  21:52:07.223  Overriding Kohl's Admin command: adminhelp  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: inspectwars  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: inspectterritory  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: inspectruler  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: setowner  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: setprestige  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: inspectgold  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: setgold  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: addgold  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: spendgold  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: inspecttroops  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: settroops  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: addtroops  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: inspectmilitary  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: inspectcomms  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: inspectcontest  -  Server - Registry:163
+  21:52:07.223  Overriding Kohl's Admin command: resolvewar  -  Server - Registry:163
+  21:52:07.287  DataStoreService: StudioAccessToApisNotAllowed: Studio access to APIs is not allowed. API: GetAsync, Data Store: _KData  -  Studio
+  21:52:07.291  Enable Studio access to API services in Experience Settings for full features.  -  Server - Store:70
+  21:52:07.291  [Kohl's Admin] Data failed to load: Enable Studio access to API services in Experience Settings for full features.  -  Server - Data:555
+  21:52:07.490  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  21:52:07.490  Overriding Kohl's Admin command: adminhelp  -  Server - Registry:163
+  21:52:07.490  Overriding Kohl's Admin command: inspectwars  -  Server - Registry:163
+  21:52:07.490  Overriding Kohl's Admin command: inspectterritory  -  Server - Registry:163
+  21:52:07.490  Overriding Kohl's Admin command: inspectruler  -  Server - Registry:163
+  21:52:07.490  Overriding Kohl's Admin command: setowner  -  Server - Registry:163
+  21:52:07.490  Overriding Kohl's Admin command: setprestige  -  Server - Registry:163
+  21:52:07.490  Overriding Kohl's Admin command: inspectgold  -  Server - Registry:163
+  21:52:07.490  Overriding Kohl's Admin command: setgold  -  Server - Registry:163
+  21:52:07.490  Overriding Kohl's Admin command: addgold  -  Server - Registry:163
+  21:52:07.490  Overriding Kohl's Admin command: spendgold  -  Server - Registry:163
+  21:52:07.490  Overriding Kohl's Admin command: inspecttroops  -  Server - Registry:163
+  21:52:07.491  Overriding Kohl's Admin command: settroops  -  Server - Registry:163
+  21:52:07.491  Overriding Kohl's Admin command: addtroops  -  Server - Registry:163
+  21:52:07.491  Overriding Kohl's Admin command: inspectmilitary  -  Server - Registry:163
+  21:52:07.491  Overriding Kohl's Admin command: inspectcomms  -  Server - Registry:163
+  21:52:07.491  Overriding Kohl's Admin command: inspectcontest  -  Server - Registry:163
+  21:52:07.491  Overriding Kohl's Admin command: resolvewar  -  Server - Registry:163
+  21:52:07.491  [Admin] Registered AdminKohlAddon with Kohl _K_INTERFACE.  -  Server - AdminService:218
+  21:53:26.415  [Hierarchy] ruler created Player1 userId= -1 id= Player_-1  -  Server - PoliticalHierarchyService:289
+  21:53:26.416  [Hierarchy] push State all clients rulers= 1 requests= 0  -  Server - PoliticalHierarchyService:180
+  21:53:26.416  [Hierarchy] push State to Player1 rulers= 1 requests= 0  -  Server - PoliticalHierarchyService:177
+  21:53:26.416  [Warfare] push State to Player1  -  Server - WarfareService:224
+  21:53:26.416  [Diplomacy] push State to Player1  -  Server - DiplomacyService:207
+  21:53:26.416  [Title] push State to Player1  -  Server - TitleProgressionService:143
+  21:53:26.416  [Title] push State all clients  -  Server - TitleProgressionService:146
+  21:53:26.416  [Territory] assigned ravenreach to Player_-1  -  Server - TerritoryMapService:138
+  21:53:26.416  [Territory] push State all clients  -  Server - TerritoryMapService:101
+  21:53:26.417   ▶ [Title] push State all clients (x3)  -  Server - TitleProgressionService:146
+
+
+  21:53:27.611  [Hierarchy] ruler created Player2 userId= -2 id= Player_-2  -  Server - PoliticalHierarchyService:289
+  21:53:27.611  [Hierarchy] push State all clients rulers= 2 requests= 0  -  Server - PoliticalHierarchyService:180
+  21:53:27.611  [Hierarchy] push State to Player2 rulers= 2 requests= 0  -  Server - PoliticalHierarchyService:177
+  21:53:27.611  [Warfare] push State to Player2  -  Server - WarfareService:224
+  21:53:27.611  [Diplomacy] push State to Player2  -  Server - DiplomacyService:207
+  21:53:27.611  [Title] push State to Player2  -  Server - TitleProgressionService:143
+  21:53:27.611  [Title] push State all clients  -  Server - TitleProgressionService:146
+  21:53:27.612  [Territory] assigned northvale to Player_-2  -  Server - TerritoryMapService:138
+  21:53:27.612  [Territory] push State all clients  -  Server - TerritoryMapService:101
+  21:53:27.612   ▶ [Title] push State all clients (x3)  -  Server - TitleProgressionService:146
+
+
+  21:53:28.110  [Hierarchy] ruler created Player3 userId= -3 id= Player_-3  -  Server - PoliticalHierarchyService:289
+  21:53:28.110  [Hierarchy] push State all clients rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:180
+  21:53:28.110  [Hierarchy] push State to Player3 rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:177
+  21:53:28.110  [Warfare] push State to Player3  -  Server - WarfareService:224
+  21:53:28.110  [Diplomacy] push State to Player3  -  Server - DiplomacyService:207
+  21:53:28.111  [Title] push State to Player3  -  Server - TitleProgressionService:143
+  21:53:28.111  [Title] push State all clients  -  Server - TitleProgressionService:146
+  21:53:28.111  [Territory] assigned goldmere to Player_-3  -  Server - TerritoryMapService:138
+  21:53:28.111  [Territory] push State all clients  -  Server - TerritoryMapService:101
+  21:53:28.111   ▶ [Title] push State all clients (x3)  -  Server - TitleProgressionService:146
+
+
+  21:53:30.036  [Hierarchy] Ready from Player2  -  Server - PoliticalHierarchyService:465
+  21:53:30.036  [Hierarchy] push State to Player2 rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:177
+  21:53:30.037  [Territory] Ready from Player2  -  Server - TerritoryMapService:248
+  21:53:30.037  [Territory] push State to Player2  -  Server - TerritoryMapService:98
+  21:53:30.037  [Title] Ready from Player2  -  Server - TitleProgressionService:216
+  21:53:30.037  [Title] push State to Player2  -  Server - TitleProgressionService:143
+  21:53:30.037  [Diplomacy] Ready from Player2  -  Server - DiplomacyService:444
+  21:53:30.037  [Diplomacy] push State to Player2  -  Server - DiplomacyService:207
+  21:53:30.037  [Warfare] Ready from Player2  -  Server - WarfareService:485
+  21:53:30.037  [Warfare] push State to Player2  -  Server - WarfareService:224
+  21:53:30.037   ▶ [Title] push State all clients (x2)  -  Server - TitleProgressionService:146
+
+  21:53:31.003  [Hierarchy] Ready from Player1  -  Server - PoliticalHierarchyService:465
+  21:53:31.003  [Hierarchy] push State to Player1 rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:177
+  21:53:31.003  [Territory] Ready from Player1  -  Server - TerritoryMapService:248
+  21:53:31.003  [Territory] push State to Player1  -  Server - TerritoryMapService:98
+  21:53:31.003  [Title] Ready from Player1  -  Server - TitleProgressionService:216
+  21:53:31.003  [Title] push State to Player1  -  Server - TitleProgressionService:143
+  21:53:31.003  [Diplomacy] Ready from Player1  -  Server - DiplomacyService:444
+  21:53:31.004  [Diplomacy] push State to Player1  -  Server - DiplomacyService:207
+  21:53:31.004  [Warfare] Ready from Player1  -  Server - WarfareService:485
+  21:53:31.004  [Warfare] push State to Player1  -  Server - WarfareService:224
+  21:53:31.004   ▶ [Title] push State all clients (x2)  -  Server - TitleProgressionService:146
+
+  21:53:32.752  [Hierarchy] Ready from Player3  -  Server - PoliticalHierarchyService:465
+  21:53:32.752  [Hierarchy] push State to Player3 rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:177
+  21:53:32.752  [Territory] Ready from Player3  -  Server - TerritoryMapService:248
+  21:53:32.752  [Territory] push State to Player3  -  Server - TerritoryMapService:98
+  21:53:32.752  [Title] Ready from Player3  -  Server - TitleProgressionService:216
+  21:53:32.752  [Title] push State to Player3  -  Server - TitleProgressionService:143
+  21:53:32.752  [Diplomacy] Ready from Player3  -  Server - DiplomacyService:444
+  21:53:32.752  [Diplomacy] push State to Player3  -  Server - DiplomacyService:207
+  21:53:32.752  [Warfare] Ready from Player3  -  Server - WarfareService:485
+  21:53:32.752  [Warfare] push State to Player3  -  Server - WarfareService:224
+  21:53:32.753   ▶ [Title] push State all clients (x2)  -  Server - TitleProgressionService:146
+
+  21:54:48.242  > local test=Instance.new("Script"); test.Name="CommunicationsReplacementPhase1"; test.Source=[====[-- Temporary server-only fixture for the disposable Local Server. local S = game.ServerScriptService.Services local H, T, D = require(S.PoliticalHierarchyService), require(S.TerritoryMapService), require(S.DiplomacyService) local C = require(S.CommunicationsService) local P = require(S.CommunicationsPolicy) local results = {} local function record(id, ...) table.insert(results, {id=id, values={...}}) end local players = game.Players:GetPlayers() record("CLIENT_COUNT", #players) assert(#players == 3) local fourth = H.DebugCreateMockRuler("GraphIntermediate", 1) for _, territory in T.GetMapDefinition().territories do T.DebugSetOwner(territory.id, nil) end T.DebugSetOwner("westmere", "Player_-1") T.DebugSetOwner("northvale", "Player_-2") T.DebugSetOwner("greyfen", fourth) T.DebugSetOwner("highmarch", "Player_-3") game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync") record("DIP_VALID_12", C.DebugCanDeliver("diplomatic", -1, -2)) record("DIP_REJECT_13", C.DebugCanDeliver("diplomatic", -1, -3)) record("DIP_ASYMMETRIC_23", C.DebugCanDeliver("diplomatic", -2, -3)) record("DIRECT_VALID", C.OpenDirect(game.Players:GetPlayerByUserId(-1), -2)) record("DIRECT_TOO_FAR", C.OpenDirect(game.Players:GetPlayerByUserId(-1), -3)) record("DIRECT_MALFORMED", C.OpenDirect(game.Players:GetPlayerByUserId(-1), {})) record("DIRECT_TWO", C.DebugCanDeliver("direct:-2:-1", -1, -2), C.DebugCanDeliver("direct:-2:-1", -3, -2)) T.DebugSetOwner("northvale", nil) T.DebugSetOwner("brightfen", "Player_-2") record("DIRECT_LOST_IMMEDIATE", C.DebugCanDeliver("direct:-2:-1", -1, -2)) record("DIP_CHANGED_IMMEDIATE", C.DebugCanDeliver("diplomatic", -1, -2)) T.DebugSetOwner("brightfen", nil) T.DebugSetOwner("northvale", "Player_-2") record("DIRECT_RESTORED_IMMEDIATE", C.DebugCanDeliver("direct:-2:-1", -1, -2)) local ok12, req12 = D.Offer("Player_-1", "Player_-2", "Alliance") record("ALLY_ACCEPT12", ok12, D.Accept(req12, "Player_-2")) local ok13, req13 = D.Offer("Player_-1", "Player_-3", "Alliance") record("ALLY_ACCEPT13", ok13, D.Accept(req13, "Player_-3")) game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync") local id12, id13 for _, a in D.GetSnapshot().agreements do 	if a.alliance then 		if a.rightRulerId == "Player_-2" then id12 = "alliance:" .. a.allianceInstanceId end 		if a.rightRulerId == "Player_-3" then id13 = "alliance:" .. a.allianceInstanceId end 	end end assert(id12 and id13) record("ALLY_DISTINCT", id12 ~= id13, id12, id13) record("ALLY_VALID", C.DebugCanDeliver(id12, -1, -2)) record("ALLY_NONPARTY", C.DebugCanDeliver(id12, -3, -2)) record("ALLY_BREAK", D.Break("Player_-1", "Player_-2", "Alliance")) record("ALLY_BREAK_IMMEDIATE", C.DebugCanDeliver(id12, -1, -2), C.DebugCanDeliver(id12, -1, -1)) local okNew, reqNew = D.Offer("Player_-1", "Player_-2", "Alliance") record("ALLY_REACCEPT", okNew, D.Accept(reqNew, "Player_-2")) local newId for _, a in D.GetSnapshot().agreements do if a.rightRulerId == "Player_-2" and a.alliance then newId = "alliance:" .. a.allianceInstanceId end end record("ALLY_NEW_INSTANCE", newId ~= id12, C.DebugCanDeliver(id12, -1, -2)) local napOk, napReq = D.Offer("Player_-2", "Player_-3", "NAP") record("NAP_ACCEPT", napOk, D.Accept(napReq, "Player_-3")) local w = P.World(H.GetSnapshot().rulers, D.GetSnapshot().agreements, T.GetOwnedTerritoryIds, T.AreAdjacent) record("IDENTITY_ALLY", P.Prefix(w, {kind="diplomatic"}, -1, -2, false)) game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync") local value = Instance.new("StringValue") value.Name = "ReplacementPhase1Results" value.Value = game.HttpService:JSONEncode({results=results, inspect=C.DebugInspect(), fourth=fourth}) value.Parent = game.ServerScriptService print("REPLACEMENT_PHASE1=" .. value.Value) ]====]; test.Parent=game.ServerScriptService  -  Studio
+  21:54:48.250  [Hierarchy] ruler created GraphIntermediate userId= nil id= Mock_3b1145e3-4d15-45ee-8aed-a9d4a1b39b9c  -  Server - PoliticalHierarchyService:289
+  21:54:48.250  [Hierarchy] push State all clients rulers= 4 requests= 0  -  Server - PoliticalHierarchyService:180
+  21:54:48.250   ▶ [Territory] push State all clients (x24)  -  Server - TerritoryMapService:101
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  21:54:48.253  [Diplomacy] push State all clients agreements= 0 requests= 1  -  Server - DiplomacyService:210
+  21:54:48.253  [Diplomacy] notice -> Player2 Alliance offered.  -  Server - DiplomacyService:89
+  21:54:48.253  [Diplomacy] push State all clients agreements= 1 requests= 0  -  Server - DiplomacyService:210
+  21:54:48.253  [Diplomacy] notice -> Player2 Alliance accepted.  -  Server - DiplomacyService:89
+  21:54:48.253  [Diplomacy] notice -> Player1 Alliance accepted.  -  Server - DiplomacyService:89
+  21:54:48.253  [Diplomacy] push State all clients agreements= 1 requests= 1  -  Server - DiplomacyService:210
+  21:54:48.253  [Diplomacy] notice -> Player3 Alliance offered.  -  Server - DiplomacyService:89
+  21:54:48.253  [Diplomacy] push State all clients agreements= 2 requests= 0  -  Server - DiplomacyService:210
+  21:54:48.254  [Diplomacy] notice -> Player3 Alliance accepted.  -  Server - DiplomacyService:89
+  21:54:48.254  [Diplomacy] notice -> Player1 Alliance accepted.  -  Server - DiplomacyService:89
+  21:54:48.255  [Diplomacy] push State all clients agreements= 1 requests= 0  -  Server - DiplomacyService:210
+  21:54:48.255  [Diplomacy] notice -> Player1 Alliance broken.  -  Server - DiplomacyService:89
+  21:54:48.255  [Diplomacy] notice -> Player2 Alliance broken.  -  Server - DiplomacyService:89
+  21:54:48.255  [Diplomacy] push State all clients agreements= 1 requests= 1  -  Server - DiplomacyService:210
+  21:54:48.255  [Diplomacy] notice -> Player2 Alliance offered.  -  Server - DiplomacyService:89
+  21:54:48.255  [Diplomacy] push State all clients agreements= 2 requests= 0  -  Server - DiplomacyService:210
+  21:54:48.255  [Diplomacy] notice -> Player2 Alliance accepted.  -  Server - DiplomacyService:89
+  21:54:48.255  [Diplomacy] notice -> Player1 Alliance accepted.  -  Server - DiplomacyService:89
+  21:54:48.255  [Diplomacy] push State all clients agreements= 2 requests= 1  -  Server - DiplomacyService:210
+  21:54:48.255  [Diplomacy] notice -> Player3 Non-Aggression Pact offered.  -  Server - DiplomacyService:89
+  21:54:48.255  [Diplomacy] push State all clients agreements= 3 requests= 0  -  Server - DiplomacyService:210
+  21:54:48.255  [Diplomacy] notice -> Player3 Non-Aggression Pact accepted.  -  Server - DiplomacyService:89
+  21:54:48.255  [Diplomacy] notice -> Player2 Non-Aggression Pact accepted.  -  Server - DiplomacyService:89
+  21:54:48.256  REPLACEMEN
+```

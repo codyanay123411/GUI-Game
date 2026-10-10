@@ -1,0 +1,73 @@
+-- Disposable server-only targeted Direct clarification fixture.
+local S=game.ServerScriptService.Services
+local H,T,D,C,P=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.DiplomacyService),require(S.CommunicationsService),require(S.CommunicationsPolicy)
+local result={checks={}}
+local function check(id,actual,expected)
+ table.insert(result.checks,{id=id,actual=actual,expected=expected,pass=actual==expected})
+end
+local function world() return P.World(H.GetSnapshot().rulers,D.GetSnapshot().agreements,T.GetOwnedTerritoryIds,T.AreAdjacent) end
+local function direct(a,b) local w=world();return P.Direct(w,w.users[a],w.users[b]) end
+local function fealty(a,b) local ok,id=H.OfferFealty(a,b);assert(ok,id); local accepted,err=H.AcceptFealty(id,b);assert(accepted,err) end
+local players=game.Players:GetPlayers()
+check("CLIENT_COUNT",#players,3)
+assert(#players==3)
+for _,territory in T.GetMapDefinition().territories do T.DebugSetOwner(territory.id,nil) end
+T.DebugSetOwner("westmere","Player_-1")
+T.DebugSetOwner("brightfen","Player_-2")
+T.DebugSetOwner("northvale","Player_-3")
+H.DebugSetRank("Player_-1",4);H.DebugSetRank("Player_-2",3);H.DebugSetRank("Player_-3",2)
+fealty("Player_-3","Player_-2")
+local w=world()
+check("ROOTS_ADJACENT_VIA_SUBJECT",P.Distance(w,w.users[-1],w.users[-2]),1)
+check("SUBJECT_HOLDINGS_NOT_PERSONAL",direct(-1,-2),false)
+T.DebugSetOwner("northvale","Player_-2")
+T.DebugSetOwner("brightfen",nil)
+T.DebugSetOwner("highmarch","Player_-3")
+fealty("Player_-2","Player_-1")
+game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync")
+w=world()
+check("SAME_ROOT_DISTANCE_ZERO",P.Distance(w,w.users[-1],w.users[-2]),0)
+check("SAME_ROOT_LIEGE_SUBJECT_ADJACENT",direct(-1,-2),true)
+check("SAME_ROOT_ADJACENT_REVERSE",direct(-2,-1),true)
+local opened,id=C.OpenDirect(game.Players:GetPlayerByUserId(-1),-2)
+check("OPEN_SAME_ROOT_ADJACENT",opened,true)
+check("DIRECT_NATIVE_POLICY_SEND",C.DebugCanDeliver(id,-1,-2),true)
+check("EXACTLY_TWO_ORDINARY",C.DebugCanDeliver(id,-3,-2),false)
+check("COUNCIL_AND_DIRECT_COEXIST",C.DebugCanDeliver("council:Player_-1",-2,-1),true)
+check("SAME_ROOT_LIEGE_SUBJECT_NONADJACENT",direct(-2,-3),false)
+local denied=C.OpenDirect(game.Players:GetPlayerByUserId(-2),-3)
+check("OPEN_SAME_ROOT_NONADJACENT",denied,false)
+check("COUNCIL_NONADJACENT_UNRESTRICTED",C.DebugCanDeliver("council:Player_-2",-3,-2),true)
+T.DebugSetOwner("northvale",nil);T.DebugSetOwner("brightfen","Player_-2")
+check("BORDER_LOSS_BEFORE_SYNC",C.DebugCanDeliver(id,-1,-2),false)
+check("COUNCIL_AFTER_BORDER_LOSS",C.DebugCanDeliver("council:Player_-1",-2,-1),true)
+T.DebugSetOwner("brightfen",nil);T.DebugSetOwner("northvale","Player_-2")
+check("BORDER_RESTORED_BEFORE_SYNC",C.DebugCanDeliver(id,-1,-2),true)
+check("SELF_DIRECT_DENIED",direct(-1,-1),false)
+local selfOpen=C.OpenDirect(game.Players:GetPlayerByUserId(-1),-1)
+check("SELF_OPEN_DENIED",selfOpen,false)
+local malformed=C.OpenDirect(game.Players:GetPlayerByUserId(-1),{})
+check("MALFORMED_OPEN_DENIED",malformed,false)
+-- Political labels do not affect personal-border eligibility. Inject snapshots only;
+-- all ownership/adjacency is still read from current Territory service.
+local a,b=table.clone(w.users[-1]),table.clone(w.users[-2])
+for _,relation in {"fellow_subjects","allies","enemies","NAP","unrelated"} do
+ a.liegeId="";b.liegeId="";a.rootRulerId=a.rulerId;b.rootRulerId=b.rulerId
+ local agreements={}
+ if relation=="fellow_subjects" then a.liegeId="test_root";b.liegeId="test_root";a.rootRulerId="test_root";b.rootRulerId="test_root" end
+ if relation=="allies" then agreements={{leftRulerId=a.rulerId,rightRulerId=b.rulerId,alliance=true,allianceInstanceId="test"}} end
+ if relation=="NAP" then agreements={{leftRulerId=a.rulerId,rightRulerId=b.rulerId,nap=true}} end
+ local variant=P.World({a,b},agreements,T.GetOwnedTerritoryIds,T.AreAdjacent)
+ check("RELATION_INDEPENDENT_"..relation,P.Direct(variant,a,b),true)
+end
+T.DebugSetOwner("northvale",nil)
+check("LANDLESS_DIRECT_DENIED",direct(-1,-2),false)
+check("DIPLOMATIC_SAME_ROOT_UNCHANGED",C.DebugCanDeliver("diplomatic",-1,-3),true)
+T.DebugSetOwner("northvale","Player_-2")
+task.wait(0.5)
+result.inspect=C.DebugInspect()
+result.pass=true
+for _,item in result.checks do if not item.pass then result.pass=false end end
+local v=Instance.new("StringValue");v.Name="DirectClarificationResults";v.Value=game.HttpService:JSONEncode(result);v.Parent=game.ServerScriptService
+print("DIRECT_CLARIFICATION="..v.Value)
+assert(result.pass,"Direct clarification test failure")

@@ -1,0 +1,104 @@
+{
+  "sources": [
+    {
+      "match": true,
+      "file": "ServerScriptService/Services/CommunicationsService.luau"
+    },
+    {
+      "match": true,
+      "file": "ServerScriptService/Services/CommunicationsPolicy.luau"
+    },
+    {
+      "match": true,
+      "file": "ServerScriptService/Services/DiplomacyService.luau"
+    },
+    {
+      "match": true,
+      "file": "ServerScriptService/Services/AdminBridge.luau"
+    },
+    {
+      "match": true,
+      "file": "ServerScriptService/Services/AdminKohlAddon.luau"
+    },
+    {
+      "match": true,
+      "file": "ServerScriptService/Bootstrap.server.luau"
+    },
+    {
+      "match": true,
+      "file": "StarterPlayerScripts/Controllers/CommunicationsController.luau"
+    },
+    {
+      "match": true,
+      "file": "StarterPlayerScripts/Controllers/TerritoryMapController.luau"
+    },
+    {
+      "match": true,
+      "file": "StarterPlayerScripts/Bootstrap.local.luau"
+    },
+    {
+      "match": true,
+      "file": "ReplicatedStorage/Shared/Util/RealmGraph.luau"
+    },
+    {
+      "match": true,
+      "file": "ReplicatedStorage/Shared/Config/CommunicationsConfig.luau"
+    }
+  ],
+  "activeBootstraps": [
+    "StarterPlayer.StarterPlayerScripts.Bootstrap",
+    "ServerScriptService.Bootstrap"
+  ],
+  "archive": [
+    {
+      "class": "ModuleScript",
+      "name": "ServerScriptService.Services.CommunicationsService"
+    },
+    {
+      "class": "ModuleScript",
+      "name": "ReplicatedStorage.Shared.Util.RealmGraph"
+    },
+    {
+      "class": "ModuleScript",
+      "name": "ReplicatedStorage.Shared.Config.CommunicationsConfig"
+    },
+    {
+      "class": "ModuleScript",
+      "name": "ServerScriptService.Services.DiplomacyService"
+    },
+    {
+      "class": "ModuleScript",
+      "name": "ServerScriptService.Services.AdminBridge"
+    },
+    {
+      "class": "ModuleScript",
+      "name": "ServerScriptService.Services.AdminKohlAddon"
+    },
+    {
+      "class": "ModuleScript",
+      "name": "ReplicatedStorage.Shared.Util.PrototypeGuiTheme"
+    },
+    {
+      "class": "ModuleScript",
+      "name": "StarterPlayer.StarterPlayerScripts.Controllers.TerritoryMapController"
+    },
+    {
+      "class": "ModuleScript",
+      "name": "StarterPlayer.StarterPlayerScripts.Controllers.CommunicationsController"
+    },
+    {
+      "class": "Script",
+      "name": "ServerScriptService.Bootstrap",
+      "disabled": true
+    },
+    {
+      "class": "LocalScript",
+      "name": "StarterPlayer.StarterPlayerScripts.Bootstrap",
+      "disabled": true
+    },
+    {
+      "class": "Frame",
+      "name": "CommunicationsPanel"
+    }
+  ]
+}

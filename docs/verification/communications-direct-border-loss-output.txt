@@ -1,0 +1,102 @@
+22:55:42.010  > print("DIRECT_CLARIFICATION="..game.ServerScriptService.DirectClarificationResults.Value)  -  Studio
+  22:55:42.013  DirectClarificationResults is not a valid member of ServerScriptService "ServerScriptService"  -  Server
+  22:55:42.013  Stack Begin  -  Studio
+  22:55:42.013  Script 'CommandBar', Line 1  -  Studio
+  22:55:42.013  Stack End  -  Studio
+  22:55:42.046  DirectClarificationResults is not a valid member of ServerScriptService "ServerScriptService"  -  Studio
+  22:55:55.502  > local s=Instance.new("Script");s.Name="DirectClarificationFixtureRetry";s.Source=[========[-- Disposable server-only targeted Direct clarification fixture. local S=game.ServerScriptService.Services local H,T,D,C,P=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.DiplomacyService),require(S.CommunicationsService),require(S.CommunicationsPolicy) local result={checks={}} local function check(id,actual,expected)  table.insert(result.checks,{id=id,actual=actual,expected=expected,pass=actual==expected}) end local function world() return P.World(H.GetSnapshot().rulers,D.GetSnapshot().agreements,T.GetOwnedTerritoryIds,T.AreAdjacent) end local function direct(a,b) local w=world();return P.Direct(w,w.users[a],w.users[b]) end local function fealty(a,b) local ok,id=H.OfferFealty(a,b);assert(ok,id); local accepted,err=H.AcceptFealty(id,b);assert(accepted,err) end local players=game.Players:GetPlayers() check("CLIENT_COUNT",#players,3) assert(#players==3) for _,territory in T.GetMapDefinition().territories do T.DebugSetOwner(territory.id,nil) end T.DebugSetOwner("westmere","Player_-1") T.DebugSetOwner("brightfen","Player_-2") T.DebugSetOwner("northvale","Player_-3") H.DebugSetRank("Player_-1",4);H.DebugSetRank("Player_-2",3);H.DebugSetRank("Player_-3",2) fealty("Player_-3","Player_-2") local w=world() check("ROOTS_ADJACENT_VIA_SUBJECT",P.Distance(w,w.users[-1],w.users[-2]),1) check("SUBJECT_HOLDINGS_NOT_PERSONAL",direct(-1,-2),false) T.DebugSetOwner("northvale","Player_-2") T.DebugSetOwner("brightfen",nil) T.DebugSetOwner("highmarch","Player_-3") fealty("Player_-2","Player_-1") game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync") w=world() check("SAME_ROOT_DISTANCE_ZERO",P.Distance(w,w.users[-1],w.users[-2]),0) check("SAME_ROOT_LIEGE_SUBJECT_ADJACENT",direct(-1,-2),true) check("SAME_ROOT_ADJACENT_REVERSE",direct(-2,-1),true) local opened,id=C.OpenDirect(game.Players:GetPlayerByUserId(-1),-2) check("OPEN_SAME_ROOT_ADJACENT",opened,true) check("DIRECT_NATIVE_POLICY_SEND",C.DebugCanDeliver(id,-1,-2),true) check("EXACTLY_TWO_ORDINARY",C.DebugCanDeliver(id,-3,-2),false) check("COUNCIL_AND_DIRECT_COEXIST",C.DebugCanDeliver("council:Player_-1",-2,-1),true) check("SAME_ROOT_LIEGE_SUBJECT_NONADJACENT",direct(-2,-3),false) local denied=C.OpenDirect(game.Players:GetPlayerByUserId(-2),-3) check("OPEN_SAME_ROOT_NONADJACENT",denied,false) check("COUNCIL_NONADJACENT_UNRESTRICTED",C.DebugCanDeliver("council:Player_-2",-3,-2),true) T.DebugSetOwner("northvale",nil);T.DebugSetOwner("brightfen","Player_-2") check("BORDER_LOSS_BEFORE_SYNC",C.DebugCanDeliver(id,-1,-2),false) check("COUNCIL_AFTER_BORDER_LOSS",C.DebugCanDeliver("council:Player_-1",-2,-1),true) T.DebugSetOwner("brightfen",nil);T.DebugSetOwner("northvale","Player_-2") check("BORDER_RESTORED_BEFORE_SYNC",C.DebugCanDeliver(id,-1,-2),true) check("SELF_DIRECT_DENIED",direct(-1,-1),false) local selfOpen=C.OpenDirect(game.Players:GetPlayerByUserId(-1),-1) check("SELF_OPEN_DENIED",selfOpen,false) local malformed=C.OpenDirect(game.Players:GetPlayerByUserId(-1),{}) check("MALFORMED_OPEN_DENIED",malformed,false) -- Political labels do not affect personal-border eligibility. Inject snapshots only; -- all ownership/adjacency is still read from current Territory service. local a,b=table.clone(w.users[-1]),table.clone(w.users[-2]) for _,relation in {"fellow_subjects","allies","enemies","NAP","unrelated"} do  a.liegeId="";b.liegeId="";a.rootRulerId=a.rulerId;b.rootRulerId=b.rulerId  local agreements={}  if relation=="fellow_subjects" then a.liegeId="test_root";b.liegeId="test_root";a.rootRulerId="test_root";b.rootRulerId="test_root" end  if relation=="allies" then agreements={{leftRulerId=a.rulerId,rightRulerId=b.rulerId,alliance=true,allianceInstanceId="test"}} end  if relation=="NAP" then agreements={{leftRulerId=a.rulerId,rightRulerId=b.rulerId,nap=true}} end  local variant=P.World({a,b},agreements,T.GetOwnedTerritoryIds,T.AreAdjacent)  check("RELATION_INDEPENDENT_"..relation,P.Direct(variant,a,b),true) end T.DebugSetOwner("northvale",nil) check("LANDLESS_DIRECT_DENIED",direct(-1,-2),false) check("DIPLOMATIC_SAME_ROOT_UNCHANGED",C.DebugCanDeliver("diplomatic",-1,-3),true) T.DebugSetOwner("northvale","Player_-2") task.wait(0.5) result.inspect=C.DebugInspect() result.pass=true for _,item in result.checks do if not item.pass then result.pass=false end end local v=Instance.new("StringValue");v.Name="DirectClarificationResults";v.Value=game.HttpService:JSONEncode(result);v.Parent=game.ServerScriptService print("DIRECT_CLARIFICATION="..v.Value) assert(result.pass,"Direct clarification test failure") ]========];s.Parent=game.ServerScriptService  -  Studio
+  22:55:55.529   ▶ [Territory] push State all clients (x19)  -  Server - TerritoryMapService:101
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  22:55:55.530  [Hierarchy] rank set Player1 Emperor  -  Server - PoliticalHierarchyService:432
+  22:55:55.531  [Hierarchy] push State all clients rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:180
+  22:55:55.531  [Hierarchy] rank set Player2 King  -  Server - PoliticalHierarchyService:432
+  22:55:55.531  [Hierarchy] push State all clients rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:180
+  22:55:55.531  [Hierarchy] rank set Player3 Duke  -  Server - PoliticalHierarchyService:432
+  22:55:55.531  [Hierarchy] push State all clients rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:180
+  22:55:55.531  [Hierarchy] push State all clients rulers= 3 requests= 1  -  Server - PoliticalHierarchyService:180
+  22:55:55.531  [Hierarchy] push State all clients rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:180
+  22:55:55.531  [Hierarchy] notice -> Player2 Vassalage accepted.  -  Server - PoliticalHierarchyService:187
+  22:55:55.531  [Hierarchy] notice -> Player3 Player2 accepted your vassalage offer.  -  Server - PoliticalHierarchyService:187
+  22:55:55.531   ▶ [Territory] push State all clients (x3)  -  Server - TerritoryMapService:101
+
+
+  22:55:55.531  [Hierarchy] push State all clients rulers= 3 requests= 1  -  Server - PoliticalHierarchyService:180
+  22:55:55.531  [Hierarchy] push State all clients rulers= 3 requests= 0  -  Server - PoliticalHierarchyService:180
+  22:55:55.531  [Hierarchy] notice -> Player1 Vassalage accepted.  -  Server - PoliticalHierarchyService:187
+  22:55:55.531  [Hierarchy] notice -> Player2 Player1 accepted your vassalage offer.  -  Server - PoliticalHierarchyService:187
+  22:55:55.533   ▶ [Territory] push State all clients (x6)  -  Server - TerritoryMapService:101
+
+
+
+
+
+  22:55:55.534  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  22:55:55.534   ▶ [Title] push State all clients (x35)  -  Server - TitleProgressionService:146
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  22:55:56.046  DIRECT_CLARIFICATION={"inspect":{"implementation":"NativeDeliveryV01","contexts":[{"id":"council:Player_-1","kind":"council","members":[-1,-2],"sources":[{"userId":-3,"canSend":false},{"userId":-2,"canSend":true},{"userId":-1,"canSend":true}]},{"id":"direct:-2:-1","kind":"direct","members":[-1,-2],"sources":[{"userId":-1,"canSend":true},{"userId":-3,"canSend":false},{"userId":-2,"canSend":true}]},{"id":"diplomatic","kind":"diplomatic","members":[-1,-2,-3],"sources":[{"userId":-1,"canSend":true},{"userId":-2,"canSend":true},{"userId":-3,"canSend":true}]},{"id":"council:Player_-2","kind":"council","members":[-2,-3],"sources":[{"userId":-3,"canSend":true},{"userId":-2,"canSend":true},{"userId":-1,"canSend":false}]}]},"pass":true,"checks":[{"id":"CLIENT_COUNT","expected":3,"pass":true,"actual":3},{"id":"ROOTS_ADJACENT_VIA_SUBJECT","expected":1,"pass":true,"actual":1},{"id":"SUBJECT_HOLDINGS_NOT_PERSONAL","expected":false,"pass":true,"actual":false},{"id":"SAME_ROOT_DISTANCE_ZERO","expected":0,"pass":true,"actual":0},{"id":"SAME_ROOT_LIEGE_SUBJECT_ADJACENT","expected":true,"pass":true,"actual":true},{"id":"SAME_ROOT_ADJACENT_REVERSE","expected":true,"pass":true,"actual":true},{"id":"OPEN_SAME_ROOT_ADJACENT","expected":true,"pass":true,"actual":true},{"id":"DIRECT_NATIVE_POLICY_SEND","expected":true,"pass":true,"actual":true},{"id":"EXACTLY_TWO_ORDINARY","expected":false,"pass":true,"actual":false},{"id":"COUNCIL_AND_DIRECT_COEXIST","expected":true,"pass":true,"actual":true},{"id":"SAME_ROOT_LIEGE_SUBJECT_NONADJACENT","expected":false,"pass":true,"actual":false},{"id":"OPEN_SAME_ROOT_NONADJACENT","expected":false,"pass":true,"actual":false},{"id":"COUNCIL_NONADJACENT_UNRESTRICTED","expected":true,"pass":true,"actual":true},{"id":"BORDER_LOSS_BEFORE_SYNC","expected":false,"pass":true,"actual":false},{"id":"COUNCIL_AFTER_BORDER_LOSS","expected":true,"pass":true,"actual":true},{"id":"BORDER_RESTORED_BEFORE_SYNC","expected":true,"pass":true,"actual":true},{"id":"SELF_DIRECT_DENIED","expected":false,"pass":true,"actual":false},{"id":"SELF_OPEN_DENIED","expected":false,"pass":true,"actual":false},{"id":"MALFORMED_OPEN_DENIED","expected":false,"pass":true,"actual":false},{"id":"RELATION_INDEPENDENT_fellow_subjects","expected":true,"pass":true,"actual":true},{"id":"RELATION_INDEPENDENT_allies","expected":true,"pass":true,"actual":true},{"id":"RELATION_INDEPENDENT_enemies","expected":true,"pass":true,"actual":true},{"id":"RELATION_INDEPENDENT_NAP","expected":true,"pass":true,"actual":true},{"id":"RELATION_INDEPENDENT_unrelated","expected":true,"pass":true,"actual":true},{"id":"LANDLESS_DIRECT_DENIED","expected":false,"pass":true,"actual":false},{"id":"DIPLOMATIC_SAME_ROOT_UNCHANGED","expected":true,"pass":true,"actual":true}]}  -  Server - DirectClarificationFixtureRetry:72
+  22:55:56.047  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  22:57:20.088  > local T=require(game.ServerScriptService.Services.TerritoryMapService); T.DebugSetOwner("northvale",nil); T.DebugSetOwner("brightfen","Player_-2"); task.delay(0.5,function() print("DIRECT_BORDER_LOSS_NATIVE="..game.HttpService:JSONEncode(require(game.ServerScriptService.Services.CommunicationsService).DebugInspect())) end)  -  Studio
+  22:57:20.095  ServerScriptService.Services.TerritoryMapService:37: attempt to index nil with 'territories'  -  Server - TerritoryMapService:37
+  22:57:20.095  Stack Begin  -  Studio
+  22:57:20.095  Script 'ServerScriptService.Services.TerritoryMapService', Line 37 - function SetOwner  -  Studio - TerritoryMapService:37
+  22:57:20.095  Script 'ServerScriptService.Services.TerritoryMapService', Line 242 - function DebugSetOwner  -  Studio - TerritoryMapService:242
+  22:57:20.095  Script 'CommandBar', Line 1  -  Studio
+  22:57:20.095  Stack End  -  Studio
+  22:57:20.126  ServerScriptService.Services.TerritoryMapService:37: attempt to index nil with 'territories'  -  Studio
+  22:57:35.981  > local s=Instance.new("Script"); s.Name="DirectBorderLossCheck"; s.Source=[========[local T=require(game.ServerScriptService.Services.TerritoryMapService);T.DebugSetOwner("northvale",nil);T.DebugSetOwner("brightfen","Player_-2");task.wait(0.5);print("DIRECT_BORDER_LOSS_NATIVE="..game.HttpService:JSONEncode(require(game.ServerScriptService.Services.CommunicationsService).DebugInspect()))]========];s.Parent=game.ServerScriptService  -  Studio
+  22:57:35.992   ▶ [Territory] push State all clients (x2)  -  Server - TerritoryMapService:101
+
+  22:57:35.993  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+  22:57:35.993   ▶ [Title] push State all clients (x2)  -  Server - TitleProgressionService:146
+
+  22:57:36.508  DIRECT_BORDER_LOSS_NATIVE={"implementation":"NativeDeliveryV01","contexts":[{"id":"council:Player_-1","kind":"council","members":[-1,-2],"sources":[{"userId":-3,"canSend":false},{"userId":-2,"canSend":true},{"userId":-1,"canSend":true}]},{"id":"direct:-2:-1","kind":"direct","members":[],"sources":[{"userId":-1,"canSend":false},{"userId":-3,"canSend":false},{"userId":-2,"canSend":false}]},{"id":"diplomatic","kind":"diplomatic","members":[-1,-2,-3],"sources":[{"userId":-1,"canSend":true},{"userId":-2,"canSend":true},{"userId":-3,"canSend":true}]},{"id":"council:Player_-2","kind":"council","members":[-2,-3],"sources":[{"userId":-3,"canSend":true},{"userId":-2,"canSend":true},{"userId":-1,"canSend":false}]}]}  -  Server - DirectBorderLossCheck:1

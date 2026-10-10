@@ -1,0 +1,403 @@
+{
+  "inspect": {
+    "implementation": "NativeDeliveryV01",
+    "contexts": [
+      {
+        "id": "alliance:ac704c1f-1e0e-49f5-ac1a-20ef3bdf5b45",
+        "kind": "alliance",
+        "members": [],
+        "sources": [
+          {
+            "userId": -3,
+            "canSend": false
+          },
+          {
+            "userId": -2,
+            "canSend": false
+          },
+          {
+            "userId": -1,
+            "canSend": false
+          }
+        ]
+      },
+      {
+        "id": "direct:-2:-1",
+        "kind": "direct",
+        "members": [],
+        "sources": [
+          {
+            "userId": -1,
+            "canSend": false
+          },
+          {
+            "userId": -3,
+            "canSend": false
+          },
+          {
+            "userId": -2,
+            "canSend": false
+          }
+        ]
+      },
+      {
+        "id": "council:Player_-2",
+        "kind": "council",
+        "members": [
+          -2,
+          -3
+        ],
+        "sources": [
+          {
+            "userId": -3,
+            "canSend": true
+          },
+          {
+            "userId": -2,
+            "canSend": true
+          },
+          {
+            "userId": -1,
+            "canSend": false
+          }
+        ]
+      },
+      {
+        "id": "alliance:6f0e6224-40b7-49ea-85e9-1a0a2ca88ccd",
+        "kind": "alliance",
+        "members": [],
+        "sources": [
+          {
+            "userId": -3,
+            "canSend": false
+          },
+          {
+            "userId": -2,
+            "canSend": false
+          },
+          {
+            "userId": -1,
+            "canSend": false
+          }
+        ]
+      },
+      {
+        "id": "council:Player_-1",
+        "kind": "council",
+        "members": [
+          -1,
+          -2
+        ],
+        "sources": [
+          {
+            "userId": -3,
+            "canSend": false
+          },
+          {
+            "userId": -2,
+            "canSend": true
+          },
+          {
+            "userId": -1,
+            "canSend": true
+          }
+        ]
+      },
+      {
+        "id": "diplomatic",
+        "kind": "diplomatic",
+        "members": [
+          -1,
+          -2,
+          -3
+        ],
+        "sources": [
+          {
+            "userId": -1,
+            "canSend": true
+          },
+          {
+            "userId": -2,
+            "canSend": true
+          },
+          {
+            "userId": -3,
+            "canSend": true
+          }
+        ]
+      },
+      {
+        "id": "alliance:38f2e5e8-cb58-42a6-a46b-75a40833de29",
+        "kind": "alliance",
+        "members": [],
+        "sources": [
+          {
+            "userId": -3,
+            "canSend": false
+          },
+          {
+            "userId": -2,
+            "canSend": false
+          },
+          {
+            "userId": -1,
+            "canSend": false
+          }
+        ]
+      }
+    ]
+  },
+  "results": [
+    {
+      "id": "REG_RECRUIT",
+      "values": [
+        true,
+        "Recruited 3 Troops for 1 Gold."
+      ]
+    },
+    {
+      "id": "REG_RECRUIT_SPEND",
+      "values": [
+        1,
+        {
+          "rulerId": "Player_-1",
+          "available": 1003,
+          "ledgerOk": true,
+          "committed": 0,
+          "wars": [],
+          "total": 1003
+        }
+      ]
+    },
+    {
+      "id": "REG_BAD_RECRUIT",
+      "values": [
+        false,
+        "Minimum recruit is 3 Troops."
+      ]
+    },
+    {
+      "id": "REG_GOLD_OVESPEND",
+      "values": [
+        false,
+        "Insufficient Gold."
+      ]
+    },
+    {
+      "id": "REG_WAR_TOO_FAR",
+      "values": [
+        false,
+        "Cannot declare war: target not adjacent."
+      ]
+    },
+    {
+      "id": "REG_WAR_VALID",
+      "values": [
+        true,
+        "d772a46f-6a6b-432b-ab00-c50892d96645"
+      ]
+    },
+    {
+      "id": "REG_WAR_DUPLICATE",
+      "values": [
+        false,
+        "Territory is already contested."
+      ]
+    },
+    {
+      "id": "REG_COMMIT",
+      "values": [
+        true,
+        "Commitment set to 9."
+      ]
+    },
+    {
+      "id": "REG_CANCEL_UNWIND",
+      "values": [
+        {
+          "rulerId": "Player_-1",
+          "available": 994,
+          "ledgerOk": true,
+          "committed": 9,
+          "wars": [
+            {
+              "role": "Attacker",
+              "reserved": 9,
+              "warId": "d772a46f-6a6b-432b-ab00-c50892d96645",
+              "locked": false,
+              "mechanicallyResolved": false,
+              "intended": 9
+            }
+          ],
+          "total": 1003
+        }
+      ]
+    },
+    {
+      "id": "COUNCIL_FEALTY32",
+      "values": [
+        true,
+        true,
+        "Vassalage accepted."
+      ]
+    },
+    {
+      "id": "COUNCIL_FEALTY21",
+      "values": [
+        true,
+        true,
+        "Vassalage accepted."
+      ]
+    },
+    {
+      "id": "COUNCIL_VALID_UP",
+      "values": [
+        true
+      ]
+    },
+    {
+      "id": "COUNCIL_VALID_DOWN",
+      "values": [
+        true
+      ]
+    },
+    {
+      "id": "COUNCIL_NONRECURSIVE",
+      "values": [
+        false
+      ]
+    },
+    {
+      "id": "IDENTITY_LIEGE",
+      "values": [
+        "[King] [Liege] Player2: "
+      ]
+    },
+    {
+      "id": "IDENTITY_SUBJECT",
+      "values": [
+        "[Duke] [Subject] Player3: "
+      ]
+    },
+    {
+      "id": "IDENTITY_COUNCIL",
+      "values": [
+        "[Duke] Player3: "
+      ]
+    },
+    {
+      "id": "IDENTITY_OBSERVER",
+      "values": [
+        "[Duke] Player3: "
+      ]
+    },
+    {
+      "id": "REG_TERRITORY",
+      "values": [
+        "Player_-2"
+      ]
+    },
+    {
+      "id": "REG_HIERARCHY",
+      "values": [
+        {
+          "requests": [],
+          "rulers": [
+            {
+              "hasUser": false,
+              "rootRulerId": "Mock_3b1145e3-4d15-45ee-8aed-a9d4a1b39b9c",
+              "userId": 0,
+              "displayName": "GraphIntermediate",
+              "rulerId": "Mock_3b1145e3-4d15-45ee-8aed-a9d4a1b39b9c",
+              "titleRank": 1,
+              "vassalIds": [],
+              "descendantIds": [],
+              "liegeId": "",
+              "independent": true,
+              "titleName": "Lord"
+            },
+            {
+              "hasUser": true,
+              "rootRulerId": "Player_-1",
+              "userId": -1,
+              "displayName": "Player1",
+              "rulerId": "Player_-1",
+              "titleRank": 4,
+              "vassalIds": [
+                "Player_-2"
+              ],
+              "descendantIds": [
+                "Player_-2",
+                "Player_-3"
+              ],
+              "liegeId": "",
+              "independent": true,
+              "titleName": "Emperor"
+            },
+            {
+              "hasUser": true,
+              "rootRulerId": "Player_-1",
+              "userId": -2,
+              "displayName": "Player2",
+              "rulerId": "Player_-2",
+              "titleRank": 3,
+              "vassalIds": [
+                "Player_-3"
+              ],
+              "descendantIds": [
+                "Player_-3"
+              ],
+              "liegeId": "Player_-1",
+              "independent": false,
+              "titleName": "King"
+            },
+            {
+              "hasUser": true,
+              "rootRulerId": "Player_-1",
+              "userId": -3,
+              "displayName": "Player3",
+              "rulerId": "Player_-3",
+              "titleRank": 2,
+              "vassalIds": [],
+              "descendantIds": [],
+              "liegeId": "Player_-2",
+              "independent": false,
+              "titleName": "Duke"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "REG_DIPLOMACY_CLEANUP",
+      "values": [
+        {
+          "requests": [],
+          "agreements": [
+            {
+              "rightRulerId": "Player_-2",
+              "allianceInstanceId": "6f0e6224-40b7-49ea-85e9-1a0a2ca88ccd",
+              "leftRulerId": "Player_-1",
+              "nap": false,
+              "alliance": true
+            },
+            {
+              "rightRulerId": "Player_-3",
+              "allianceInstanceId": "38f2e5e8-cb58-42a6-a46b-75a40833de29",
+              "leftRulerId": "Player_-1",
+              "nap": false,
+              "alliance": true
+            },
+            {
+              "rightRulerId": "Player_-3",
+              "allianceInstanceId": "",
+              "leftRulerId": "Player_-2",
+              "nap": true,
+              "alliance": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

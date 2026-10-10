@@ -1,0 +1,594 @@
+{
+  "placeVersion": 89,
+  "scripts": [
+    {
+      "bytes": 1579,
+      "path": "StarterPlayer.StarterPlayerScripts.Bootstrap",
+      "attributes": [],
+      "class": "LocalScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 10464,
+      "path": "StarterPlayer.StarterPlayerScripts.Controllers.PoliticalHierarchyController",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 15930,
+      "path": "StarterPlayer.StarterPlayerScripts.Controllers.TerritoryMapController",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 4332,
+      "path": "StarterPlayer.StarterPlayerScripts.Controllers.TitleProgressionController",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 9915,
+      "path": "StarterPlayer.StarterPlayerScripts.Controllers.DiplomacyController",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 13446,
+      "path": "StarterPlayer.StarterPlayerScripts.Controllers.WarfareController",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 5662,
+      "path": "StarterPlayer.StarterPlayerScripts.Controllers.AdminFeedbackController",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 2770,
+      "path": "StarterPlayer.StarterPlayerScripts.Controllers.EconomyController",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 17690,
+      "path": "StarterPlayer.StarterPlayerScripts.Controllers.MilitaryController",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 12256,
+      "path": "StarterPlayer.StarterPlayerScripts.Controllers.CommunicationsController",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 165,
+      "path": "ReplicatedStorage.Shared.Config.PoliticalHierarchyConfig",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 3099,
+      "path": "ReplicatedStorage.Shared.Config.ValePrototypeMap",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 509,
+      "path": "ReplicatedStorage.Shared.Config.MapCatalog",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 903,
+      "path": "ReplicatedStorage.Shared.Config.RealmColors",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 160,
+      "path": "ReplicatedStorage.Shared.Config.DiplomacyConfig",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 110,
+      "path": "ReplicatedStorage.Shared.Config.WarfareConfig",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 264,
+      "path": "ReplicatedStorage.Shared.Config.EconomyConfig",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 429,
+      "path": "ReplicatedStorage.Shared.Config.MilitaryConfig",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 826,
+      "path": "ReplicatedStorage.Shared.Config.CommunicationsConfig",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 613,
+      "path": "ReplicatedStorage.Shared.Types.PoliticalTypes",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 1028,
+      "path": "ReplicatedStorage.Shared.Types.TerritoryTypes",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 618,
+      "path": "ReplicatedStorage.Shared.Types.TitleTypes",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 521,
+      "path": "ReplicatedStorage.Shared.Types.DiplomacyTypes",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 296,
+      "path": "ReplicatedStorage.Shared.Types.WarfareTypes",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 297,
+      "path": "ReplicatedStorage.Shared.Types.EconomyTypes",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 1305,
+      "path": "ReplicatedStorage.Shared.Util.PoliticalRankRules",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 1233,
+      "path": "ReplicatedStorage.Shared.Util.MapAdjacency",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 1572,
+      "path": "ReplicatedStorage.Shared.Util.MapGeometry",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 4073,
+      "path": "ReplicatedStorage.Shared.Util.MapTriangles",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 982,
+      "path": "ReplicatedStorage.Shared.Util.TitleRequirements",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 20384,
+      "path": "ReplicatedStorage.Shared.Util.PrototypeGuiTheme",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 1077,
+      "path": "ReplicatedStorage.Shared.Util.WarfareAdjacency",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 1308,
+      "path": "ReplicatedStorage.Shared.Util.PlayerRelevantView",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 2056,
+      "path": "ReplicatedStorage.Shared.Util.EconomyPayout",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 6135,
+      "path": "ReplicatedStorage.Shared.Util.MilitaryCombat",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 2727,
+      "path": "ReplicatedStorage.Shared.Util.RealmGraph",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 151,
+      "path": "ReplicatedStorage.Remotes._Placeholder",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 1641,
+      "path": "ServerScriptService.Bootstrap",
+      "attributes": [],
+      "class": "Script",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 16803,
+      "path": "ServerScriptService.Services.PoliticalHierarchyService",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 8195,
+      "path": "ServerScriptService.Services.TerritoryMapService",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 8979,
+      "path": "ServerScriptService.Services.TitleProgressionService",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 17555,
+      "path": "ServerScriptService.Services.DiplomacyService",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 17667,
+      "path": "ServerScriptService.Services.WarfareService",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 877,
+      "path": "ServerScriptService.Services.AdminConfig",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 13158,
+      "path": "ServerScriptService.Services.AdminBridge",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 9763,
+      "path": "ServerScriptService.Services.AdminService",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 9579,
+      "path": "ServerScriptService.Services.EconomyService",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 27145,
+      "path": "ServerScriptService.Services.MilitaryService",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    },
+    {
+      "bytes": 33175,
+      "path": "ServerScriptService.Services.CommunicationsService",
+      "attributes": [],
+      "class": "ModuleScript",
+      "LinkedSource": ""
+    }
+  ],
+  "jobId": "6f12be9b-8e24-41f4-89b5-ecc0f4118d68",
+  "placeId": 77421850892463,
+  "instances": [
+    {
+      "Visible": "true",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.Header",
+      "attributes": [],
+      "Position": "{0, 0}, {0, 0}",
+      "RichText": "false",
+      "class": "TextLabel",
+      "Text": "Communications",
+      "Size": "{1, 0}, {0, 18}"
+    },
+    {
+      "Visible": "true",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.Status",
+      "attributes": [],
+      "Position": "{0, 0}, {0, 18}",
+      "RichText": "false",
+      "class": "TextLabel",
+      "Text": "Diplomatic",
+      "Size": "{1, 0}, {0, 16}"
+    },
+    {
+      "Visible": "true",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.ConvList",
+      "attributes": [],
+      "Position": "{0, 0}, {0, 36}",
+      "class": "ScrollingFrame",
+      "CanvasSize": "{0, 0}, {0, 0}",
+      "Size": "{1, 0}, {0, 70}"
+    },
+    {
+      "Visible": "true",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.Transcript",
+      "attributes": [],
+      "Position": "{0, 0}, {0, 108}",
+      "RichText": "false",
+      "class": "TextLabel",
+      "Text": "Select a conversation.",
+      "Size": "{1, 0}, {0, 86}"
+    },
+    {
+      "Visible": "true",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.Input",
+      "Text": "",
+      "attributes": [],
+      "Position": "{0, 0}, {0, 196}",
+      "RichText": "false",
+      "TextEditable": "true",
+      "class": "TextBox",
+      "Size": "{1, -108}, {0, 24}"
+    },
+    {
+      "Visible": "true",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.SendButton",
+      "attributes": [],
+      "Position": "{1, -104}, {0, 196}",
+      "RichText": "false",
+      "class": "TextButton",
+      "Text": "Send",
+      "Size": "{0, 48}, {0, 24}"
+    },
+    {
+      "Visible": "true",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.HelpButton",
+      "attributes": [],
+      "Position": "{1, -52}, {0, 196}",
+      "RichText": "false",
+      "class": "TextButton",
+      "Text": "Help",
+      "Size": "{0, 52}, {0, 24}"
+    },
+    {
+      "Visible": "true",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.DirectButton",
+      "attributes": [],
+      "Position": "{0, 0}, {0, 222}",
+      "RichText": "false",
+      "class": "TextButton",
+      "Text": "Direct contacts",
+      "Size": "{1, 0}, {0, 20}"
+    },
+    {
+      "Visible": "false",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.ContactList",
+      "attributes": [],
+      "Position": "{0, 0}, {0, 242}",
+      "class": "ScrollingFrame",
+      "CanvasSize": "{0, 0}, {2, 0}",
+      "Size": "{1, 0}, {0, 22}"
+    },
+    {
+      "Visible": "false",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.ObserverBody",
+      "attributes": [],
+      "Position": "{0, 0}, {0, 244}",
+      "RichText": "false",
+      "class": "TextLabel",
+      "Text": "",
+      "Size": "{1, -70}, {0, 46}"
+    },
+    {
+      "Visible": "false",
+      "path": "StarterGui.HierarchyPrototypeGui.CommunicationsPanel.MuteObserver",
+      "attributes": [],
+      "Position": "{1, -66}, {0, 244}",
+      "RichText": "false",
+      "class": "TextButton",
+      "Text": "Mute observer",
+      "Size": "{0, 66}, {0, 20}"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes._Placeholder",
+      "attributes": [],
+      "class": "ModuleScript"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.HierarchyClientEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.HierarchyServerEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.TerritoryClientEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.TerritoryServerEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.TitleClientEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.TitleServerEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.DiplomacyClientEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.DiplomacyServerEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.WarfareClientEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.WarfareServerEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.EconomyClientEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.EconomyServerEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.MilitaryClientEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.MilitaryServerEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.CommunicationsClientEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "path": "ReplicatedStorage.Remotes.CommunicationsServerEvent",
+      "attributes": [],
+      "class": "RemoteEvent"
+    },
+    {
+      "Enabled": "true",
+      "path": "TextChatService.ChatWindowConfiguration",
+      "attributes": [],
+      "class": "ChatWindowConfiguration"
+    },
+    {
+      "Enabled": "true",
+      "path": "TextChatService.ChatInputBarConfiguration",
+      "attributes": [],
+      "class": "ChatInputBarConfiguration"
+    },
+    {
+      "Enabled": "true",
+      "path": "TextChatService.BubbleChatConfiguration",
+      "attributes": [],
+      "class": "BubbleChatConfiguration"
+    },
+    {
+      "Enabled": "false",
+      "path": "TextChatService.BubbleChatConfiguration.UIGradient",
+      "attributes": [],
+      "class": "UIGradient"
+    },
+    {
+      "Visible": "true",
+      "path": "TextChatService.BubbleChatConfiguration.ImageLabel",
+      "attributes": [],
+      "Position": "{0, 0}, {0, 0}",
+      "class": "ImageLabel",
+      "Size": "{0, 100}, {0, 100}"
+    },
+    {
+      "path": "TextChatService.BubbleChatConfiguration.UICorner",
+      "attributes": [],
+      "class": "UICorner"
+    },
+    {
+      "path": "TextChatService.BubbleChatConfiguration.UIPadding",
+      "attributes": [],
+      "class": "UIPadding"
+    },
+    {
+      "Enabled": "false",
+      "path": "TextChatService.ChannelTabsConfiguration",
+      "attributes": [],
+      "class": "ChannelTabsConfiguration"
+    }
+  ]
+}

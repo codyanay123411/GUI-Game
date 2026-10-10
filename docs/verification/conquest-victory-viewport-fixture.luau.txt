@@ -1,0 +1,11 @@
+local S=game.ServerScriptService.Services
+local H,T,W,M,V,E=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.WarfareService),require(S.MilitaryService),require(S.VictoryService),require(S.EconomyService)
+local p=game.Players:GetPlayers()[1];assert(p)
+local a=H.GetRulerIdForUserId(p.UserId);assert(a)
+for _,land in T.GetMapDefinition().territories do assert(T.SetOwner(land.id,nil)) end
+for i,land in T.GetMapDefinition().territories do if i<=11 then assert(T.SetOwner(land.id,a)) end end
+assert(not V.GetSnapshot().ended);assert(M.DebugSetSeed(42));assert(M.DebugSetTroops(a,1000))
+local gold=E.GetBalance(a);local ok,war=W.DeclareWar(a,"goldmere");assert(ok,war);assert(M.SetCommit(a,war,600));assert(M.LockCommit(a,war));assert(M.DebugAdvance(6))
+assert(V.GetSnapshot().ended and V.GetSnapshot().controlled==12 and T.GetOwnerRulerId("goldmere")==a)
+assert(E.GetBalance(a)==gold,"Neutral conquest must not grant loot")
+print("UC_VIC_VIEWPORT_NO_LOOT_PASS")

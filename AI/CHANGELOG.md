@@ -1,5 +1,21 @@
 # Changelog
 
+## 2026-10-10 — Finalize current development baseline
+
+Director authorized saving, committing and pushing the entire current implementation. Corrected stale Communications milestone wording, added current architecture inventory and historical report context, resolved the Overview snapshot warning, and corrected a bootstrap order comment. All 65 sources compile and match Studio; current-client map/navigation, Tab, Unclaimed UI and Victory initialization smoke passed. Saved an offline final place; retained useful evidence/recovery copies and existing verification limitations. No new gameplay/UI behavior or Roblox publication.
+
+## 2026-10-10 — Unclaimed conquest and Domination V0.x
+
+Implemented territory militia without NPC rulers or loot; integrated persistent survivors and stale-target validation into Warfare/Military. Added configurable realm Domination, synchronous victory boundaries, exactly-once final snapshots, competitive mutation freeze and responsive root/realm/defeat results. Kept map, Players and Messages available; retained final ownership on disconnect and prevented late-join free land. Added authorized admin inspection/setup. Verified Solo mouse flow, three actual clients, disconnect/race/hierarchy cases, malformed requests, ledgers and HD720/VGA modal input. Preserved prior recovered assets and saved an offline place. Details and limitations: [CONQUEST_VICTORY.md](CONQUEST_VICTORY.md). Agent verification is not Director acceptance; no commit, push or publication.
+
+## 2026-10-09 — Communications recovered-candidate audit
+
+Preserved supplemental Studio dependencies and metadata; verified original five-script snapshot against post-test Source. Compared channel policy, presentation, moderation architecture, admin scope, and lifecycle behavior with the Communications freeze. Three-client Local Server tests reproduced ended-Alliance send acceptance before sync, stale Council state after ruler removal, same-root Direct rejection, and transcript clipping. Recorded static filtering/privacy risks separately from live observations and recommended selective salvage in `AI/COMMUNICATIONS_RECOVERY_AUDIT.md`. Test session closed; no candidate rewrite/sync/integration, design change, Director acceptance, commit, push, or publication.
+
+## 2026-10-09 — Development takeover investigation
+
+Read project memory and cross-checked source authorities; ran existing Studio Play Solo and two-client Local Server gameplay checks. Recorded observed results, incomplete regression coverage, viewport clipping, selected-territory information mismatch, and replication-boundary concerns in `AI/TAKEOVER_REPORT.md`. Confirmed unsynced/external Studio Communications implementation and preserved five validated script sources in `docs/verification/2026-10-09-studio-communications-snapshot.json` without replacing synced source. Full provenance and place reconciliation remain pending. No gameplay edits, acceptance changes, deferred-test passes, commit, push, or publication.
+
 ## 2026-08-23
 
 Set up the local Roblox + Cursor development environment.
@@ -308,3 +324,21 @@ Director PASS #18: never-interacted attacker 55s cancel (Brightfen; `War cancell
 ## 2026-08-24 — Communications V0.x design freeze (docs only)
 
 Recorded Director Communications freeze: **PRE-V0.5 REQUIRED — DESIGN FREEZE IN PROGRESS — NOT IMPLEMENTED.** Current authorized design milestone. Implementation not authorized. **General** retired; **Diplomatic** is public nearby-realm chat (graph distance ≤ 2 from sender; asymmetric delivery desired). Council = ruler + direct subjects. Allies = per Alliance (no NAP, no subject inherit). Direct = 1:1 with current adjacency; send cut immediately if border lost. Admin/Observer separate. TextChatService direction. No speech censorship. Military V0.1 remains Director-accepted. No Luau, Studio, remotes, GUI, TextChatService, Kohl, or Git.
+
+
+## 2026-10-09 — Communications recovered-work salvage and replacement
+
+Director authorized recommendation B. Reused stateless realm graph, adapted identity/exact help and Diplomacy-owned distinct Alliance IDs; rebuilt service/controller around native Success receipts joined to metadata-only labels, current political validation and event-driven membership cleanup. Removed active raw/custom message fallbacks and deferred project announcements. Rebuilt only Communications transcript/controls, adding measured wrapping/scrolling and pointer blocking. Three-client authority/regression tests and final Play Solo GUI checks recorded in AI/COMMUNICATIONS_IMPLEMENTATION.md. Native peer privacy denied for synthetic users; peer filtering/observer/live disconnect and same-root Direct design clarification remain outstanding. Original sources/GUI preserved inactive and a local place copy saved; one active implementation. PARTIALLY AGENT-VERIFIED, NOT Director-accepted; no Git commit/push or publication.
+
+
+## 2026-10-09 — Director clarification: Direct personal-territory adjacency
+
+Direct now checks borders between the two rulers’ directly/personally owned territories, independently of relationship and greater-realm roots. Root aggregation remains Diplomatic-only; subject holdings do not qualify their liege for Direct. Existing immediate revocation, two ordinary participants, native privacy, history and Council rules preserved. Canonical design/decision docs clarified; no scope expansion. Targeted three-client verification passed 26/26 authority checks, including same-root adjacent/non-adjacent cases and border loss/restoration before sync. Native real-account verification remains outstanding; NOT Director-accepted. No commit/push/publish.
+
+## 2026-10-09 — Map-first GUI / UX sprint
+
+Reorganized seven panels into centralized Map/system navigation with one contextual drawer, persistent resources and full-screen gradient. Added camera-aligned province names; improved empty/loading states, typography, political-offer layering, Military status spacing and dangerous-action styling. Routed InspectComms through existing feedback and fixed long admin result scrolling using measured text. Verified targeted Solo and three-client flows and input isolation; preserved original GUI and place. Full report: `AI/GUI_UX_SPRINT.md`. No gameplay-rule changes, new acceptance, commit, push or publication.
+
+## 2026-10-10 — Implement custom Realm Overview player list
+
+Added hold-Tab overlay, Players navigation, live public political rows, local relations, holdings, deterministic sorts and informational details. Supported PlayerList-only disable moved into the new controller with respawn handling; added input isolation and compact rows. Verified Solo, three clients, political transitions, Direct revocation, disconnect cleanup, focus/restoration, repeated lifecycle and 50 diagnostic rows. See AI/REALM_OVERVIEW.md. No gameplay changes, Director acceptance, commit, push or publication.

@@ -1,0 +1,23 @@
+-- Disposable server-only cleanup and blocked-native-render fixture.
+local S=game.ServerScriptService.Services
+local H,T,D,C=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.DiplomacyService),require(S.CommunicationsService)
+local M=require(S.MilitaryService)
+local results={}
+local function record(id,...) table.insert(results,{id=id,values={...}}) end
+record("REG_CANCEL_UNWIND_SETTLED",M.GetInspect("Player_-1"))
+record("REG_DIPLOMACY_CLEANUP_SETTLED",#D.GetSnapshot().agreements)
+H.DebugRemoveRuler("Player_-2")
+record("COUNCIL_REMOVAL_IMMEDIATE",C.DebugCanDeliver("council:Player_-2",-3,-3),C.DebugCanDeliver("council:Player_-2",-3,-1))
+record("DIRECT_RULER_REMOVAL_IMMEDIATE",C.DebugCanDeliver("direct:-2:-1",-1,-2))
+task.wait(0.5)
+record("COUNCIL_CLEANED",C.DebugInspect())
+record("HIERARCHY_CLEANED",H.GetSnapshot())
+record("TERRITORY_CLEANED",T.GetOwnerRulerId("northvale") or "unclaimed")
+-- An identity envelope cannot generate text without a native Success receipt.
+game.ReplicatedStorage.Remotes.CommunicationsServerEvent:FireClient(game.Players:GetPlayerByUserId(-3),"Identity",{
+	messageId="audit-no-native-receipt",contextId="council:Player_-2",kind="council",label="Council",ordinary=true,observing=false,prefix="[AUDIT LABEL ONLY] "})
+local value=Instance.new("StringValue")
+value.Name="ReplacementPhase3Results"
+value.Value=game.HttpService:JSONEncode({results=results})
+value.Parent=game.ServerScriptService
+print("REPLACEMENT_PHASE3="..value.Value)

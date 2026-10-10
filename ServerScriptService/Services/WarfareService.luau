@@ -19,6 +19,8 @@ local Territory = require(ServerScriptService.Services.TerritoryMapService)
 local Diplomacy = require(ServerScriptService.Services.DiplomacyService)
 local WarfareAdjacency = require(ReplicatedStorage.Shared.Util.WarfareAdjacency)
 
+local MatchState = require(script.Parent.MatchState)
+local Neutral = require(script.Parent.NeutralDefenseService)
 local WarfareService = {}
 
 type War = {
@@ -27,6 +29,9 @@ type War = {
 	defenderRootId: string,
 	targetTerritoryId: string,
 	status: string,
+	targetKind: string,
+	targetRevision: number,
+	neutralDefenders: number?,
 }
 
 local started = false
@@ -191,6 +196,8 @@ local function buildSnapshot()
 				defenderRootId = war.defenderRootId,
 				targetTerritoryId = war.targetTerritoryId,
 				status = war.status,
+				targetKind = war.targetKind,
+				neutralDefenders = war.neutralDefenders,
 			})
 		end
 	end
@@ -240,6 +247,9 @@ local function endWar(war: War, reason: string)
 end
 
 local function targetStillOriginalDefender(war: War): boolean
+	if war.targetKind == "Unclaimed" then
+		return Territory.GetOwnerRulerId(war.targetTerritoryId) == nil and Territory.GetOwnershipRevision(war.targetTerritoryId) == war.targetRevision
+	end
 	local currentRoot = ownerRootId(war.targetTerritoryId)
 	return currentRoot == war.defenderRootId
 end
@@ -249,6 +259,7 @@ function WarfareService.GetSnapshot()
 end
 
 function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if typeof(targetTerritoryId) ~= "string" or targetTerritoryId == "" then
 		return false, "Cannot declare war: invalid target."
 	end
@@ -259,7 +270,7 @@ function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: st
 	local mapDef = Territory.GetMapDefinition()
 	local exists = false
 	for _, t in mapDef.territories do
-		if t.id == targetTerritoryId then
+		if t.id == targetTerritoryId and t.conquerable ~= false then
 			exists = true
 			break
 		end
@@ -268,24 +279,19 @@ function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: st
 		return false, "Cannot declare war: unknown territory."
 	end
 	local ownerId = Territory.GetOwnerRulerId(targetTerritoryId)
-	if not ownerId then
-		return false, "Cannot declare war: target is Unclaimed."
-	end
+	local neutral = if not ownerId then Neutral.Get(targetTerritoryId) else nil
 	if isOwnedByRealm(targetTerritoryId, attackerRootId) then
 		return false, "Cannot declare war: target belongs to your realm."
 	end
-	local defenderRoot = ownerRootId(targetTerritoryId)
-	if not defenderRoot then
-		return false, "Cannot declare war: target is Unclaimed."
-	end
+	local defenderRoot = ownerRootId(targetTerritoryId) or ""
 	local defender = findRuler(defenderRoot)
-	if not isIndependentRoot(defender) then
+	if not neutral and not isIndependentRoot(defender) then
 		return false, "Cannot declare war: defender is not an independent realm."
 	end
 	if not isGreaterRealmAdjacent(attackerRootId, targetTerritoryId) then
 		return false, "Cannot declare war: target not adjacent."
 	end
-	if Diplomacy.HasNonAggressionPact(attackerRootId, defenderRoot) then
+	if not neutral and Diplomacy.HasNonAggressionPact(attackerRootId, defenderRoot) then
 		return false, "Cannot declare war: Non-Aggression Pact active."
 	end
 	if activeWarOnTerritory(targetTerritoryId) then
@@ -306,11 +312,14 @@ function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: st
 		defenderRootId = defenderRoot,
 		targetTerritoryId = targetTerritoryId,
 		status = "Active",
+		targetKind = if neutral then "Unclaimed" else "Player",
+		targetRevision = Territory.GetOwnershipRevision(targetTerritoryId),
+		neutralDefenders = if neutral then neutral.current else nil,
 	}
 	warsById[warId] = created
 	militaryModule().OnWarCreated(created)
 	pushState()
-	noticeRulerId(attackerRootId, "War declared.")
+	noticeRulerId(attackerRootId, if neutral then "Conquest begun. Commit Troops in Military." else "War declared.")
 	noticeRulerId(defenderRoot, "War declared against your realm.")
 	return true, warId
 end
@@ -329,12 +338,18 @@ function WarfareService.CancelWar(warId: string, reason: string)
 end
 
 function WarfareService.ApplyMilitaryOutcome(warId: string, outcome: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local war = warsById[warId]
 	if not war or war.status ~= "Active" then
 		return false, "War is no longer active."
 	end
 	if outcome ~= "Attacker" and outcome ~= "Defender" then
 		return false, "Unknown resolution."
+	end
+	if war.targetKind == "Unclaimed" and (not targetStillOriginalDefender(war) or not isIndependentRoot(findRuler(war.attackerRootId))) then
+		endWar(war, "stale neutral conquest")
+		pushState()
+		return false, "Conquest stale; no transfer."
 	end
 	if outcome == "Defender" then
 		local attacker = war.attackerRootId
@@ -367,11 +382,24 @@ function WarfareService.ApplyMilitaryOutcome(warId: string, outcome: string): (b
 	return true, "Attacker victory."
 end
 
+function WarfareService.IsTargetCurrent(warId: string): boolean
+	local war = warsById[warId]
+	return war ~= nil and targetStillOriginalDefender(war)
+end
+
+function WarfareService.FreezeMatch()
+	local snapshot = {}
+	for _, war in warsById do table.insert(snapshot, war) end
+	for _, war in snapshot do endWar(war, "match ended") end
+	pushState()
+end
+
 function WarfareService.GetContestInspect()
 	return buildSnapshot()
 end
 
 function WarfareService.DebugResolveWar(warId: string, outcome: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local war = warsById[warId]
 	if not war or war.status ~= "Active" then
 		return false, "War is no longer active."

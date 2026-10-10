@@ -1,0 +1,77 @@
+-- Run in Studio Edit mode. GUI stays in the place, not Script Sync source.
+local gui = game.StarterGui.HierarchyPrototypeGui
+local panel = gui.CommunicationsPanel
+local archive = game.ServerStorage:FindFirstChild("CommunicationsRecoveryArchive")
+if not archive then
+	archive = Instance.new("Folder")
+	archive.Name = "CommunicationsRecoveryArchive"
+	archive.Parent = game.ServerStorage
+end
+if not archive:FindFirstChild("CommunicationsPanel") then panel:Clone().Parent = archive end
+for _, child in panel:GetChildren() do child:Destroy() end
+panel.Size = UDim2.fromOffset(280, 292)
+panel.AnchorPoint = Vector2.zero
+panel.Position = UDim2.fromOffset(264, 8)
+panel.Active = true
+panel.ClipsDescendants = true
+local function make(class, name, x, y, width, height, text)
+	local item = Instance.new(class)
+	item.Name = name
+	item.Position = UDim2.fromOffset(x, y)
+	item.Size = UDim2.fromOffset(width, height)
+	item.BackgroundColor3 = Color3.fromRGB(28, 34, 42)
+	item.BorderSizePixel = 0
+	if item:IsA("TextLabel") or item:IsA("TextButton") or item:IsA("TextBox") then
+		item.Font = Enum.Font.SourceSans
+		item.TextSize = 14
+		item.TextColor3 = Color3.fromRGB(230, 234, 240)
+		item.Text = text or ""
+		item.RichText = false
+		if item:IsA("TextButton") then item.BackgroundColor3 = Color3.fromRGB(47, 115, 70) end
+	end
+	item.Parent = panel
+	return item
+end
+local header = make("TextLabel", "Header", 4, 0, 160, 22, "Communications")
+header.TextXAlignment = Enum.TextXAlignment.Left
+local status = make("TextLabel", "Status", 4, 22, 272, 20, "Connecting…")
+status.TextXAlignment = Enum.TextXAlignment.Left
+status.TextTruncate = Enum.TextTruncate.AtEnd
+local function scroll(name, y, height)
+	local item = make("ScrollingFrame", name, 4, y, 272, height)
+	item.ScrollBarThickness = 6
+	item.ScrollingDirection = Enum.ScrollingDirection.Y
+	item.CanvasSize = UDim2.fromOffset(0, 0)
+	item.ClipsDescendants = true
+	item.Active = true
+	return item
+end
+scroll("ConvList", 44, 52)
+local transcript = scroll("Transcript", 100, 126)
+transcript.AutomaticCanvasSize = Enum.AutomaticSize.Y
+local body = Instance.new("TextLabel")
+body.Name = "Body"
+body.Size = UDim2.new(1, -10, 0, 0)
+body.AutomaticSize = Enum.AutomaticSize.Y
+body.BackgroundTransparency = 1
+body.Text = ""
+body.RichText = false
+body.TextWrapped = true
+body.TextYAlignment = Enum.TextYAlignment.Top
+body.TextXAlignment = Enum.TextXAlignment.Left
+body.TextSize = 14
+body.Font = Enum.Font.SourceSans
+body.TextColor3 = Color3.fromRGB(230, 234, 240)
+body.Parent = transcript
+local contacts = scroll("ContactList", 100, 126)
+contacts.Visible = false
+local input = make("TextBox", "Input", 4, 230, 168, 26)
+input.ClearTextOnFocus = false
+input.PlaceholderText = "Message / help"
+make("TextButton", "SendButton", 176, 230, 48, 26, "Send")
+make("TextButton", "HelpButton", 228, 230, 48, 26, "Help")
+make("TextButton", "DirectButton", 4, 260, 168, 26, "Direct contacts")
+make("TextButton", "ObserverButton", 176, 260, 100, 26, "Observer")
+local mute = make("TextButton", "MuteObserver", 206, 0, 70, 22, "Mute")
+mute.Visible = false
+print("COMMUNICATIONS_GUI_REPLACEMENT_READY")

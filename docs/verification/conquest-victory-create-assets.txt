@@ -1,0 +1,78 @@
+assert(game:GetService("RunService"):IsEdit(), "Edit only")
+local g = game.StarterGui.HierarchyPrototypeGui
+assert(not g:FindFirstChild("VictoryOverlay"), "Victory GUI already exists")
+local C = require(game.ReplicatedStorage.Shared.Util.PrototypeGuiTheme).Colors
+local overlay = Instance.new("Frame")
+overlay.Name = "VictoryOverlay"
+overlay.Size = UDim2.fromScale(1, 1)
+overlay.BackgroundColor3 = Color3.fromRGB(5, 10, 15)
+overlay.BackgroundTransparency = 0.18
+overlay.BorderSizePixel = 0
+overlay.Active = true
+overlay.Visible = false
+overlay.ZIndex = 120
+overlay.Parent = g
+local panel = Instance.new("Frame")
+panel.Name = "Panel"
+panel.AnchorPoint = Vector2.new(0.5, 0.5)
+panel.Position = UDim2.fromScale(0.5, 0.5)
+panel.Size = UDim2.fromOffset(600, 370)
+panel.BackgroundColor3 = C.panel
+panel.BorderSizePixel = 0
+panel.Active = true
+panel.ZIndex = 121
+panel.Parent = overlay
+local corner = Instance.new("UICorner", panel)
+corner.CornerRadius = UDim.new(0, 12)
+local stroke = Instance.new("UIStroke", panel)
+stroke.Color = C.section
+local function label(name, text, y, height, size, bold)
+ local item = Instance.new("TextLabel")
+ item.Name = name
+ item.Text = text
+ item.Position = UDim2.fromOffset(24, y)
+ item.Size = UDim2.new(1, -48, 0, height)
+ item.BackgroundTransparency = 1
+ item.TextWrapped = true
+ item.TextSize = size
+ item.Font = if bold then Enum.Font.GothamBold else Enum.Font.Gotham
+ item.TextColor3 = if bold then C.section else C.textSecondary
+ item.TextYAlignment = Enum.TextYAlignment.Top
+ item.ZIndex = 122
+ item.Parent = panel
+ return item
+end
+label("Heading", "VICTORY", 24, 38, 28, true)
+label("Winner", "Winning ruler", 70, 46, 20, true)
+local body = label("Body", "Domination", 122, 160, 14, false)
+body.Size = UDim2.new(1, -48, 1, -200)
+local continue = Instance.new("TextButton")
+continue.Name = "Continue"
+continue.Text = "Inspect the final map"
+continue.Size = UDim2.new(1, -48, 0, 40)
+continue.Position = UDim2.new(0, 24, 1, -60)
+continue.BackgroundColor3 = C.action
+continue.TextColor3 = C.actionText
+continue.Font = Enum.Font.GothamBold
+continue.TextSize = 14
+continue.BorderSizePixel = 0
+continue.ZIndex = 122
+continue.Parent = panel
+Instance.new("UICorner", continue).CornerRadius = UDim.new(0, 6)
+local nav = g.StrategyNavigation
+local result = nav.Players:Clone()
+result.Name = "MatchResult"
+result.Text = "Match result"
+result.Position = UDim2.fromOffset(6, 436)
+result.Visible = false
+result.Parent = nav
+nav.RequestNotice.Position = UDim2.fromOffset(6, 496)
+nav.CanvasSize = UDim2.fromOffset(0, 540)
+local remotes = game.ReplicatedStorage.Remotes
+for _, name in { "VictoryClientEvent", "VictoryServerEvent" } do
+ assert(not remotes:FindFirstChild(name), "Remote already exists")
+ local event = Instance.new("RemoteEvent")
+ event.Name = name
+ event.Parent = remotes
+end
+print("CONQUEST_VICTORY_ASSETS_CREATED")

@@ -1,0 +1,161 @@
+Window: "Server - Roblox Studio", App: RobloxStudioBeta.exe.
+	0 window (settable, string) Server - Roblox Studio Secondary Actions: Raise ID: RBXMainWindow
+		1 title bar (settable, string) Value: Server - Roblox Studio
+			2 menu bar System ID: MenuBar
+				227 menu item System
+			4 button Minimize
+			5 button Maximize
+			6 button Close
+		47 status bar ID: RBXMainWindow.statusbar
+			48 text
+			49 text
+			50 text
+			51 text
+			52 text
+			53 group (settable, string)
+				54 group (settable, string) ID: rplg_sabuiltin_Footer.rbxm_FooterStatusBarQueue
+		100 tool bar (settable, string) Command ID: RBXMainWindow.commandToolBar
+			101 group (settable, string)
+				102 edit (settable, string) Value: local s=Instance.new("Script"); s.Name="NativePrivacyProbe"; s.Source=[====[local t=game.TextChatService; local r={}; r.general={pcall(function() return t:CanUsersChatAsync(-2,-1) end)}; r.user={pcall(function() return t:CanUserChatAsync(-2) end)}; r.direct={pcall(function() return t:CanUsersDirectChatAsync(-2,{-1}) end)}; print("NATIVE_PRIVACY_PROBE="..game.HttpService:JSONEncode(r))]====]; s.Parent=game.ServerScriptService ID: commandBarScriptEditor
+					103 group (settable, string) ID: commandBarScriptEditor.qt_scrollarea_viewport
+				104 custom (settable, string) ID: multiLineRunButtonContainer
+					105 button (settable, string) ID: multiLineRunButtonContainer.commandBarContainerSaveButton
+					106 button (settable, string) ID: multiLineRunButtonContainer.commandBarContainerHistoryButton
+					107 button (settable, string) Run ID: multiLineRunButtonContainer.commandBarRunButton
+		93 group (settable, string) ID: RBXMainWindow.studioTopBar
+			98 group (settable, string) ID: RBXMainWindow.studioTopBar.rplg_sabuiltin_Ribbon.rbxm_Ribbon
+				99 group (settable, string) ID: RBXMainWindow.studioTopBar.rplg_sabuiltin_Ribbon.rbxm_Ribbon.rplg_sabuiltin_Ribbon.rbxm_Ribbon
+			108 menu bar (settable, string)
+				109 menu item (settable, string) File
+				110 menu item (settable, string) Edit
+				111 menu item (settable, string) View
+				112 menu item (settable, string) Plugins
+				113 menu item (settable, string) Test
+				114 menu item (settable, string) Window
+				115 menu item (settable, string) Help
+		59 group (settable, string) ID: RBXMainWindow.RootWidget
+			116 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel
+				117 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3
+					118 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6
+						209 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest0
+							210 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest0.Layout5
+								211 tab (settable, string)
+							212 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest0.Layout28
+								213 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest0.Layout28.pserv_cloud_174577307_ToolGripEditor
+									214 group (settable, string)
+										215 group (settable, string)
+											216 button (settable, string) Collapse
+											217 button (settable, string) Close
+									218 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest0.Layout28.pserv_cloud_174577307_ToolGripEditor.pserv_cloud_174577307_ToolGripEditor
+						124 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest1
+							125 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutWest1.Layout8
+								126 tab (settable, string)
+						127 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15
+							128 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutNorth0
+								129 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutNorth0.Layout14
+									130 tab (settable, string)
+							131 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutNorth1
+								132 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutNorth1.Layout17
+									133 tab (settable, string)
+							134 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.Layout1
+								135 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.Layout1.Layout21
+									136 tab (settable, string)
+								137 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.Layout1.Layout22
+									138 tab (settable, string) Server
+										139 tab item (settable, string) Server
+									140 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.Layout1.Layout22.ideDocDocumentPanel
+										141 group (settable, string)
+										142 custom (settable, string)
+											143 group (settable, string)
+												144 group (settable, string) ID: WrapperScrollArea
+													145 group (settable, string) ID: WrapperScrollArea.qt_scrollarea_viewport
+														146 group (settable, string)
+															147 group (settable, string)
+																148 group (settable, string) ID: QEngineWidget
+												149 group (settable, string) ID: mainViewToolbar
+													150 group (settable, string) ID: mainViewToolbar.rplg_sabuiltin_DeviceSimulatorToolbar.rbxm_DeviceSimulatorToolbar
+														151 group (settable, string) ID: mainViewToolbar.rplg_sabuiltin_DeviceSimulatorToolbar.rbxm_DeviceSimulatorToolbar.rplg_sabuiltin_DeviceSimulatorToolbar.rbxm_DeviceSimulatorToolbar
+									152 group (settable, string)
+										153 tool bar (settable, string)
+											154 check box (settable, string) Visualization Modes
+							155 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutSouth1
+								156 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.Layout15.FixedSplitLayoutSouth1.Layout19
+									157 tab (settable, string)
+						158 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast1
+							159 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast1.Layout12
+								160 tab (settable, string)
+						161 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0
+							162 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout10
+								163 tab (settable, string)
+							164 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout23
+								165 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout23.rplg_sabuiltin_ExplorerPlugin.rbxm_ExplorerPlugin
+									166 group (settable, string)
+										167 group (settable, string)
+											168 button (settable, string) Collapse
+											169 button (settable, string) Close
+									170 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout23.rplg_sabuiltin_ExplorerPlugin.rbxm_ExplorerPlugin.rplg_sabuiltin_ExplorerPlugin.rbxm_ExplorerPlugin
+							171 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout24
+								172 tab (settable, string)
+							173 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.FixedSplitLayoutEast0.Layout25
+								174 tab (settable, string)
+						219 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.DockPanelSplitter_54
+						220 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.Layout6.DockPanelSplitter_55
+					176 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.FixedSplitLayoutSouth0
+						177 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.FixedSplitLayoutSouth0.Layout2
+							178 tab (settable, string)
+						179 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.FixedSplitLayoutSouth0.Layout26
+							180 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.FixedSplitLayoutSouth0.Layout26.outputWidgetPanel
+								181 group (settable, string)
+									182 group (settable, string)
+										183 button (settable, string) Collapse
+										184 button (settable, string) Close
+								185 group (settable, string)
+									186 group (settable, string)
+										187 edit Value: 22:00:05.587 NATIVE_RECEIPT_AUDIT={"userId":-3,"data":{"id":"-2-{5844EE2F-9FD7-458D-817C-88D7D885C713}","ordinary":true,"observing":true,"event":"Identity"}} - Server 22:00:05.587 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{5844EE2F-9FD7-458D-817C-88D7D885C713}","ordinary":true,"observing":true,"event":"Identity"}} - Server 22:00:05.587 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"sender":-2,"channel":"Comms_diplomatic","id":"-2-{5844EE2F-9FD7-458D-817C-88D7D885C713}","event":"Native","status":"Enum.TextChatMessageStatus.Success"}} - Server 22:00:05.587 NATIVE_RECEIPT_AUDIT={"userId":-1,"data":{"id":"-2-{5844EE2F-9FD7-458D-817C-88D7D885C713}","ordinary":true,"observing":true,"event":"Identity"}} - Server 22:01:41.982 > local p=game.Players:GetPlayerByUserId(-2); local s=Instance.new("LocalScript"); s.Name="NativeReturnProbe"; s.Source=[====[local r=game.ReplicatedStorage.Remotes.CommunicationsReceiptAudit; local ok,result=pcall(function() return game.TextChatService.TextChannels.Comms_diplomatic:SendAsync("NATIVE RETURN PROBE") end); r:FireServer({event="SendAsyncReturn",ok=ok,status=ok and result and tostring(result.Status) or tostring(result)})]====]; s.Parent=p.PlayerGui - Studio 22:01:42.037 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"ok":true,"event":"SendAsyncReturn","status":"Enum.TextChatMessageStatus.Sending"}} - Server 22:01:42.066 NATIVE_RECEIPT_AUDIT={"userId":-3,"data":{"id":"-2-{7E01C5C1-F837-47EA-8FF8-2519CB2722E5}","ordinary":true,"observing":true,"event":"Identity"}} - Server 22:01:42.066 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{7E01C5C1-F837-47EA-8FF8-2519CB2722E5}","ordinary":true,"observing":true,"event":"Identity"}} - Server 22:01:42.066 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"sender":-2,"channel":"Comms_diplomatic","id":"-2-{7E01C5C1-F837-47EA-8FF8-2519CB2722E5}","event":"Native","status":"Enum.TextChatMessageStatus.Success"}} - Server 22:01:42.066 NATIVE_RECEIPT_AUDIT={"userId":-1,"data":{"id":"-2-{7E01C5C1-F837-47EA-8FF8-2519CB2722E5}","ordinary":true,"observing":true,"event":"Identity"}} - Server 22:02:43.905 > for _,p in game.Players:GetPlayers() do local s=Instance.new("LocalScript"); s.Name="NativeChannelReceiptProbe"; s.Source=[====[local r=game.ReplicatedStorage.Remotes.CommunicationsReceiptAudit; local c=game.TextChatService.TextChannels.Comms_diplomatic; c.MessageReceived:Connect(function(m) r:FireServer({event="ChannelReceived",id=m.MessageId,status=tostring(m.Status)}) end); c.OnIncomingMessage=function(m) r:FireServer({event="Incoming",id=m.MessageId,status=tostring(m.Status)}); return nil end]====]; s.Parent=p.PlayerGui end - Studio 22:03:05.400 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","event":"Incoming","status":"Enum.TextChatMessageStatus.Sending"}} - Server 22:03:05.429 NATIVE_RECEIPT_AUDIT={"userId":-3,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","ordinary":true,"observing":true,"event":"Identity"}} - Server 22:03:05.429 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","event":"Incoming","status":"Enum.TextChatMessageStatus.Success"}} - Server 22:03:05.429 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","ordinary":true,"observing":true,"event":"Identity"}} - Server 22:03:05.429 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"sender":-2,"channel":"Comms_diplomatic","id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","event":"Native","status":"Enum.TextChatMessageStatus.Success"}} - Server 22:03:05.430 NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","event":"ChannelReceived","status":"Enum.TextChatMessageStatus.Success"}} - Server 22:03:05.430 NATIVE_RECEIPT_AUDIT={"userId":-1,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","ordinary":true,"observing":true,"event":"Identity"}} - Server 22:04:06.861 > local s=Instance.new("Script"); s.Name="NativePrivacyProbe"; s.Source=[====[local t=game.TextChatService; local r={}; r.general={pcall(function() return t:CanUsersChatAsync(-2,-1) end)}; r.user={pcall(function() return t:CanUserChatAsync(-2) end)}; r.direct={pcall(function() return t:CanUsersDirectChatAsync(-2,{-1}) end)}; print("NATIVE_PRIVACY_PROBE="..game.HttpService:JSONEncode(r))]====]; s.Parent=game.ServerScriptService - Studio 22:04:06.878 NATIVE_PRIVACY_PROBE={"direct":[true,[]],"general":[true,false],"user":[true,true]} - Server - NativePrivacyProbe:1 22:04:06.879 [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon - Server - AdminService:248
+											188 group (settable, string) ID: qt_scrollarea_viewport
+											242 group (settable, string) ID: qt_scrollarea_vcontainer
+												243 scroll bar (settable, float) Value: 30
+										189 group (settable, string)
+											190 custom (settable, string)
+												191 custom (settable, string)
+													192 group (settable, string) ID: MessageTypeDropdown
+														193 custom (settable, string)
+															194 button (settable, string) All Messages ID: OutputDropdown_MessageButton
+													195 group (settable, string) ID: ScriptContextDropdown
+														196 custom (settable, string)
+															197 button (settable, string) All Contexts ID: OutputDropdown_Data ModelButton
+												198 custom (settable, string)
+													199 combo box (settable, string) ID: OutputFilterBar_ComboBox
+														200 list (settable, string)
+														201 edit (settable, string) ID: OutputFilterBar_ComboBox.OutputFilterBar_FindLineEdit
+												202 button (settable, string) ID: ClearButton
+												203 group (settable, string) ID: MoreDropdown
+													204 custom (settable, string)
+														205 button (settable, string) ID: OutputDropdown_MoreButton
+						206 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.FixedSplitLayoutSouth0.Layout27
+							207 tab (settable, string)
+					223 group (settable, string) ID: RBXMainWindow.RootWidget.RootDockSplitLayoutPanel.Layout3.DockPanelSplitter_53
+
+Document text: ```
+22:00:05.587  NATIVE_RECEIPT_AUDIT={"userId":-3,"data":{"id":"-2-{5844EE2F-9FD7-458D-817C-88D7D885C713}","ordinary":true,"observing":true,"event":"Identity"}}  -  Server
+  22:00:05.587  NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{5844EE2F-9FD7-458D-817C-88D7D885C713}","ordinary":true,"observing":true,"event":"Identity"}}  -  Server
+  22:00:05.587  NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"sender":-2,"channel":"Comms_diplomatic","id":"-2-{5844EE2F-9FD7-458D-817C-88D7D885C713}","event":"Native","status":"Enum.TextChatMessageStatus.Success"}}  -  Server
+  22:00:05.587  NATIVE_RECEIPT_AUDIT={"userId":-1,"data":{"id":"-2-{5844EE2F-9FD7-458D-817C-88D7D885C713}","ordinary":true,"observing":true,"event":"Identity"}}  -  Server
+  22:01:41.982  > local p=game.Players:GetPlayerByUserId(-2); local s=Instance.new("LocalScript"); s.Name="NativeReturnProbe"; s.Source=[====[local r=game.ReplicatedStorage.Remotes.CommunicationsReceiptAudit; local ok,result=pcall(function() return game.TextChatService.TextChannels.Comms_diplomatic:SendAsync("NATIVE RETURN PROBE") end); r:FireServer({event="SendAsyncReturn",ok=ok,status=ok and result and tostring(result.Status) or tostring(result)})]====]; s.Parent=p.PlayerGui  -  Studio
+  22:01:42.037  NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"ok":true,"event":"SendAsyncReturn","status":"Enum.TextChatMessageStatus.Sending"}}  -  Server
+  22:01:42.066  NATIVE_RECEIPT_AUDIT={"userId":-3,"data":{"id":"-2-{7E01C5C1-F837-47EA-8FF8-2519CB2722E5}","ordinary":true,"observing":true,"event":"Identity"}}  -  Server
+  22:01:42.066  NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{7E01C5C1-F837-47EA-8FF8-2519CB2722E5}","ordinary":true,"observing":true,"event":"Identity"}}  -  Server
+  22:01:42.066  NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"sender":-2,"channel":"Comms_diplomatic","id":"-2-{7E01C5C1-F837-47EA-8FF8-2519CB2722E5}","event":"Native","status":"Enum.TextChatMessageStatus.Success"}}  -  Server
+  22:01:42.066  NATIVE_RECEIPT_AUDIT={"userId":-1,"data":{"id":"-2-{7E01C5C1-F837-47EA-8FF8-2519CB2722E5}","ordinary":true,"observing":true,"event":"Identity"}}  -  Server
+  22:02:43.905  > for _,p in game.Players:GetPlayers() do local s=Instance.new("LocalScript"); s.Name="NativeChannelReceiptProbe"; s.Source=[====[local r=game.ReplicatedStorage.Remotes.CommunicationsReceiptAudit; local c=game.TextChatService.TextChannels.Comms_diplomatic; c.MessageReceived:Connect(function(m) r:FireServer({event="ChannelReceived",id=m.MessageId,status=tostring(m.Status)}) end); c.OnIncomingMessage=function(m) r:FireServer({event="Incoming",id=m.MessageId,status=tostring(m.Status)}); return nil end]====]; s.Parent=p.PlayerGui end  -  Studio
+  22:03:05.400  NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","event":"Incoming","status":"Enum.TextChatMessageStatus.Sending"}}  -  Server
+  22:03:05.429  NATIVE_RECEIPT_AUDIT={"userId":-3,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","ordinary":true,"observing":true,"event":"Identity"}}  -  Server
+  22:03:05.429  NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","event":"Incoming","status":"Enum.TextChatMessageStatus.Success"}}  -  Server
+  22:03:05.429  NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","ordinary":true,"observing":true,"event":"Identity"}}  -  Server
+  22:03:05.429  NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"sender":-2,"channel":"Comms_diplomatic","id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","event":"Native","status":"Enum.TextChatMessageStatus.Success"}}  -  Server
+  22:03:05.430  NATIVE_RECEIPT_AUDIT={"userId":-2,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","event":"ChannelReceived","status":"Enum.TextChatMessageStatus.Success"}}  -  Server
+  22:03:05.430  NATIVE_RECEIPT_AUDIT={"userId":-1,"data":{"id":"-2-{9EAF4D4B-47F0-4665-B67C-6BE0CA88F83B}","ordinary":true,"observing":true,"event":"Identity"}}  -  Server
+  22:04:06.861  > local s=Instance.new("Script"); s.Name="NativePrivacyProbe"; s.Source=[====[local t=game.TextChatService; local r={}; r.general={pcall(function() return t:CanUsersChatAsync(-2,-1) end)}; r.user={pcall(function() return t:CanUserChatAsync(-2) end)}; r.direct={pcall(function() return t:CanUsersDirectChatAsync(-2,{-1}) end)}; print("NATIVE_PRIVACY_PROBE="..game.HttpService:JSONEncode(r))]====]; s.Parent=game.ServerScriptService  -  Studio
+  22:04:06.878  NATIVE_PRIVACY_PROBE={"direct":[true,[]],"general":[true,false],"user":[true,true]}  -  Server - NativePrivacyProbe:1
+  22:04:06.879  [Admin] Replaced stale AdminKohlAddon at ReplicatedStorage.Kohl's Admin Source.Addons.AdminKohlAddon  -  Server - AdminService:248
+```

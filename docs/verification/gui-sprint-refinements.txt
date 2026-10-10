@@ -1,0 +1,1838 @@
+game.StarterPlayer.StarterPlayerScripts.Controllers.StrategyPresentationController.Source=[========[--!strict
+-- Presentation and navigation only; gameplay controllers retain their contracts.
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Theme = require(ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
+local Controller = {}
+local started = false
+local panels = { Realm = "Main", Titles = "TitlePanel", Territory = "TerritoryInfo", Diplomacy = "DiplomacyPanel", Military = "MilitaryPanel", Economy = "EconomyPanel", Communications = "CommunicationsPanel" }
+function Controller.Start()
+	if started then return end
+	started = true
+	local gui = Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui") :: ScreenGui
+	local nav = gui:WaitForChild("StrategyNavigation") :: ScrollingFrame
+	local top = gui:WaitForChild("StrategyTopbar") :: Frame
+	local hint = gui:WaitForChild("MapHint") :: TextLabel
+	local map = gui:WaitForChild("MapStage") :: Frame
+	local selected = "Map"
+	local C = Theme.Colors
+	local commsPanel = gui.CommunicationsPanel
+	commsPanel.BackgroundColor3 = C.panel
+	for _, item in commsPanel:GetDescendants() do
+		if item:IsA("TextLabel") then item.BackgroundTransparency = 1 end
+		if item:IsA("TextButton") and item.Parent == commsPanel then
+			Theme.applyPrimaryButton(item, item.Active)
+		end
+	end
+	local emptyRulers = Instance.new("TextLabel")
+	emptyRulers.Name = "EmptyRulers"
+	emptyRulers.BackgroundTransparency = 1
+	emptyRulers.Size = UDim2.new(1, -12, 0, 48)
+	emptyRulers.Text = "No other rulers in this match yet."
+	emptyRulers.TextWrapped = true
+	emptyRulers.Font = Enum.Font.Gotham
+	emptyRulers.TextSize = 14
+	emptyRulers.TextColor3 = C.textSecondary
+	emptyRulers.Parent = gui.Main.PlayerList
+	local function updateRulersEmpty()
+		emptyRulers.Visible = gui.Main.PlayerList:FindFirstChildWhichIsA("Frame") == nil
+	end
+	gui.Main.PlayerList.ChildAdded:Connect(updateRulersEmpty)
+	gui.Main.PlayerList.ChildRemoved:Connect(updateRulersEmpty)
+	updateRulersEmpty()
+	local buttons = {}
+	local layout: () -> ()
+	local function position(item: GuiObject, x: number, y: number, w: number, h: number)
+		item.AnchorPoint = Vector2.zero
+		item.Position = UDim2.fromOffset(x,y)
+		item.Size = UDim2.fromOffset(w,h)
+	end
+	local function gotoPanel(name: string)
+		selected = name
+		gui:SetAttribute("SelectedSystem",name)
+		for key, panelName in panels do
+			(gui:FindFirstChild(panelName) :: GuiObject).Visible = key == name
+		end
+		for key, button in buttons do
+			button.BackgroundColor3 = if key == name then C.action else C.well
+			button.TextColor3 = if key == name then C.actionText else C.textSecondary
+		end
+		layout()
+	end
+	local function layer(item: Instance, z: number)
+		if item:IsA("GuiObject") then item.ZIndex = z end
+		for _, child in item:GetDescendants() do
+			if child:IsA("GuiObject") then child.ZIndex = z + 1 end
+		end
+	end
+	layout = function()
+		local size = gui.AbsoluteSize
+		local w,h = size.X,size.Y
+		if w < 1 or h < 1 then return end
+		local rail = if w < 760 then 80 else 100
+		local drawer = math.clamp(w * 0.34,280,380)
+		local open = selected ~= "Map"
+		local left = rail + 20
+		local mapWidth = math.max(180,w-left-12-(if open then drawer+12 else 0))
+		position(top,8,4,w-16,64)
+		position(nav,8,76,rail,math.max(120,h-108))
+		nav.CanvasSize = UDim2.fromOffset(0,440)
+		position(top.Gold,math.floor(w*0.42),8,math.floor(w*0.28)-20,48)
+		position(top.Troops,math.floor(w*0.72),8,math.floor(w*0.28)-24,48)
+		top.Gold.TextSize = if w < 760 then 12 else 14
+		top.Troops.TextSize = if w < 760 then 12 else 14
+		top.Ruler.Size = UDim2.fromOffset(math.max(120,math.floor(w*0.42)-32),22)
+		position(map,left,76,mapWidth,math.max(160,h-108))
+		position(hint,left,h-26,mapWidth,20)
+		hint.Text = "Drag to pan  ·  Wheel to zoom  ·  Select a territory"
+		for _, name in panels do
+			local panel = gui:FindFirstChild(name) :: GuiObject
+			position(panel,w-drawer-12,76,drawer,math.max(180,h-108))
+			layer(panel,20)
+		end
+		local realm = gui.Main
+		realm.TreeScroll.Size = UDim2.new(1,0,0,110)
+		realm.PlayerList.Size = UDim2.new(1,0,0,140)
+		realm.SelfInfo.Size = UDim2.new(1,0,0,90)
+		local dip = gui.DiplomacyPanel
+		dip.Status.Size = UDim2.new(1,0,0,64)
+		dip.List.Size = UDim2.new(1,0,0,math.max(130,h-238))
+		local comms = gui.CommunicationsPanel
+		local cw,ch = drawer,math.max(180,h-108)
+		position(comms.Header,12,10,cw-114,24)
+		position(comms.MuteObserver,cw-88,10,76,24)
+		position(comms.Status,12,40,cw-24,24)
+		position(comms.ConvList,12,70,cw-24,76)
+		position(comms.Transcript,12,154,cw-24,math.max(60,ch-250))
+		position(comms.ContactList,12,154,cw-24,math.max(60,ch-250))
+		position(comms.Input,12,ch-86,cw-140,32)
+		position(comms.SendButton,cw-120,ch-86,50,32)
+		position(comms.HelpButton,cw-64,ch-86,52,32)
+		position(comms.DirectButton,12,ch-46,cw-134,32)
+		position(comms.ObserverButton,cw-114,ch-46,102,32)
+		local territory = gui.TerritoryInfo
+		territory.Body.Size = UDim2.new(1,0,0,140)
+		territory.WarStatus.Size = UDim2.new(1,0,0,110)
+		territory.WarStatus.TextTruncate = Enum.TextTruncate.None
+		local title = gui.TitlePanel
+		title.Body.Size = UDim2.new(1,0,1,-116)
+		local military = gui.MilitaryPanel
+		military.CanvasSize = UDim2.fromOffset(0,470)
+		military.Stats.Position = UDim2.fromOffset(12,44)
+		military.Stats.Size = UDim2.new(1,-24,0,72)
+		military.Stats.TextSize = 18
+		military.RecruitBox.Position = UDim2.fromOffset(12,126)
+		military.RecruitBox.Size = UDim2.new(0.5,-18,0,32)
+		military.RecruitButton.Position = UDim2.new(0.5,0,0,126)
+		military.RecruitButton.Size = UDim2.new(0.5,-66,0,32)
+		military.MaxRecruitButton.AnchorPoint = Vector2.zero
+		military.MaxRecruitButton.Position = UDim2.new(1,-60,0,126)
+		military.MaxRecruitButton.Size = UDim2.fromOffset(48,32)
+		military.MaxRecruitButton.Text = "Max"
+		military.CostLabel.Position = UDim2.fromOffset(12,166)
+		military.CostLabel.Size = UDim2.new(1,-24,0,24)
+		military.CommitBody.Position = UDim2.fromOffset(12,200)
+		military.CommitBox.Position = UDim2.fromOffset(12,360)
+		military.CommitBox.Size = UDim2.new(1,-24,0,32)
+		military.LockButton.Position = UDim2.fromOffset(12,402)
+		military.LockButton.Size = UDim2.new(1,-24,0,34)
+		for i,name in {"VassalageOfferOverlay","DiplomacyOfferOverlay"} do
+			local overlay = gui:FindFirstChild(name) :: GuiObject
+			overlay.AnchorPoint = Vector2.new(0.5,0.5)
+			overlay.Position = UDim2.new(0.5,0,0,h/2+(if i == 1 then -93 else 93))
+			overlay.Size = UDim2.fromOffset(math.min(460,w-48),172)
+			layer(overlay,100+i*4)
+		end
+		local toast = gui.ResultToast
+		toast.AnchorPoint = Vector2.new(0.5,0)
+		toast.Position = UDim2.new(0.5,0,0,76)
+		toast.Size = UDim2.fromOffset(math.min(520,w-40),64)
+		layer(toast,140)
+		local inspect = gui:FindFirstChild("AdminInspectPanel")
+		if inspect and inspect:IsA("GuiObject") then
+			inspect.AnchorPoint = Vector2.new(0.5,0.5)
+			inspect.Position = UDim2.fromScale(0.5,0.5)
+			inspect.Size = UDim2.fromOffset(math.min(640,w-48),math.min(400,h-48))
+			layer(inspect,160)
+		end
+	end
+	for _, button in nav:GetChildren() do
+		if button:IsA("TextButton") then
+			local name = button.Name
+			buttons[name] = button
+			button.Activated:Connect(function() gotoPanel(if selected == name then "Map" else name) end)
+			button.MouseEnter:Connect(function()
+				if selected ~= name then button.BackgroundColor3=C.row end
+			end)
+			button.MouseLeave:Connect(function()
+				button.BackgroundColor3 = if selected == name then C.action else C.well
+			end)
+		end
+	end
+	local function summaries()
+		local economy = gui.EconomyPanel.Body.Text
+		local gold = string.match(economy,"Gold: ([^\n]+)") or "—"
+		local income = string.match(economy,"Income: ([^\n]+)") or "Loading treasury"
+		top.Gold.Text = "GOLD  "..gold.."\n"..income
+		local stats = gui.MilitaryPanel.Stats.Text
+		top.Troops.Text = "TROOPS  "..(string.match(stats,"Available: ([^\n]+)") or "—").." available\n"..(string.match(stats,"Committed: ([^\n]+)") or "0").." committed"
+		local self = gui.Main.SelfInfo.Text
+		top.Ruler.Text = (string.match(self,"Rank: ([^\n]+)") or "Ruler").."  ·  "..(string.match(self,"Name: ([^\n]+)") or "Connecting")
+		local war = gui.TerritoryInfo.WarStatus.Text
+		buttons.Military.Text = if string.find(war,"No active wars",1,true) then "Military" else "Military  •"
+	end
+	for _, label in {gui.EconomyPanel.Body,gui.MilitaryPanel.Stats,gui.Main.SelfInfo,gui.TerritoryInfo.WarStatus} do
+		label:GetPropertyChangedSignal("Text"):Connect(summaries)
+	end
+	local function style(inst: Instance)
+		if inst:IsA("TextBox") then
+			inst.BackgroundColor3=C.well; inst.TextColor3=C.textPrimary;inst.PlaceholderColor3=C.textMuted
+			inst.Font=Enum.Font.Gotham;inst.TextSize=14;inst.BorderSizePixel=0
+		elseif inst:IsA("ScrollingFrame") then
+			inst.ScrollBarThickness=5;inst.ScrollBarImageColor3=C.section
+		end
+		if inst:IsA("TextButton") and not inst:IsDescendantOf(nav) then
+			inst.MouseEnter:Connect(function() if inst.Active then inst.BackgroundTransparency=0.12 end end)
+			inst.MouseLeave:Connect(function() inst.BackgroundTransparency=0 end)
+			inst.MouseButton1Down:Connect(function() if inst.Active then inst.BackgroundTransparency=0.25 end end)
+			inst.MouseButton1Up:Connect(function() inst.BackgroundTransparency=0 end)
+		end
+	end
+	for _, item in gui:GetDescendants() do style(item) end
+	gui.DescendantAdded:Connect(style)
+	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
+	gui.ChildAdded:Connect(function() task.defer(layout) end)
+	local territoryValue = gui.TerritoryInfo.SelectedTerritoryId
+	local previousCommitment: string? = nil
+	gui.MilitaryPanel.CommitBody:GetPropertyChangedSignal("Text"):Connect(function()
+		local text = gui.MilitaryPanel.CommitBody.Text
+		local active = string.find(text, "Decision:", 1, true) or string.find(text, "Hard timeout:", 1, true)
+		local key = if active then string.match(text, "^[^\n]+") else nil
+		if key and key ~= previousCommitment then
+			gui.MilitaryPanel.CanvasPosition = Vector2.zero
+			gotoPanel("Military")
+		end
+		previousCommitment = key
+	end)
+	territoryValue:GetPropertyChangedSignal("Value"):Connect(function()
+		if territoryValue.Value ~= "" and selected ~= "Military" then gotoPanel("Territory") end
+	end)
+	for _, name in {"VassalageOfferOverlay","DiplomacyOfferOverlay"} do
+		local overlay=gui[name]
+		overlay:GetPropertyChangedSignal("Visible"):Connect(function()
+			nav.RequestNotice.Visible=gui.VassalageOfferOverlay.Visible or gui.DiplomacyOfferOverlay.Visible
+		end)
+	end
+	summaries()
+	gotoPanel("Map")
+end
+return Controller
+]========]
+game.StarterPlayer.StarterPlayerScripts.Controllers.TerritoryMapController.Source=[========[--!strict
+
+--[[
+	Prototype map renderer and input. Displays server ownership; never mutates it.
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local GuiService = game:GetService("GuiService")
+
+local MapCatalog = require(ReplicatedStorage.Shared.Config.MapCatalog)
+local RealmColors = require(ReplicatedStorage.Shared.Config.RealmColors)
+local MapGeometry = require(ReplicatedStorage.Shared.Util.MapGeometry)
+local MapTriangles = require(ReplicatedStorage.Shared.Util.MapTriangles)
+
+local player = Players.LocalPlayer
+local TerritoryMapController = {}
+
+local MIN_ZOOM = 0.7
+local MAX_ZOOM = 2.8
+local FOV = 25
+local THICK = 6
+local SELECT_COLOR = Color3.fromRGB(255, 214, 64)
+
+local started = false
+
+local function decodeState(payload: any): any?
+	if typeof(payload) == "string" then
+		local ok, decoded = pcall(function()
+			return HttpService:JSONDecode(payload)
+		end)
+		if ok and typeof(decoded) == "table" then
+			return decoded
+		end
+		return nil
+	elseif typeof(payload) == "table" then
+		return payload
+	end
+	return nil
+end
+
+local function scaleFromCentroid(polygon: { { x: number, y: number } }, towardCenter: number)
+	local cx, cy = MapGeometry.Centroid(polygon)
+	local out = {}
+	for _, p in polygon do
+		table.insert(out, {
+			x = p.x + (cx - p.x) * towardCenter,
+			y = p.y + (cy - p.y) * towardCenter,
+		})
+	end
+	return out
+end
+
+function TerritoryMapController.Start()
+	if started or _G.__TerritoryMapV01Started == true then
+		return
+	end
+	started = true
+	_G.__TerritoryMapV01Started = true
+
+	local gui = player:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui", 12)
+	if not (gui and gui:IsA("ScreenGui")) then
+		warn("[Territory] HierarchyPrototypeGui missing; map idle.")
+		started = false
+		_G.__TerritoryMapV01Started = nil
+		return
+	end
+
+	local mapStage = gui:WaitForChild("MapStage") :: Frame
+	local viewport = mapStage:FindFirstChild("MapView")
+	if not (viewport and viewport:IsA("ViewportFrame")) then
+		if viewport then
+			viewport:Destroy()
+		end
+		viewport = Instance.new("ViewportFrame")
+		viewport.Name = "MapView"
+		viewport.BackgroundColor3 = Color3.fromRGB(28, 34, 42)
+		viewport.BorderSizePixel = 0
+		viewport.Size = UDim2.fromScale(1, 1)
+		viewport.ZIndex = 1
+		viewport.Active = false
+		viewport.Ambient = Color3.fromRGB(210, 210, 210)
+		viewport.LightColor = Color3.fromRGB(255, 255, 255)
+		viewport.LightDirection = Vector3.new(0, -1, 0)
+		viewport.Parent = mapStage
+	end
+	viewport.Active = false
+	local info = gui:WaitForChild("TerritoryInfo") :: Frame
+	local infoBody = info:WaitForChild("Body") :: TextLabel
+	local selectedValue = info:FindFirstChild("SelectedTerritoryId")
+
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	local territoryIntent = remotes:WaitForChild("TerritoryClientEvent") :: RemoteEvent
+	local territoryPush = remotes:WaitForChild("TerritoryServerEvent") :: RemoteEvent
+	local hierarchyPush = remotes:WaitForChild("HierarchyServerEvent") :: RemoteEvent
+
+	local mapDef = MapCatalog.GetDefault()
+	local polygons = {}
+	local byId = {}
+	for _, t in mapDef.territories do
+		byId[t.id] = t
+		table.insert(polygons, t.polygon)
+	end
+	local minX, minY, maxX, maxY = MapGeometry.MapBounds(polygons)
+	local spanX = math.max(maxX - minX, 1)
+	local spanY = math.max(maxY - minY, 1)
+	local midX = (minX + maxX) * 0.5
+	local midY = (minY + maxY) * 0.5
+
+	local ownership: { [string]: string } = {}
+	local colorIndex: { [string]: number } = {}
+	local hierarchyById: { [string]: any } = {}
+	local selectedId: string? = nil
+
+	local zoom = 1
+	local lookX = midX
+	local lookZ = midY
+	local dragging = false
+	local dragMoved = false
+	local dragStart: Vector2? = nil
+	local lookStart = Vector2.zero
+
+	local world = Instance.new("WorldModel")
+	world.Parent = viewport
+	local folder = Instance.new("Folder")
+	folder.Name = "Territories"
+	folder.Parent = world
+	local fillParts: { [string]: { WedgePart } } = {}
+	local rimParts: { [string]: { WedgePart } } = {}
+	local selectParts: { [string]: { WedgePart } } = {}
+
+	for _, t in mapDef.territories do
+		local selectFolder = Instance.new("Folder")
+		selectFolder.Name = t.id .. "_select"
+		selectFolder.Parent = folder
+		local rim = Instance.new("Folder")
+		rim.Name = t.id .. "_rim"
+		rim.Parent = folder
+		local fill = Instance.new("Folder")
+		fill.Name = t.id .. "_fill"
+		fill.Parent = folder
+		-- Gold outline above fill/holder so selection does not replace political colors.
+		selectParts[t.id] = MapTriangles.DrawRing(
+			selectFolder,
+			t.polygon,
+			SELECT_COLOR,
+			t.id .. "select",
+			THICK,
+			10,
+			THICK * 0.75,
+			true
+		)
+		for _, p in selectParts[t.id] do
+			p.Transparency = 1
+			p.Material = Enum.Material.Neon
+			p.Color = SELECT_COLOR
+		end
+		rimParts[t.id] = MapTriangles.DrawQuad(rim, t.polygon, RealmColors.Unclaimed, t.id .. "rim", THICK, THICK * 0.2)
+		fillParts[t.id] = MapTriangles.DrawQuad(
+			fill,
+			scaleFromCentroid(t.polygon, 0.18),
+			RealmColors.Unclaimed,
+			t.id .. "fill",
+			THICK,
+			THICK * 0.55
+		)
+	end
+
+	local camera = Instance.new("Camera")
+	camera.FieldOfView = FOV
+	camera.Parent = viewport
+	viewport.CurrentCamera = camera
+	-- Noninteractive province names use the same projection as map picking.
+	local provinceLabels = {}
+	for _, t in mapDef.territories do
+		local label = Instance.new("TextLabel")
+		label.Name = "ProvinceName_" .. t.id
+		label.BackgroundTransparency = 1
+		label.AnchorPoint = Vector2.new(0.5, 0.5)
+		label.Text = t.displayName
+		label.Font = Enum.Font.GothamMedium
+		label.TextSize = 12
+		label.TextColor3 = Color3.fromRGB(25, 34, 42)
+		label.TextStrokeColor3 = Color3.fromRGB(235, 231, 219)
+		label.TextStrokeTransparency = 0.65
+		label.Active = false
+		label.ZIndex = 2
+		label.Parent = mapStage
+		provinceLabels[t.id] = label
+	end
+
+	local function rulerOf(rulerId: string?): any?
+		if not rulerId or rulerId == "" then
+			return nil
+		end
+		return hierarchyById[rulerId]
+	end
+
+	local function ownerColor(ownerId: string): Color3
+		local idx = colorIndex[ownerId]
+		if typeof(idx) == "number" then
+			return RealmColors.ByIndex(idx)
+		end
+		return RealmColors.ByIndex(1)
+	end
+
+	local function cameraHeight(): number
+		local size = mapStage.AbsoluteSize
+		local aspect = if size.Y > 0 then size.X / size.Y else 1
+		local half = math.max(spanX / aspect, spanY) * 0.55 / zoom
+		return half / math.tan(math.rad(FOV * 0.5))
+	end
+
+	local function applyCamera()
+		local h = cameraHeight()
+		local size = mapStage.AbsoluteSize
+		local aspect = if size.Y > 0 then size.X / size.Y else 1
+		local halfZ = h * math.tan(math.rad(FOV * 0.5))
+		local halfX = halfZ * aspect
+		local pad = 20
+		local loX = minX - pad + halfX
+		local hiX = maxX + pad - halfX
+		if loX <= hiX then
+			lookX = math.clamp(lookX, loX, hiX)
+		else
+			lookX = midX
+		end
+		local loZ = minY - pad + halfZ
+		local hiZ = maxY + pad - halfZ
+		if loZ <= hiZ then
+			lookZ = math.clamp(lookZ, loZ, hiZ)
+		else
+			lookZ = midY
+		end
+		camera.CFrame = CFrame.lookAt(Vector3.new(lookX, h, lookZ), Vector3.new(lookX, 0, lookZ), Vector3.new(0, 0, -1))
+		for _, t in mapDef.territories do
+			local cx, cy = MapGeometry.Centroid(t.polygon)
+			local label = provinceLabels[t.id]
+			local px = (0.5 + (cx - lookX) / (2 * halfX)) * size.X
+			local py = (0.5 + (cy - lookZ) / (2 * halfZ)) * size.Y
+			local x1, _, x2 = MapGeometry.PolygonBounds(t.polygon)
+			local width = (x2 - x1) / (2 * halfX) * size.X * 0.85
+			label.Position = UDim2.fromOffset(px, py)
+			label.Size = UDim2.fromOffset(width, 24)
+			label.TextSize = if width < 90 then 10 else 12
+			label.Visible = width >= 54 and px > 0 and py > 0 and px < size.X and py < size.Y
+		end
+	end
+
+	local function screenToMap(screen: Vector2): (number?, number?)
+		local abs = viewport.AbsolutePosition
+		local size = viewport.AbsoluteSize
+		if size.X < 1 or size.Y < 1 then
+			return nil, nil
+		end
+		local u = (screen.X - abs.X) / size.X
+		local v = (screen.Y - abs.Y) / size.Y
+		if u < 0 or v < 0 or u > 1 or v > 1 then
+			return nil, nil
+		end
+		local h = cameraHeight()
+		local aspect = size.X / size.Y
+		local halfZ = h * math.tan(math.rad(FOV * 0.5))
+		local halfX = halfZ * aspect
+		local mx = lookX + (u - 0.5) * 2 * halfX
+		local my = lookZ + (v - 0.5) * 2 * halfZ
+		return mx, my
+	end
+
+	local function hitTerritory(mx: number, my: number): string?
+		for _, t in mapDef.territories do
+			if MapGeometry.PointInPolygon(mx, my, t.polygon) then
+				return t.id
+			end
+		end
+		return nil
+	end
+
+	local function updateInfo()
+		if not selectedId then
+			infoBody.Text = "No territory selected.\nClick the map to inspect a province."
+			return
+		end
+		local def = byId[selectedId]
+		if not def then
+			infoBody.Text = "Unknown territory."
+			return
+		end
+		local ownerId = ownership[selectedId]
+		if not ownerId or ownerId == "" then
+			infoBody.Text = string.format(
+				"%s\nID: %s\nOwner: Unclaimed\nRank: —\nStatus: —\nGreater realm: —",
+				def.displayName,
+				def.id
+			)
+			return
+		end
+		local owner = rulerOf(ownerId)
+		local root = if owner then rulerOf(owner.rootRulerId) else nil
+		infoBody.Text = string.format(
+			"%s\nID: %s\nOwner: %s\nRank: %s\nStatus: %s\nGreater realm: %s",
+			def.displayName,
+			def.id,
+			if owner then owner.displayName else ownerId,
+			if owner then owner.titleName else "—",
+			if owner then (if owner.independent then "Independent" else "Subject") else "—",
+			if root then root.displayName else (if owner then owner.displayName else "—")
+		)
+	end
+
+	local function colorize()
+		for _, t in mapDef.territories do
+			local ownerId = ownership[t.id]
+			local fill = RealmColors.Unclaimed
+			local rim = Color3.fromRGB(40, 44, 50)
+			if ownerId and ownerId ~= "" then
+				local owner = rulerOf(ownerId)
+				local rootId = if owner and typeof(owner.rootRulerId) == "string" and owner.rootRulerId ~= "" then owner.rootRulerId else ownerId
+				fill = ownerColor(rootId)
+				rim = ownerColor(ownerId)
+			end
+			for _, p in fillParts[t.id] do
+				p.Color = fill
+				p.Material = Enum.Material.SmoothPlastic
+			end
+			for _, p in rimParts[t.id] do
+				p.Color = rim
+			end
+			local selected = selectedId == t.id
+			for _, p in selectParts[t.id] do
+				p.Color = SELECT_COLOR
+				p.Material = Enum.Material.Neon
+				p.Transparency = if selected then 0 else 1
+			end
+		end
+		updateInfo()
+		applyCamera()
+		if selectedValue and selectedValue:IsA("StringValue") then
+			selectedValue.Value = selectedId or ""
+		end
+	end
+
+	local function applyTerritoryState(data: any)
+		ownership = {}
+		if typeof(data.territories) == "table" then
+			for _, row in data.territories do
+				if typeof(row.territoryId) == "string" then
+					ownership[row.territoryId] = if row.hasOwner == true then (tostring(row.ownerRulerId)) else ""
+				end
+			end
+		end
+		colorIndex = {}
+		if typeof(data.rulerColors) == "table" then
+			for _, row in data.rulerColors do
+				if typeof(row.rulerId) == "string" and typeof(row.colorIndex) == "number" then
+					colorIndex[row.rulerId] = row.colorIndex
+				end
+			end
+		end
+		print("[Territory] State received map=", tostring(data.mapId))
+		colorize()
+	end
+
+	local function applyHierarchyState(data: any)
+		hierarchyById = {}
+		if typeof(data.rulers) == "table" then
+			for _, ruler in data.rulers do
+				if typeof(ruler.rulerId) == "string" then
+					hierarchyById[ruler.rulerId] = ruler
+				end
+			end
+		end
+		colorize()
+	end
+
+	territoryPush.OnClientEvent:Connect(function(kind: any, payload: any)
+		if kind == "State" then
+			local data = decodeState(payload)
+			if data then
+				applyTerritoryState(data)
+			else
+				warn("[Territory] State decode failed")
+			end
+		end
+	end)
+
+	hierarchyPush.OnClientEvent:Connect(function(kind: any, payload: any)
+		if kind == "State" then
+			local data = decodeState(payload)
+			if data then
+				applyHierarchyState(data)
+			end
+		end
+	end)
+
+	local function pointerScreen(): Vector2
+		return UserInputService:GetMouseLocation() - GuiService:GetGuiInset()
+	end
+
+	local function mouseOverMap(screen: Vector2): boolean
+		local abs = mapStage.AbsolutePosition
+		local size = mapStage.AbsoluteSize
+		return screen.X >= abs.X and screen.Y >= abs.Y and screen.X <= abs.X + size.X and screen.Y <= abs.Y + size.Y
+	end
+
+	-- Map is the lowest input layer. Higher project GUI at this point owns the pointer.
+	-- ResultToast is informational and is not treated as a blocking layer.
+	-- AdminInspectPanel, EconomyPanel, MilitaryPanel, and visible Kohl command/dashboard chrome block the map.
+	local function isKohlBlockingGui(obj: GuiObject): boolean
+		local screenGui = obj:FindFirstAncestorWhichIsA("ScreenGui")
+		if not screenGui then
+			return false
+		end
+		local guiName = screenGui.Name
+		if
+			guiName ~= "FluxUILayerTopbar"
+			and guiName ~= "FluxUILayerTop"
+			and guiName ~= "FluxUILayerDefault"
+			and guiName ~= "FluxUILayerBottom"
+		then
+			return false
+		end
+		local current: Instance? = obj
+		while current and current ~= screenGui do
+			if current:IsA("GuiObject") and current.Visible then
+				local n = current.Name
+				if n == "CommandBar" or n == "Window" or n == "Dialog" or n == "Cmdbar2" or n == "KADashboardButton" or n == "KACommandsButton" then
+					return true
+				end
+			end
+			current = current.Parent
+		end
+		return false
+	end
+	local function isMapDescendant(obj: Instance): boolean
+		local current: Instance? = obj
+		while current and current ~= gui do
+			if current == mapStage then
+				return true
+			end
+			current = current.Parent
+		end
+		return false
+	end
+
+	local function blockingPanelOf(obj: Instance): GuiObject?
+		local current: Instance? = obj
+		while current and current ~= gui do
+			if current:IsA("GuiObject") and current.Parent == gui then
+				local name = current.Name
+				if name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" or name == "EconomyPanel" or name == "MilitaryPanel" or name == "CommunicationsPanel" or name == "StrategyNavigation" or name == "StrategyTopbar" then
+					return current
+				end
+			end
+			current = current.Parent
+		end
+		return nil
+	end
+
+	local function pointerOnHigherGui(screen: Vector2): boolean
+		local objects = player.PlayerGui:GetGuiObjectsAtPosition(screen.X, screen.Y)
+		for _, obj in objects do
+			if obj:IsA("GuiObject") and obj.Visible and not isMapDescendant(obj) then
+				if isKohlBlockingGui(obj) then
+					return true
+				end
+				local panel = blockingPanelOf(obj)
+				if panel and panel.Visible then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local mapPress = false
+
+	-- Press must start on the map surface (MapStage / MapView), not on higher panels.
+	-- Drag uses inset-corrected cursor position so GuiObject vs UIS coordinates cannot cancel pan.
+	local function beginMapPress(input: InputObject)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+			return
+		end
+		if pointerOnHigherGui(pointerScreen()) then
+			return
+		end
+		mapPress = true
+		dragging = true
+		dragMoved = false
+		dragStart = pointerScreen()
+		lookStart = Vector2.new(lookX, lookZ)
+	end
+
+	mapStage.InputBegan:Connect(beginMapPress)
+	viewport.InputBegan:Connect(beginMapPress)
+
+	UserInputService.InputChanged:Connect(function(input, _gameProcessed)
+		if dragging and mapPress and input.UserInputType == Enum.UserInputType.MouseMovement and dragStart then
+			local now = pointerScreen()
+			if (now - dragStart).Magnitude > 6 then
+				dragMoved = true
+			end
+			if dragMoved then
+				local size = viewport.AbsoluteSize
+				if size.X < 1 or size.Y < 1 then
+					return
+				end
+				local h = cameraHeight()
+				local halfZ = h * math.tan(math.rad(FOV * 0.5))
+				local halfX = halfZ * (size.X / size.Y)
+				local dx = (now.X - dragStart.X) / size.X * 2 * halfX
+				local dz = (now.Y - dragStart.Y) / size.Y * 2 * halfZ
+				lookX = lookStart.X - dx
+				lookZ = lookStart.Y - dz
+				applyCamera()
+			end
+		elseif input.UserInputType == Enum.UserInputType.MouseWheel then
+			-- Active MapStage marks wheel as gameProcessed. That is the map surface, not a higher panel.
+			local pos = pointerScreen()
+			if not mouseOverMap(pos) or pointerOnHigherGui(pos) then
+				return
+			end
+			if input.Position.Z > 0 then
+				zoom = math.clamp(zoom * 1.12, MIN_ZOOM, MAX_ZOOM)
+			else
+				zoom = math.clamp(zoom / 1.12, MIN_ZOOM, MAX_ZOOM)
+			end
+			applyCamera()
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+			return
+		end
+		local wasMapPress = mapPress
+		local wasDrag = dragMoved
+		mapPress = false
+		dragging = false
+		dragMoved = false
+		if not wasMapPress or wasDrag then
+			return
+		end
+		local pos = pointerScreen()
+		if pointerOnHigherGui(pos) then
+			return
+		end
+		local mx, my = screenToMap(pos)
+		if not mx or not my then
+			return
+		end
+		selectedId = hitTerritory(mx, my)
+		colorize()
+	end)
+
+	mapStage:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		applyCamera()
+	end)
+
+	applyCamera()
+	territoryIntent:FireServer("Ready")
+	print("[Territory] controller started; Ready sent")
+	colorize()
+end
+
+return TerritoryMapController
+]========]
+game.StarterPlayer.StarterPlayerScripts.Controllers.CommunicationsController.Source=[========[--!strict
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
+local TextService = game:GetService("TextService")
+local Config = require(ReplicatedStorage.Shared.Config.CommunicationsConfig)
+local Theme = require(ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
+local Controller = {}
+local started = false
+
+function Controller.Start()
+	if started then return end
+	started = true
+	local player = Players.LocalPlayer
+	local panel = player:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui"):WaitForChild("CommunicationsPanel") :: Frame
+	local transcript = panel:WaitForChild("Transcript") :: ScrollingFrame
+	local body = transcript:WaitForChild("Body") :: TextLabel
+	local list = panel:WaitForChild("ConvList") :: ScrollingFrame
+	local contacts = panel:WaitForChild("ContactList") :: ScrollingFrame
+	local input = panel:WaitForChild("Input") :: TextBox
+	local send = panel:WaitForChild("SendButton") :: TextButton
+	local help = panel:WaitForChild("HelpButton") :: TextButton
+	local direct = panel:WaitForChild("DirectButton") :: TextButton
+	local observe = panel:WaitForChild("ObserverButton") :: TextButton
+	local muteButton = panel:WaitForChild("MuteObserver") :: TextButton
+	local status = panel:WaitForChild("Status") :: TextLabel
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	local intent = remotes:WaitForChild("CommunicationsClientEvent") :: RemoteEvent
+	local push = remotes:WaitForChild("CommunicationsServerEvent") :: RemoteEvent
+	local channels = TextChatService:WaitForChild("TextChannels")
+	local rows: { [string]: any } = {}
+	local logs: { [string]: { string } } = {}
+	local shown: { [string]: boolean } = {}
+	local unread: { [string]: number } = {}
+	local identity: { [string]: any } = {}
+	local pending: { [string]: TextChatMessage } = {}
+	local seen: { [string]: boolean } = {}
+	local submitted: { [string]: string } = {}
+	local observerLog: { string } = {}
+	local selected = "diplomatic"
+	local observing, muted, sending = false, false, false
+	local availableContacts = {}
+	local renderList: () -> ()
+
+	local function fitTranscript()
+		local height = TextService:GetTextSize(body.Text, body.TextSize, body.Font,
+			Vector2.new(math.max(1, transcript.AbsoluteSize.X - 10), 100000)).Y + 8
+		body.AutomaticSize = Enum.AutomaticSize.None
+		body.Size = UDim2.new(1, -10, 0, height)
+		transcript.AutomaticCanvasSize = Enum.AutomaticSize.None
+		transcript.CanvasSize = UDim2.fromOffset(0, height)
+		transcript.CanvasPosition = Vector2.new(0, math.max(0, height - transcript.AbsoluteWindowSize.Y))
+	end
+	transcript:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitTranscript)
+	TextChatService.ChatWindowConfiguration.Enabled = false
+	TextChatService.ChatInputBarConfiguration.Enabled = false
+	TextChatService.BubbleChatConfiguration.Enabled = false
+	TextChatService.ChannelTabsConfiguration.Enabled = false
+
+	local function refresh()
+		local row = rows[selected]
+		local canSend = row ~= nil and row.canSend == true and not observing
+		input.TextEditable = canSend
+		send.Active = canSend and not sending
+		Theme.applyPrimaryButton(send, send.Active)
+		send.Text = if sending then "…" else "Send"
+		status.Text = if observing then "Observer (native receipts only)" elseif row then
+			row.label .. (if canSend then "" else " — unavailable") else "History — unavailable"
+		body.Text = table.concat(if observing then observerLog else logs[selected] or {}, "\n\n")
+		fitTranscript()
+		muteButton.Visible = observing
+		muteButton.Text = if muted then "Unmute" else "Mute"
+		task.defer(function()
+			transcript.CanvasPosition = Vector2.new(0, math.max(0, transcript.AbsoluteCanvasSize.Y - transcript.AbsoluteWindowSize.Y))
+		end)
+	end
+	local function append(id: string, line: string)
+		local log = logs[id]
+		if not log then log = {}; logs[id] = log end
+		table.insert(log, line)
+		while #log > Config.HistoryLimit do table.remove(log, 1) end
+	end
+	local function explain()
+		local row = rows[selected]
+		if row and not observing then
+			append(selected, "[SYSTEM] " .. (Config.Help[row.kind] or "This context is unavailable."))
+			shown[selected] = true
+		end
+		refresh()
+	end
+	local function selectContext(id: string)
+		selected, observing = id, false
+		contacts.Visible = false
+		transcript.Visible = true
+		unread[id] = 0
+		if not shown[id] then explain() else refresh() end
+		renderList()
+	end
+	local function button(parent: Instance, text: string, y: number, callback: () -> ())
+		local item = Instance.new("TextButton")
+		item.Size = UDim2.new(1, -8, 0, 24)
+		item.Position = UDim2.fromOffset(0, y)
+		item.BackgroundColor3 = Theme.Colors.row
+		item.BorderSizePixel = 0
+		item.TextColor3 = Theme.Colors.textPrimary
+		item.Font = Enum.Font.Gotham
+		item.TextSize = 14
+		item.Text = text
+		item.Parent = parent
+		item.Activated:Connect(callback)
+	end
+	renderList = function()
+		for _, child in list:GetChildren() do if child:IsA("TextButton") then child:Destroy() end end
+		local ids = {}
+		for id, row in rows do if not row.observerOnly or logs[id] then table.insert(ids, id) end end
+		for id in logs do if not rows[id] then table.insert(ids, id) end end
+		table.sort(ids)
+		for i, id in ids do
+			local row = rows[id]
+			local label = if row then row.label else id .. " (history)"
+			local count = unread[id] or 0
+			button(list, (if id == selected then "› " else "") .. label .. (if count > 0 then " (" .. count .. ")" else ""), (i - 1) * 26,
+				function() selectContext(id) end)
+		end
+		list.CanvasSize = UDim2.fromOffset(0, #ids * 26)
+	end
+	local function received(id: string)
+		local message, meta = pending[id], identity[id]
+		if not message or not meta or seen[id] then return end
+		seen[id] = true
+		if message.TextSource and message.TextSource.UserId == player.UserId and submitted[id] then
+			if input.Text == submitted[id] then input.Text = "" end
+			submitted[id] = nil
+			sending = false
+		end
+		pending[id], identity[id] = nil, nil
+		if meta.ordinary then
+			append(meta.contextId, meta.prefix .. message.Text)
+			if selected ~= meta.contextId or observing then unread[meta.contextId] = (unread[meta.contextId] or 0) + 1 end
+		end
+		if meta.observing and not muted then
+			table.insert(observerLog, meta.observerPrefix .. message.Text)
+			while #observerLog > Config.HistoryLimit do table.remove(observerLog, 1) end
+		end
+		renderList()
+		refresh()
+		task.delay(30, function() seen[id] = nil end)
+	end
+	TextChatService.MessageReceived:Connect(function(message)
+		local channel = message.TextChannel
+		if message.Status ~= Enum.TextChatMessageStatus.Success or not message.TextSource
+			or not channel or not channel:GetAttribute("CommunicationsContextId") then return end
+		local id = message.MessageId
+		pending[id] = message
+		received(id)
+		task.delay(30, function() pending[id], identity[id] = nil, nil end)
+	end)
+	push.OnClientEvent:Connect(function(action, data)
+		if action == "Identity" and typeof(data) == "table" and typeof(data.messageId) == "string" then
+			identity[data.messageId] = data
+			received(data.messageId)
+			task.delay(30, function() identity[data.messageId] = nil end)
+		elseif action == "State" and typeof(data) == "table" then
+			rows = {}
+			for _, row in data.contexts do rows[row.id] = row end
+			availableContacts = data.contacts
+			observe.Visible = data.isAdmin
+			if not data.isAdmin then observing = false end
+			if not shown[selected] and rows[selected] and not rows[selected].observerOnly then explain() end
+			renderList()
+			refresh()
+		elseif action == "Opened" and typeof(data) == "string" then selectContext(data)
+		elseif action == "Notice" and typeof(data) == "string" then status.Text = data end
+	end)
+	local function submit()
+		local row = rows[selected]
+		local text = string.match(input.Text, "^%s*(.-)%s*$") or ""
+		if observing or sending or not row or not row.canSend or text == "" then return end
+		if string.lower(text) == "help" then input.Text = ""; explain(); return end
+		local channel = channels:FindFirstChild(row.channelName)
+		if not channel or not channel:IsA("TextChannel") then status.Text = "Native channel unavailable."; return end
+		sending = true
+		refresh()
+		task.spawn(function()
+			local ok, result = pcall(function() return channel:SendAsync(text) end)
+			sending = false
+			refresh()
+			if not ok or not result then
+				status.Text = "Message not delivered by Roblox."
+			elseif result.Status == Enum.TextChatMessageStatus.Sending or result.Status == Enum.TextChatMessageStatus.Success then
+				submitted[result.MessageId] = text
+				if seen[result.MessageId] then
+					if input.Text == text then input.Text = "" end
+					submitted[result.MessageId] = nil
+				end
+				task.delay(15, function()
+					if submitted[result.MessageId] then
+						submitted[result.MessageId] = nil
+						status.Text = "Delivery not confirmed by Roblox."
+					end
+				end)
+			else
+				status.Text = "Message blocked by Roblox."
+			end
+			-- Only native MessageReceived + authoritative label can append player text.
+		end)
+	end
+	send.Activated:Connect(submit)
+	input.FocusLost:Connect(function(enter) if enter then submit() end end)
+	help.Activated:Connect(explain)
+	direct.Activated:Connect(function()
+		contacts.Visible = not contacts.Visible
+		transcript.Visible = not contacts.Visible
+		for _, child in contacts:GetChildren() do if child:IsA("TextButton") then child:Destroy() end end
+		for i, contact in availableContacts do button(contacts, contact.name, (i - 1) * 26, function() intent:FireServer("OpenDirect", contact.userId) end) end
+		contacts.CanvasSize = UDim2.fromOffset(0, #availableContacts * 26)
+		if #availableContacts == 0 then status.Text = "No currently neighboring contact." end
+	end)
+	observe.Activated:Connect(function()
+		observing = not observing
+		contacts.Visible = false
+		transcript.Visible = true
+		refresh()
+	end)
+	muteButton.Activated:Connect(function() muted = not muted; refresh() end)
+	intent:FireServer("Ready")
+	refresh()
+end
+return Controller
+]========]
+game.StarterPlayer.StarterPlayerScripts.Controllers.MilitaryController.Source=[========[--!strict
+
+--[[
+	Player-relevant Military / Armies V0.1 HUD.
+	Recruit / RecruitMax / SetCommit / LockCommit intents only.
+	Commitment field auto-submits parsed integers; Lock uses server-accepted intent.
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+
+local PrototypeGuiTheme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Util"):WaitForChild("PrototypeGuiTheme"))
+local MilitaryConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("MilitaryConfig"))
+
+local player = Players.LocalPlayer
+local MilitaryController = {}
+
+local started = false
+local COMMIT_DEBOUNCE_SEC = 0.08
+
+local function decodeState(payload: any): any?
+	if typeof(payload) == "string" then
+		local ok, decoded = pcall(function()
+			return HttpService:JSONDecode(payload)
+		end)
+		if ok and typeof(decoded) == "table" then
+			return decoded
+		end
+		return nil
+	elseif typeof(payload) == "table" then
+		return payload
+	end
+	return nil
+end
+
+local function formatCountdown(endsAt: number): string
+	local remaining = math.max(0, math.ceil(endsAt - workspace:GetServerTimeNow()))
+	return string.format("%ds", remaining)
+end
+
+local function parseWholeNonNegative(text: string): number?
+	if text == "" then
+		return nil
+	end
+	local n = tonumber(text)
+	if typeof(n) ~= "number" or n ~= n or n ~= math.floor(n) or n < 0 then
+		return nil
+	end
+	return n
+end
+
+function MilitaryController.Start()
+	if started or _G.__MilitaryV01Started == true then
+		return
+	end
+	started = true
+	_G.__MilitaryV01Started = true
+
+	local gui = player:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui", 12)
+	if not (gui and gui:IsA("ScreenGui")) then
+		warn("[Military] HierarchyPrototypeGui missing; HUD idle.")
+		started = false
+		_G.__MilitaryV01Started = nil
+		return
+	end
+
+	local info = gui:WaitForChild("TerritoryInfo") :: Frame
+	local selectedValue = info:WaitForChild("SelectedTerritoryId") :: StringValue
+	local panel = gui:WaitForChild("MilitaryPanel") :: Frame
+	local stats = panel:WaitForChild("Stats") :: TextLabel
+	local recruitBox = panel:WaitForChild("RecruitBox") :: TextBox
+	local costLabel = panel:WaitForChild("CostLabel") :: TextLabel
+	local recruitButton = panel:WaitForChild("RecruitButton") :: TextButton
+	local maxRecruitButton = panel:WaitForChild("MaxRecruitButton") :: TextButton
+	local commitBody = panel:WaitForChild("CommitBody") :: TextLabel
+	local commitBox = panel:WaitForChild("CommitBox") :: TextBox
+	local lockButton = panel:WaitForChild("LockButton") :: TextButton
+	local mapStage = gui:WaitForChild("MapStage") :: Frame
+	local battleBanner = mapStage:WaitForChild("BattleBanner") :: TextLabel
+	local resultToast = gui:WaitForChild("ResultToast") :: Frame
+	local resultToastLabel = resultToast:WaitForChild("Label") :: TextLabel
+
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	local intent = remotes:WaitForChild("MilitaryClientEvent") :: RemoteEvent
+	local push = remotes:WaitForChild("MilitaryServerEvent") :: RemoteEvent
+
+	local total = 0
+	local available = 0
+	local committed = 0
+	local troopsPerGold = 3
+	local wars = {}
+	local hasState = false
+	local noticeToken = 0
+	local lastSentByWar: { [string]: number } = {}
+	local fieldStatus = ""
+	local debounceToken = 0
+	local boundSessionWarId: string? = nil
+	local lastBattleByTerritory: { [string]: any } = {}
+	local lastBattleTokenByTerritory: { [string]: number } = {}
+	local COMMIT_BODY_IDLE = UDim2.new(1, -16, 0, 148)
+	local COMMIT_BODY_SUMMARY = UDim2.new(1, -16, 0, 148)
+
+	commitBox.PlaceholderText = "Troops to commit"
+	lockButton.Text = "Ready"
+
+	local function showNotice(message: string)
+		noticeToken += 1
+		local token = noticeToken
+		resultToastLabel.Text = message
+		resultToast.Visible = true
+		task.delay(6, function()
+			if token == noticeToken then
+				resultToast.Visible = false
+			end
+		end)
+	end
+
+	local function recruitAmount(): number?
+		local n = tonumber(recruitBox.Text)
+		if n == nil then
+			return nil
+		end
+		return n
+	end
+
+	local function updateCost()
+		local n = recruitAmount()
+		if n == nil then
+			costLabel.Text = "Gold cost: —"
+			return
+		end
+		if n > 0 and n == math.floor(n) and n % troopsPerGold == 0 then
+			costLabel.Text = string.format("Gold cost: %d", n / troopsPerGold)
+		else
+			costLabel.Text = "Gold cost: invalid"
+		end
+	end
+
+	local function isLiveWar(war: any): boolean
+		return war ~= nil and (war.phase == "commit" or war.phase == "present")
+	end
+
+	local function liveWars(): { any }
+		local live = {}
+		for _, war in wars do
+			if isLiveWar(war) then
+				table.insert(live, war)
+			end
+		end
+		return live
+	end
+
+	local function warForTarget(territoryId: string): any?
+		if territoryId == "" then
+			return nil
+		end
+		for _, war in wars do
+			if isLiveWar(war) and war.targetTerritoryId == territoryId then
+				return war
+			end
+		end
+		return nil
+	end
+
+	-- Display/input context only. Selection never mutates server Military state.
+	local function displayedWar(): any?
+		local selected = selectedValue.Value
+		local matched = warForTarget(selected)
+		if matched then
+			return matched
+		end
+		-- Empty selection + exactly one war: keep single-war HUD without a map click.
+		if selected == "" then
+			local live = liveWars()
+			if #live == 1 then
+				return live[1]
+			end
+		end
+		return nil
+	end
+
+	local function activeCommitWar(): any?
+		return displayedWar()
+	end
+
+	local function resetCommitInput()
+		debounceToken += 1
+		fieldStatus = ""
+		if commitBox.Text ~= "" then
+			commitBox.Text = ""
+		end
+		commitBox.PlaceholderText = "Troops to commit"
+	end
+
+	local function lastBattleDuration(): number
+		local override = panel:GetAttribute("DebugLastBattleSeconds")
+		if typeof(override) == "number" and override == override and override > 0 then
+			return override
+		end
+		local configured = tonumber(MilitaryConfig.LastBattleSummarySeconds)
+		if configured and configured > 0 then
+			return configured
+		end
+		return 20
+	end
+
+	local function lastBattleTerritoryId(result: any): string?
+		if typeof(result.targetTerritoryId) == "string" and result.targetTerritoryId ~= "" then
+			return result.targetTerritoryId
+		end
+		return nil
+	end
+
+	local function lastBattleForTerritory(territoryId: string): any?
+		if territoryId == "" then
+			return nil
+		end
+		return lastBattleByTerritory[territoryId]
+	end
+
+	local function soleCachedLastBattle(): any?
+		local found: any? = nil
+		local n = 0
+		for _, result in lastBattleByTerritory do
+			n += 1
+			found = result
+		end
+		if n == 1 then
+			return found
+		end
+		return nil
+	end
+
+	local function discardTerritoryLastBattle(territoryId: string)
+		lastBattleTokenByTerritory[territoryId] = (lastBattleTokenByTerritory[territoryId] or 0) + 1
+		lastBattleByTerritory[territoryId] = nil
+	end
+
+	local function formatLastBattle(result: any): string
+		local place = result.targetDisplayName
+		if typeof(place) ~= "string" or place == "" then
+			place = result.targetTerritoryId
+		end
+		if typeof(place) ~= "string" or place == "" then
+			place = "contested territory"
+		end
+		local outcome = if result.won == true then "VICTORY" else "DEFEAT"
+		return table.concat({
+			"Last Battle — " .. place,
+			"",
+			outcome,
+			"",
+			"Your committed: " .. tostring(tonumber(result.committed) or 0),
+			"Enemy committed: " .. tostring(tonumber(result.enemyCommitted) or 0),
+			"Your casualties: " .. tostring(tonumber(result.casualties) or 0),
+			"Your survivors: " .. tostring(tonumber(result.survivors) or 0),
+		}, "\n")
+	end
+
+	local function beginLastBattle(result: any)
+		local territoryId = lastBattleTerritoryId(result)
+		if territoryId == nil then
+			return
+		end
+		lastBattleTokenByTerritory[territoryId] = (lastBattleTokenByTerritory[territoryId] or 0) + 1
+		local token = lastBattleTokenByTerritory[territoryId]
+		lastBattleByTerritory[territoryId] = result
+		local displayed = displayedWar()
+		if displayed == nil or displayed.targetTerritoryId == territoryId then
+			resetCommitInput()
+		end
+		task.delay(lastBattleDuration(), function()
+			if lastBattleTokenByTerritory[territoryId] == token then
+				lastBattleByTerritory[territoryId] = nil
+			end
+		end)
+	end
+
+	local function syncCommitInputToSession()
+		local session = displayedWar()
+		local sessionId = if session and typeof(session.warId) == "string" then session.warId else nil
+		if sessionId == nil then
+			if boundSessionWarId ~= nil or commitBox.Text ~= "" then
+				resetCommitInput()
+			end
+			boundSessionWarId = nil
+			return
+		end
+		if boundSessionWarId == sessionId then
+			return
+		end
+		debounceToken += 1
+		fieldStatus = ""
+		commitBox.PlaceholderText = "Troops to commit"
+		boundSessionWarId = sessionId
+		local intended = tonumber(session.intended)
+		if typeof(intended) == "number" then
+			lastSentByWar[sessionId] = intended
+			local shown = tostring(intended)
+			if commitBox.Text ~= shown then
+				commitBox.Text = shown
+			end
+		elseif commitBox.Text ~= "" then
+			commitBox.Text = ""
+		end
+	end
+
+	local function maxCommitFor(war: any): number
+		local intended = tonumber(war.intended) or 0
+		return available + intended
+	end
+
+	local function trySendCommit(force: boolean): boolean
+		local war = activeCommitWar()
+		if not war or typeof(war.warId) ~= "string" then
+			return false
+		end
+		if war.phase ~= "commit" or war.locked == true then
+			return false
+		end
+		local parsed = parseWholeNonNegative(commitBox.Text)
+		if parsed == nil then
+			local text = commitBox.Text
+			if text == "" then
+				fieldStatus = ""
+			else
+				fieldStatus = "Invalid amount (not a whole number >= 0)"
+			end
+			return false
+		end
+		if parsed > maxCommitFor(war) then
+			fieldStatus = "Invalid: over Available"
+			if lastSentByWar[war.warId] == parsed and not force then
+				return false
+			end
+			lastSentByWar[war.warId] = parsed
+			intent:FireServer("SetCommit", war.warId, parsed)
+			return false
+		end
+		if lastSentByWar[war.warId] == parsed and not force then
+			fieldStatus = ""
+			return true
+		end
+		fieldStatus = ""
+		lastSentByWar[war.warId] = parsed
+		intent:FireServer("SetCommit", war.warId, parsed)
+		return true
+	end
+
+	local function scheduleCommitSend()
+		debounceToken += 1
+		local token = debounceToken
+		task.delay(COMMIT_DEBOUNCE_SEC, function()
+			if token == debounceToken then
+				trySendCommit(false)
+			end
+		end)
+	end
+
+	local function render()
+		if not hasState then
+			stats.Text = "Total: —\nAvailable: —\nCommitted: —"
+			commitBody.Text = "No active war commitment."
+			commitBody.Size = COMMIT_BODY_IDLE
+			commitBox.Visible = true
+			lockButton.Visible = true
+			battleBanner.Visible = false
+			PrototypeGuiTheme.applyPrimaryButton(recruitButton, true)
+			PrototypeGuiTheme.applyPrimaryButton(maxRecruitButton, true)
+			PrototypeGuiTheme.applyPrimaryButton(lockButton, false)
+			lockButton.Active = false
+			return
+		end
+		stats.Text = string.format("Total: %d\nAvailable: %d\nCommitted: %d", total, available, committed)
+		updateCost()
+		PrototypeGuiTheme.applyPrimaryButton(recruitButton, true)
+		PrototypeGuiTheme.applyPrimaryButton(maxRecruitButton, true)
+		recruitButton.Active = true
+		maxRecruitButton.Active = true
+
+		local function showLastBattleUi(result: any)
+			syncCommitInputToSession()
+			commitBox.Visible = false
+			lockButton.Visible = false
+			lockButton.Active = false
+			PrototypeGuiTheme.applyPrimaryButton(lockButton, false)
+			battleBanner.Visible = false
+			commitBody.Size = COMMIT_BODY_SUMMARY
+			commitBody.Text = formatLastBattle(result)
+		end
+
+		local function showIdleCommitment(message: string)
+			syncCommitInputToSession()
+			commitBox.Visible = true
+			lockButton.Visible = true
+			lockButton.Active = false
+			PrototypeGuiTheme.applyPrimaryButton(lockButton, false)
+			battleBanner.Visible = false
+			commitBody.Size = COMMIT_BODY_IDLE
+			commitBody.Text = message
+		end
+
+		local war = displayedWar()
+		if war then
+			local targetId = war.targetTerritoryId
+			if typeof(targetId) == "string" then
+				local cached = lastBattleForTerritory(targetId)
+				if cached ~= nil and typeof(cached.warId) == "string" and cached.warId ~= war.warId then
+					discardTerritoryLastBattle(targetId)
+				end
+			end
+			commitBox.Visible = true
+			lockButton.Visible = true
+			commitBody.Size = COMMIT_BODY_IDLE
+		else
+			local selected = selectedValue.Value
+			local selectedSummary = lastBattleForTerritory(selected)
+			if selected ~= "" and selectedSummary ~= nil then
+				showLastBattleUi(selectedSummary)
+				return
+			end
+			if #liveWars() > 0 then
+				showIdleCommitment("No commitment for this territory.\nSelect a contested territory.")
+				return
+			end
+			if selected == "" then
+				local only = soleCachedLastBattle()
+				if only ~= nil then
+					showLastBattleUi(only)
+					return
+				end
+			end
+			showIdleCommitment("No active war commitment.")
+			return
+		end
+
+		local lines = {
+			string.format("%s — %s", war.role or "?", war.targetDisplayName or war.targetTerritoryId),
+			string.format("Available: %d", available),
+		}
+		if typeof(war.intended) == "number" then
+			table.insert(lines, "Accepted commitment: " .. tostring(war.intended))
+		else
+			table.insert(lines, "Accepted commitment: none")
+		end
+		if fieldStatus ~= "" and war.phase == "commit" and war.locked ~= true then
+			table.insert(lines, fieldStatus)
+		end
+		if war.phase == "commit" then
+			if (tonumber(war.windowEndsAt) or 0) > workspace:GetServerTimeNow() then
+				table.insert(lines, "Decision: " .. formatCountdown(war.windowEndsAt))
+			else
+				table.insert(lines, "Hard timeout: " .. formatCountdown(war.hardEndsAt))
+			end
+			if war.locked then
+				table.insert(lines, war.opponentState or "Waiting for opponent")
+			else
+				table.insert(lines, war.opponentState or "Opponent preparing forces")
+			end
+		elseif war.phase == "present" then
+			table.insert(lines, "Battle in progress")
+			if typeof(war.attackerCommitted) == "number" and typeof(war.defenderCommitted) == "number" then
+				table.insert(lines, string.format("Fielded: attacker %d / defender %d", war.attackerCommitted, war.defenderCommitted))
+			end
+			if typeof(war.presentationEndsAt) == "number" then
+				table.insert(lines, "Resolving in " .. formatCountdown(war.presentationEndsAt))
+			end
+		end
+		if war.result then
+			table.insert(lines, war.result.title or "")
+			table.insert(
+				lines,
+				string.format(
+					"Committed %d / Casualties %d / Survivors %d",
+					war.result.committed,
+					war.result.casualties,
+					war.result.survivors
+				)
+			)
+		end
+		commitBody.Text = table.concat(lines, "\n")
+
+		local canLock = war.phase == "commit" and war.locked ~= true and typeof(war.intended) == "number"
+		lockButton.Active = canLock
+		PrototypeGuiTheme.applyPrimaryButton(lockButton, canLock)
+
+		local showBattle = war.phase == "present"
+		battleBanner.Visible = showBattle
+		if showBattle then
+			battleBanner.Text = "Battle in progress — " .. (war.targetDisplayName or "contested territory")
+		end
+	end
+
+	recruitBox:GetPropertyChangedSignal("Text"):Connect(updateCost)
+
+	recruitButton.MouseButton1Click:Connect(function()
+		local n = recruitAmount()
+		intent:FireServer("Recruit", n)
+	end)
+
+	maxRecruitButton.MouseButton1Click:Connect(function()
+		intent:FireServer("RecruitMax")
+	end)
+
+	commitBox:GetPropertyChangedSignal("Text"):Connect(function()
+		local war = activeCommitWar()
+		if not war or war.phase ~= "commit" or war.locked == true then
+			return
+		end
+		scheduleCommitSend()
+	end)
+
+	lockButton.MouseButton1Click:Connect(function()
+		local war = activeCommitWar()
+		if not war or typeof(war.warId) ~= "string" then
+			return
+		end
+		if not lockButton.Active then
+			return
+		end
+		debounceToken += 1
+		local parsed = parseWholeNonNegative(commitBox.Text)
+		if parsed ~= nil and parsed <= maxCommitFor(war) then
+			trySendCommit(true)
+		end
+		intent:FireServer("LockCommit", war.warId)
+	end)
+
+	selectedValue:GetPropertyChangedSignal("Value"):Connect(function()
+		syncCommitInputToSession()
+		render()
+	end)
+
+	push.OnClientEvent:Connect(function(kind: any, payload: any)
+		if kind == "BattleResult" then
+			local result = decodeState(payload)
+			if result and typeof(result.title) == "string" then
+				showNotice(string.format(
+					"%s  Committed %d / Casualties %d / Survivors %d",
+					result.title,
+					tonumber(result.committed) or 0,
+					tonumber(result.casualties) or 0,
+					tonumber(result.survivors) or 0
+				))
+				beginLastBattle(result)
+			end
+			return
+		end
+		if kind == "Notice" and typeof(payload) == "string" then
+			showNotice(payload)
+			if string.find(payload, "Not enough", 1, true) or string.find(payload, "Commitment", 1, true) then
+				if string.find(payload, "Not enough", 1, true) then
+					fieldStatus = "Invalid: over Available"
+				elseif string.find(payload, "whole number", 1, true) or string.find(payload, "negative", 1, true) then
+					fieldStatus = "Invalid amount"
+				end
+			end
+			return
+		end
+		if kind ~= "State" then
+			return
+		end
+		local state = decodeState(payload)
+		if not state then
+			return
+		end
+		total = tonumber(state.total) or 0
+		available = tonumber(state.available) or 0
+		committed = tonumber(state.committed) or 0
+		troopsPerGold = tonumber(state.troopsPerGold) or 3
+		wars = state.wars or {}
+		hasState = true
+		syncCommitInputToSession()
+		for _, war in wars do
+			if typeof(war.warId) == "string" and typeof(war.intended) == "number" then
+				if lastSentByWar[war.warId] == nil then
+					lastSentByWar[war.warId] = war.intended
+				end
+			end
+		end
+		render()
+	end)
+
+	RunService.Heartbeat:Connect(function()
+		if hasState then
+			render()
+		end
+	end)
+
+	PrototypeGuiTheme.ApplyScreen(gui)
+	intent:FireServer("Ready")
+	render()
+end
+
+return MilitaryController
+]========]
+game.StarterPlayer.StarterPlayerScripts.Controllers.AdminFeedbackController.Source=[========[--!strict
+
+--[[
+	Project-owned admin command feedback. Display only.
+	Does not invoke AdminBridge. Does not trust the client for mutations.
+]]
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local PrototypeGuiTheme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Util"):WaitForChild("PrototypeGuiTheme"))
+
+local player = Players.LocalPlayer
+local AdminFeedbackController = {}
+
+local started = false
+
+local INSPECT = {
+	Help = true,
+	InspectWars = true,
+	InspectTerritory = true,
+	InspectRuler = true,
+	InspectGold = true,
+	InspectTroops = true,
+	InspectMilitary = true,
+	InspectComms = true,
+	InspectContest = true,
+}
+
+local TITLES = {
+	Help = "GameTester commands",
+	InspectWars = "Active wars",
+	InspectTerritory = "Territory",
+	InspectRuler = "Ruler",
+	InspectGold = "Gold",
+	InspectTroops = "Troops",
+	InspectMilitary = "Military",
+	InspectComms = "Communications",
+	InspectContest = "War contest",
+	SetOwner = "Territory owner",
+	SetPrestige = "Prestige",
+	SetGold = "Gold",
+	AddGold = "Gold",
+	SpendGold = "Gold",
+	ResolveWar = "War",
+}
+
+local function prettyMessage(raw: string): string
+	local trimmed = string.gsub(raw, "^%s+", "")
+	trimmed = string.gsub(trimmed, "%s+$", "")
+	if string.sub(trimmed, 1, 1) == "{" or string.sub(trimmed, 1, 1) == "[" then
+		local ok, decoded = pcall(function()
+			return HttpService:JSONDecode(trimmed)
+		end)
+		if ok and typeof(decoded) == "table" then
+			local lines = {}
+			local function expand(values: any, depth: number)
+				local keys = {}
+				for key in values do table.insert(keys, key) end
+				table.sort(keys, function(a, b) return tostring(a) < tostring(b) end)
+				for _, key in keys do
+					local value = values[key]
+					local prefix = string.rep("  ", depth) .. tostring(key) .. ": "
+					if typeof(value) == "table" and depth < 12 then
+						table.insert(lines, prefix)
+						expand(value, depth + 1)
+					else
+						table.insert(lines, prefix .. tostring(value))
+					end
+				end
+			end
+			expand(decoded, 0)
+			return table.concat(lines, "\n")
+		end
+	end
+	return raw
+end
+
+function AdminFeedbackController.Start()
+	if started or _G.__AdminFeedbackStarted == true then
+		return
+	end
+	started = true
+	_G.__AdminFeedbackStarted = true
+
+	local gui = player:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui", 12)
+	if not (gui and gui:IsA("ScreenGui")) then
+		warn("[Admin] HierarchyPrototypeGui missing; feedback idle.")
+		started = false
+		_G.__AdminFeedbackStarted = nil
+		return
+	end
+
+	local function ensureInspectPanel(): (Frame, TextLabel, TextLabel, TextButton)
+		local existing = gui:FindFirstChild("AdminInspectPanel")
+		if existing and existing:IsA("Frame") then
+			local header = existing:FindFirstChild("Header")
+			local body = existing:FindFirstChild("Body", true)
+			local closeBtn = existing:FindFirstChild("CloseButton")
+			if header and header:IsA("TextLabel") and body and body:IsA("TextLabel") and closeBtn and closeBtn:IsA("TextButton") then
+				return existing, header, body, closeBtn
+			end
+			existing:Destroy()
+		end
+		local panel = Instance.new("Frame")
+		panel.Name = "AdminInspectPanel"
+		panel.AnchorPoint = Vector2.new(0, 0)
+		panel.Position = UDim2.fromOffset(12, 84)
+		panel.Size = UDim2.fromOffset(420, 248)
+		panel.Visible = false
+		panel.Active = true
+		panel.ZIndex = 28
+		panel.Parent = gui
+		local header = Instance.new("TextLabel")
+		header.Name = "Header"
+		header.BackgroundTransparency = 1
+		header.Size = UDim2.new(1, -80, 0, 22)
+		header.Text = "Inspect"
+		header.Parent = panel
+		local closeBtn = Instance.new("TextButton")
+		closeBtn.Name = "CloseButton"
+		closeBtn.AnchorPoint = Vector2.new(1, 0)
+		closeBtn.Position = UDim2.new(1, 0, 0, 0)
+		closeBtn.Size = UDim2.fromOffset(72, 22)
+		closeBtn.Text = "Close"
+		closeBtn.Parent = panel
+		local scroll = Instance.new("ScrollingFrame")
+		scroll.Name = "BodyScroll"
+		scroll.Position = UDim2.fromOffset(0, 28)
+		scroll.Size = UDim2.new(1, 0, 1, -28)
+		scroll.BorderSizePixel = 0
+		scroll.ScrollBarThickness = 6
+		scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+		scroll.CanvasSize = UDim2.new(0, 0, 0, 0)
+		scroll.Parent = panel
+		local body = Instance.new("TextLabel")
+		body.Name = "Body"
+		body.BackgroundTransparency = 1
+		body.Size = UDim2.new(1, -8, 0, 0)
+		body.AutomaticSize = Enum.AutomaticSize.Y
+		body.TextWrapped = true
+		body.TextXAlignment = Enum.TextXAlignment.Left
+		body.TextYAlignment = Enum.TextYAlignment.Top
+		body.Text = ""
+		body.Parent = scroll
+		return panel, header, body, closeBtn
+	end
+
+	local inspect, inspectHeader, inspectBody, closeBtn = ensureInspectPanel()
+	local resultToast = gui:WaitForChild("ResultToast") :: Frame
+	local resultToastLabel = resultToast:WaitForChild("Label") :: TextLabel
+	PrototypeGuiTheme.ApplyScreen(gui)
+
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	local feedbackWait = remotes:WaitForChild("AdminFeedbackEvent", 20)
+	if not (feedbackWait and feedbackWait:IsA("RemoteEvent")) then
+		warn("[Admin] AdminFeedbackEvent missing; feedback idle.")
+		started = false
+		_G.__AdminFeedbackStarted = nil
+		return
+	end
+	local feedback = feedbackWait :: RemoteEvent
+
+	local toastToken = 0
+
+	local function showToast(message: string, kind: string)
+		toastToken += 1
+		local token = toastToken
+		PrototypeGuiTheme.applyToast(resultToast, kind)
+		resultToastLabel.Text = message
+		resultToast.Visible = true
+		task.delay(6, function()
+			if token == toastToken then
+				resultToast.Visible = false
+			end
+		end)
+	end
+
+	closeBtn.MouseButton1Click:Connect(function()
+		inspect.Visible = false
+	end)
+
+	feedback.OnClientEvent:Connect(function(payload: any)
+		if typeof(payload) ~= "table" then
+			return
+		end
+		local ok = payload.ok == true
+		local operation = tostring(payload.operation or "")
+		local message = prettyMessage(tostring(payload.message or ""))
+		if not ok then
+			inspect.Visible = false
+			showToast(message, "error")
+			return
+		end
+		if INSPECT[operation] then
+			inspectHeader.Text = TITLES[operation] or "Inspect"
+			inspectBody.Text = message
+			inspect.Visible = true
+		else
+			inspect.Visible = false
+			showToast(message, "ok")
+		end
+	end)
+
+	print("[Admin] feedback controller started.")
+end
+
+return AdminFeedbackController
+]========]
+game.StarterGui.HierarchyPrototypeGui.StrategyNavigation.Communications.Text="Messages";game.StarterGui.HierarchyPrototypeGui.CommunicationsPanel.Header.Text="Communications"; print("GUI_REFINEMENTS_STAGED")

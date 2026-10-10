@@ -84,3 +84,6 @@ $RECYCLE.BIN/
 # Kohl's Admin auto-update dumps (Script Sync). Loader + READ_ME stay tracked.
 ServerScriptService/Kohl's Admin/Loader/MainModule/
 ServerScriptService/Kohl's Admin/Loader/MainModuleLegacy/
+
+# Throwaway Output filter capture; substantive verification evidence remains tracked.
+docs/verification/conquest-victory-stage-one-pass-output.txt

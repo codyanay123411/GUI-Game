@@ -1,0 +1,23 @@
+-- Temporary lifecycle diagnostic, executed ONLY in disposable Local Server.
+local H = require(game.ServerScriptService.Services.PoliticalHierarchyService)
+local C = require(game.ServerScriptService.Services.CommunicationsService)
+local debug = game.ServerScriptService.CommunicationsDebug.Invoke
+H.DebugRemoveRuler("Player_-2")
+task.wait(0.8)
+debug:Invoke("Sync")
+local sources = {}
+for _, ch in game.TextChatService.TextChannels:GetChildren() do
+	if string.sub(ch.Name,1,8) == "Council_" then
+		local members = {}
+		for _, source in ch:GetChildren() do
+			if source:IsA("TextSource") then table.insert(members,{userId=source.UserId,canSend=source.CanSend}) end
+		end
+		sources[ch.Name] = members
+	end
+end
+local ok, result = debug:Invoke("SendAs", -3, "council:Player_-2", "AUDIT ORPHAN COUNCIL REJECT")
+local snapshot = Instance.new("StringValue")
+snapshot.Name = "RecoveryAuditPhase3Results"
+snapshot.Value = game.HttpService:JSONEncode({send={ok,result}, sources=sources, hierarchy=H.GetSnapshot(), conversations=C.GetInspect()})
+snapshot.Parent = game.ServerScriptService
+print("RECOVERY_PHASE3=" .. snapshot.Value)

@@ -7,7 +7,7 @@
 	When services exist under ServerScriptService.Services, require and
 	start them from here in a defined order.
 
-	Order: Hierarchy → Territory → Title → Diplomacy → Warfare → Economy → Military → Admin.
+	Order: Hierarchy → Territory → Title → Diplomacy → Warfare → Economy → Military → Communications → Victory → Admin.
 	Economy starts after Territory (ownership/config) and Hierarchy (ruler lifecycle).
 	Military starts after Warfare (war lifecycle) and Economy (Gold spend).
 
@@ -23,6 +23,7 @@ local WarfareService = require(script.Parent.Services.WarfareService)
 local EconomyService = require(script.Parent.Services.EconomyService)
 local MilitaryService = require(script.Parent.Services.MilitaryService)
 local AdminService = require(script.Parent.Services.AdminService)
+local CommunicationsService = require(script.Parent.Services.CommunicationsService)
 PoliticalHierarchyService.Start()
 TerritoryMapService.Start()
 TitleProgressionService.Start()
@@ -30,4 +31,6 @@ DiplomacyService.Start()
 WarfareService.Start()
 EconomyService.Start()
 MilitaryService.Start()
+CommunicationsService.Start()
+require(script.Parent.Services.VictoryService).Start()
 AdminService.Start()

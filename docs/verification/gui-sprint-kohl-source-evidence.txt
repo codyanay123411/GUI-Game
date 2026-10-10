@@ -1,0 +1,1 @@
+23:31:51.387  > for _,m in game.ReplicatedStorage:GetDescendants() do if m:IsA("ModuleScript") then local src=m.Source;for _,word in {"CREATOR","advertising","Your game is unable","notifyOn"} do local p=string.find(src,word,1,true);if p then print("KOHL_UI_SOURCE",m:GetFullName(),string.sub(src,math.max(1,p-300),p+450)) end end end end  -  Studio

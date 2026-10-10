@@ -1,0 +1,64 @@
+-- Temporary server-only fixture for the disposable Local Server.
+local S = game.ServerScriptService.Services
+local H, T, D = require(S.PoliticalHierarchyService), require(S.TerritoryMapService), require(S.DiplomacyService)
+local C = require(S.CommunicationsService)
+local P = require(S.CommunicationsPolicy)
+local results = {}
+local function record(id, ...) table.insert(results, {id=id, values={...}}) end
+local players = game.Players:GetPlayers()
+record("CLIENT_COUNT", #players)
+assert(#players == 3)
+local fourth = H.DebugCreateMockRuler("GraphIntermediate", 1)
+for _, territory in T.GetMapDefinition().territories do T.DebugSetOwner(territory.id, nil) end
+T.DebugSetOwner("westmere", "Player_-1")
+T.DebugSetOwner("northvale", "Player_-2")
+T.DebugSetOwner("greyfen", fourth)
+T.DebugSetOwner("highmarch", "Player_-3")
+game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync")
+record("DIP_VALID_12", C.DebugCanDeliver("diplomatic", -1, -2))
+record("DIP_REJECT_13", C.DebugCanDeliver("diplomatic", -1, -3))
+record("DIP_ASYMMETRIC_23", C.DebugCanDeliver("diplomatic", -2, -3))
+record("DIRECT_VALID", C.OpenDirect(game.Players:GetPlayerByUserId(-1), -2))
+record("DIRECT_TOO_FAR", C.OpenDirect(game.Players:GetPlayerByUserId(-1), -3))
+record("DIRECT_MALFORMED", C.OpenDirect(game.Players:GetPlayerByUserId(-1), {}))
+record("DIRECT_TWO", C.DebugCanDeliver("direct:-2:-1", -1, -2), C.DebugCanDeliver("direct:-2:-1", -3, -2))
+T.DebugSetOwner("northvale", nil)
+T.DebugSetOwner("brightfen", "Player_-2")
+record("DIRECT_LOST_IMMEDIATE", C.DebugCanDeliver("direct:-2:-1", -1, -2))
+record("DIP_CHANGED_IMMEDIATE", C.DebugCanDeliver("diplomatic", -1, -2))
+T.DebugSetOwner("brightfen", nil)
+T.DebugSetOwner("northvale", "Player_-2")
+record("DIRECT_RESTORED_IMMEDIATE", C.DebugCanDeliver("direct:-2:-1", -1, -2))
+local ok12, req12 = D.Offer("Player_-1", "Player_-2", "Alliance")
+record("ALLY_ACCEPT12", ok12, D.Accept(req12, "Player_-2"))
+local ok13, req13 = D.Offer("Player_-1", "Player_-3", "Alliance")
+record("ALLY_ACCEPT13", ok13, D.Accept(req13, "Player_-3"))
+game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync")
+local id12, id13
+for _, a in D.GetSnapshot().agreements do
+	if a.alliance then
+		if a.rightRulerId == "Player_-2" then id12 = "alliance:" .. a.allianceInstanceId end
+		if a.rightRulerId == "Player_-3" then id13 = "alliance:" .. a.allianceInstanceId end
+	end
+end
+assert(id12 and id13)
+record("ALLY_DISTINCT", id12 ~= id13, id12, id13)
+record("ALLY_VALID", C.DebugCanDeliver(id12, -1, -2))
+record("ALLY_NONPARTY", C.DebugCanDeliver(id12, -3, -2))
+record("ALLY_BREAK", D.Break("Player_-1", "Player_-2", "Alliance"))
+record("ALLY_BREAK_IMMEDIATE", C.DebugCanDeliver(id12, -1, -2), C.DebugCanDeliver(id12, -1, -1))
+local okNew, reqNew = D.Offer("Player_-1", "Player_-2", "Alliance")
+record("ALLY_REACCEPT", okNew, D.Accept(reqNew, "Player_-2"))
+local newId
+for _, a in D.GetSnapshot().agreements do if a.rightRulerId == "Player_-2" and a.alliance then newId = "alliance:" .. a.allianceInstanceId end end
+record("ALLY_NEW_INSTANCE", newId ~= id12, C.DebugCanDeliver(id12, -1, -2))
+local napOk, napReq = D.Offer("Player_-2", "Player_-3", "NAP")
+record("NAP_ACCEPT", napOk, D.Accept(napReq, "Player_-3"))
+local w = P.World(H.GetSnapshot().rulers, D.GetSnapshot().agreements, T.GetOwnedTerritoryIds, T.AreAdjacent)
+record("IDENTITY_ALLY", P.Prefix(w, {kind="diplomatic"}, -1, -2, false))
+game.ServerScriptService.CommunicationsDebug.Invoke:Invoke("Sync")
+local value = Instance.new("StringValue")
+value.Name = "ReplacementPhase1Results"
+value.Value = game.HttpService:JSONEncode({results=results, inspect=C.DebugInspect(), fourth=fourth})
+value.Parent = game.ServerScriptService
+print("REPLACEMENT_PHASE1=" .. value.Value)

@@ -1,0 +1,416 @@
+--!strict
+
+--[[
+	Communications V0.x player UI.
+
+	Conversation picker, match-scoped transcript, unread/toasts.
+	Send is an intent; server authorizes delivery.
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
+local TextChatService = game:GetService("TextChatService")
+
+local PrototypeGuiTheme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Util"):WaitForChild("PrototypeGuiTheme"))
+local CommunicationsConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("CommunicationsConfig"))
+
+local player = Players.LocalPlayer
+local CommunicationsController = {}
+
+local started = false
+
+local function decode(payload: any): any?
+	if typeof(payload) == "string" then
+		local ok, decoded = pcall(function()
+			return HttpService:JSONDecode(payload)
+		end)
+		if ok and typeof(decoded) == "table" then
+			return decoded
+		end
+		return nil
+	elseif typeof(payload) == "table" then
+		return payload
+	end
+	return nil
+end
+
+function CommunicationsController.Start()
+	if started or _G.__CommunicationsV01Started == true then
+		return
+	end
+	started = true
+	_G.__CommunicationsV01Started = true
+
+	local gui = player:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui", 12)
+	if not (gui and gui:IsA("ScreenGui")) then
+		warn("[Communications] HierarchyPrototypeGui missing; HUD idle.")
+		started = false
+		_G.__CommunicationsV01Started = nil
+		return
+	end
+
+	local panel = gui:WaitForChild("CommunicationsPanel") :: Frame
+	local header = panel:WaitForChild("Header") :: TextLabel
+	local list = panel:WaitForChild("ConvList") :: ScrollingFrame
+	local status = panel:WaitForChild("Status") :: TextLabel
+	local transcript = panel:WaitForChild("Transcript") :: TextLabel
+	local input = panel:WaitForChild("Input") :: TextBox
+	local sendButton = panel:WaitForChild("SendButton") :: TextButton
+	local helpButton = panel:WaitForChild("HelpButton") :: TextButton
+	local directButton = panel:WaitForChild("DirectButton") :: TextButton
+	local contactList = panel:WaitForChild("ContactList") :: ScrollingFrame
+	local observerBody = panel:FindFirstChild("ObserverBody")
+	local muteButton = panel:FindFirstChild("MuteObserver")
+	local resultToast = gui:WaitForChild("ResultToast") :: Frame
+	local resultToastLabel = resultToast:WaitForChild("Label") :: TextLabel
+
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	local intent = remotes:WaitForChild("CommunicationsClientEvent") :: RemoteEvent
+	local push = remotes:WaitForChild("CommunicationsServerEvent") :: RemoteEvent
+
+	local conversations: { any } = {}
+	local contacts: { any } = {}
+	local selectedId: string? = nil
+	local logs: { [string]: { string } } = {}
+	local unread: { [string]: number } = {}
+	local toastedUnread: { [string]: boolean } = {}
+	local helpShown: { [string]: boolean } = {}
+	local observerMuted = false
+	local isAdmin = false
+	local observerLines: { string } = {}
+	local noticeToken = 0
+
+	local windowConfig = TextChatService:FindFirstChildOfClass("ChatWindowConfiguration")
+	if windowConfig then
+		windowConfig.Enabled = false
+	end
+	local tabs = TextChatService:FindFirstChildOfClass("ChannelTabsConfiguration")
+	if tabs then
+		tabs.Enabled = false
+	end
+	local bubbles = TextChatService:FindFirstChildOfClass("BubbleChatConfiguration")
+	if bubbles then
+		bubbles.Enabled = false
+	end
+	local inputBar = TextChatService:FindFirstChildOfClass("ChatInputBarConfiguration")
+	if inputBar then
+		inputBar.Enabled = false
+	end
+
+	local function toast(text: string)
+		noticeToken += 1
+		local token = noticeToken
+		resultToastLabel.Text = text
+		resultToast.Visible = true
+		task.delay(4, function()
+			if token == noticeToken then
+				resultToast.Visible = false
+			end
+		end)
+	end
+
+	local function selectedConv(): any?
+		if not selectedId then
+			return nil
+		end
+		for _, conv in conversations do
+			if conv.id == selectedId then
+				return conv
+			end
+		end
+		return nil
+	end
+
+	local function appendLog(conversationId: string, line: string)
+		if logs[conversationId] == nil then
+			logs[conversationId] = {}
+		end
+		table.insert(logs[conversationId], line)
+		while #logs[conversationId] > 80 do
+			table.remove(logs[conversationId], 1)
+		end
+	end
+
+	local function renderTranscript()
+		if not selectedId then
+			transcript.Text = "Select a conversation."
+			return
+		end
+		local lines = logs[selectedId]
+		if not lines or #lines == 0 then
+			transcript.Text = "(No messages yet.)"
+			return
+		end
+		transcript.Text = table.concat(lines, "\n")
+	end
+
+	local function renderList()
+		for _, child in list:GetChildren() do
+			if child:IsA("TextButton") then
+				child:Destroy()
+			end
+		end
+		local y = 0
+		for _, conv in conversations do
+			local btn = Instance.new("TextButton")
+			btn.Name = conv.id
+			btn.Size = UDim2.new(1, -6, 0, 22)
+			btn.Position = UDim2.new(0, 2, 0, y)
+			btn.BackgroundColor3 = if conv.id == selectedId then PrototypeGuiTheme.Colors.row else PrototypeGuiTheme.Colors.well
+			btn.TextColor3 = PrototypeGuiTheme.Colors.textPrimary
+			btn.Font = Enum.Font.Gotham
+			btn.TextSize = 12
+			btn.TextXAlignment = Enum.TextXAlignment.Left
+			btn.AutoButtonColor = true
+			local badge = unread[conv.id] or 0
+			local suffix = ""
+			if conv.status ~= "active" then
+				suffix = " [" .. tostring(conv.status) .. "]"
+			end
+			if badge > 0 then
+				suffix ..= string.format(" (%d)", badge)
+			end
+			btn.Text = tostring(conv.label) .. suffix
+			btn.Parent = list
+			btn.MouseButton1Click:Connect(function()
+				selectedId = conv.id
+				unread[conv.id] = 0
+				toastedUnread[conv.id] = false
+				if helpShown[conv.id] ~= true then
+					helpShown[conv.id] = true
+					appendLog(conv.id, "[SYSTEM] " .. tostring(conv.help or CommunicationsConfig.Help[conv.kind] or ""))
+				end
+				intent:FireServer("MarkRead", conv.id)
+				renderList()
+				renderTranscript()
+				local sel = selectedConv()
+				status.Text = if sel then tostring(sel.label) else ""
+				input.TextEditable = sel ~= nil and sel.canSend == true
+			end)
+			y += 24
+		end
+		list.CanvasSize = UDim2.new(0, 0, 0, y)
+	end
+
+	local function renderContacts()
+		for _, child in contactList:GetChildren() do
+			if child:IsA("TextButton") then
+				child:Destroy()
+			end
+		end
+		local y = 0
+		for _, row in contacts do
+			local btn = Instance.new("TextButton")
+			btn.Size = UDim2.new(1, -6, 0, 20)
+			btn.Position = UDim2.new(0, 2, 0, y)
+			btn.BackgroundColor3 = PrototypeGuiTheme.Colors.row
+			btn.TextColor3 = PrototypeGuiTheme.Colors.textPrimary
+			btn.Font = Enum.Font.Gotham
+			btn.TextSize = 12
+			btn.TextXAlignment = Enum.TextXAlignment.Left
+			btn.Text = tostring(row.label)
+			btn.Parent = contactList
+			btn.MouseButton1Click:Connect(function()
+				intent:FireServer("OpenDirect", row.rulerId)
+			end)
+			y += 22
+		end
+		contactList.CanvasSize = UDim2.new(0, 0, 0, y)
+	end
+
+	local function renderObserver()
+		if observerBody and observerBody:IsA("TextLabel") then
+			observerBody.Visible = isAdmin
+			if observerMuted then
+				observerBody.Text = "[Observer muted]"
+			else
+				observerBody.Text = if #observerLines == 0 then "[Observer idle]" else table.concat(observerLines, "\n")
+			end
+		end
+		if muteButton and muteButton:IsA("TextButton") then
+			muteButton.Visible = isAdmin
+			muteButton.Text = if observerMuted then "Unmute observer" else "Mute observer"
+		end
+	end
+
+	sendButton.MouseButton1Click:Connect(function()
+		local conv = selectedConv()
+		if not conv or conv.canSend ~= true then
+			return
+		end
+		local text = input.Text
+		input.Text = ""
+		intent:FireServer("Send", conv.id, text)
+	end)
+
+	input.FocusLost:Connect(function(enter)
+		if enter then
+			local conv = selectedConv()
+			if conv and conv.canSend == true and input.Text ~= "" then
+				local text = input.Text
+				input.Text = ""
+				intent:FireServer("Send", conv.id, text)
+			end
+		end
+	end)
+
+	helpButton.MouseButton1Click:Connect(function()
+		local conv = selectedConv()
+		if conv then
+			intent:FireServer("Help", conv.id)
+		end
+	end)
+
+	directButton.MouseButton1Click:Connect(function()
+		contactList.Visible = not contactList.Visible
+	end)
+
+	if muteButton and muteButton:IsA("TextButton") then
+		muteButton.MouseButton1Click:Connect(function()
+			observerMuted = not observerMuted
+			renderObserver()
+		end)
+	end
+
+	contactList.Visible = false
+
+	push.OnClientEvent:Connect(function(kind: any, payload: any)
+		local data = decode(payload)
+		if kind == "State" and data then
+			conversations = data.conversations or {}
+			contacts = data.directContacts or {}
+			isAdmin = data.isAdmin == true
+			if selectedId == nil then
+				for _, conv in conversations do
+					if conv.kind == "diplomatic" then
+						selectedId = conv.id
+						if helpShown[conv.id] ~= true then
+							helpShown[conv.id] = true
+							appendLog(conv.id, "[SYSTEM] " .. tostring(conv.help or CommunicationsConfig.Help[conv.kind] or ""))
+						end
+						break
+					end
+				end
+			end
+			renderList()
+			renderContacts()
+			renderTranscript()
+			renderObserver()
+			local sel = selectedConv()
+			status.Text = if sel then tostring(sel.label) else "Communications"
+			header.Text = "Communications"
+			return
+		end
+		if kind == "Message" and data then
+			local convId = data.conversationId
+			local line = string.format("%s: %s", tostring(data.prefix), tostring(data.text))
+			appendLog(convId, line)
+			local isSelf = typeof(data.speakerUserId) == "number" and data.speakerUserId == player.UserId
+			if selectedId == convId then
+				unread[convId] = 0
+				toastedUnread[convId] = false
+				renderTranscript()
+			else
+				unread[convId] = (unread[convId] or 0) + 1
+				if isSelf ~= true and toastedUnread[convId] ~= true then
+					toastedUnread[convId] = true
+					local conv
+					for _, row in conversations do
+						if row.id == convId then
+							conv = row
+							break
+						end
+					end
+					local kindName = conv and conv.kind or data.kind
+					if kindName == "direct" then
+						toast(string.format("%s has contacted you.", tostring(data.toastLabel or data.prefix)))
+					elseif kindName == "council" then
+						local name = conv and conv.label or "Council"
+						if string.sub(name, 1, 10) == "Council — " then
+							toast(string.sub(name, 11) .. "'s Council has new activity.")
+						else
+							toast(name .. " has new activity.")
+						end
+					elseif kindName == "alliance" then
+						local name = conv and conv.label or "Alliance"
+						if string.sub(name, 1, 12) == "Alliance — " then
+							toast("Alliance with " .. string.sub(name, 13) .. " has new activity.")
+						else
+							toast(name .. " has new activity.")
+						end
+					end
+				end
+			end
+			renderList()
+			return
+		end
+		if kind == "System" and data then
+			appendLog(data.conversationId, "[SYSTEM] " .. tostring(data.text))
+			if selectedId == data.conversationId then
+				renderTranscript()
+			end
+			return
+		end
+		if kind == "Opened" and data then
+			selectedId = data.conversationId
+			renderList()
+			renderTranscript()
+			return
+		end
+		if kind == "Announce" and data then
+			toast(tostring(data.text))
+			appendLog("diplomatic", tostring(data.text))
+			if selectedId == "diplomatic" then
+				renderTranscript()
+			end
+			return
+		end
+		if kind == "Observer" and data then
+			if observerMuted then
+				return
+			end
+			local line = string.format(
+				"[%s] [%s] [%s] %s: %s",
+				tostring(data.context),
+				tostring(data.relationship),
+				tostring(data.speakerTitle),
+				tostring(data.speaker),
+				tostring(data.text)
+			)
+			table.insert(observerLines, line)
+			while #observerLines > 40 do
+				table.remove(observerLines, 1)
+			end
+			renderObserver()
+			return
+		end
+		if kind == "Notice" and data then
+			toast(tostring(data.text))
+			return
+		end
+		if kind == "HelpHint" and data then
+			local conv = selectedConv()
+			if conv then
+				intent:FireServer("Help", conv.id)
+			else
+				toast(tostring(data.text))
+			end
+			return
+		end
+		if kind == "TcsEcho" and data then
+			local folder = TextChatService:FindFirstChild("TextChannels")
+			local ch = folder and folder:FindFirstChild(tostring(data.channelName))
+			if ch and ch:IsA("TextChannel") then
+				pcall(function()
+					ch:SendAsync(tostring(data.text))
+				end)
+			end
+			return
+		end
+	end)
+
+	intent:FireServer("Ready")
+end
+
+return CommunicationsController

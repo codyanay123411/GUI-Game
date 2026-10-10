@@ -99,7 +99,7 @@ function MilitaryController.Start()
 	local boundSessionWarId: string? = nil
 	local lastBattleByTerritory: { [string]: any } = {}
 	local lastBattleTokenByTerritory: { [string]: number } = {}
-	local COMMIT_BODY_IDLE = UDim2.new(1, -16, 0, 88)
+	local COMMIT_BODY_IDLE = UDim2.new(1, -16, 0, 148)
 	local COMMIT_BODY_SUMMARY = UDim2.new(1, -16, 0, 148)
 
 	commitBox.PlaceholderText = "Troops to commit"
@@ -440,6 +440,7 @@ function MilitaryController.Start()
 			string.format("%s — %s", war.role or "?", war.targetDisplayName or war.targetTerritoryId),
 			string.format("Available: %d", available),
 		}
+		if war.targetKind == "Unclaimed" then table.insert(lines, "Unclaimed militia: " .. tostring(war.neutralDefenders) .. " defenders") end
 		if typeof(war.intended) == "number" then
 			table.insert(lines, "Accepted commitment: " .. tostring(war.intended))
 		else

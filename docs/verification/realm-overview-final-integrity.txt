@@ -1,0 +1,1087 @@
+assert(game:GetService("RunService"):IsEdit(),"Expected edit mode")
+assert(game.ReplicatedStorage.Shared.Config.PresentationBindings.Source == [========[--!strict
+-- Director-authorized temporary default. Settings/remapping remain future work.
+return { HoldRealmOverview = Enum.KeyCode.Tab }
+]========],"ReplicatedStorage/Shared/Config/PresentationBindings.luau source differs")
+assert(game.ReplicatedStorage.Shared.Util.RealmOverviewView.Source == [========[--!strict
+-- Read-only, allowlisted presentation projection. Never exposes resources or requests.
+local View = {}
+
+function View.Build(connected: { any }, localUserId: number, states: any, sortMode: string): { any }
+	local rulers, users, personal, realm, direct = {}, {}, {}, {}, {}
+	for _, ruler in (states.Hierarchy or {}).rulers or {} do
+		rulers[ruler.rulerId] = ruler
+		if ruler.userId then users[tonumber(ruler.userId)] = ruler end
+	end
+	for _, territory in (states.Territory or {}).territories or {} do
+		local owner = rulers[territory.ownerRulerId]
+		if owner then
+			personal[owner.rulerId] = (personal[owner.rulerId] or 0) + 1
+			realm[owner.rootRulerId] = (realm[owner.rootRulerId] or 0) + 1
+		end
+	end
+	for _, contact in (states.Communications or {}).contacts or {} do direct[contact.userId] = true end
+	local me = users[localUserId]
+	local localRoot = if me then me.rootRulerId else nil
+	local function name(id: string?): string
+		local ruler = if id then rulers[id] else nil
+		return if ruler then ruler.displayName else "Awaiting ruler"
+	end
+	local rows = {}
+	for _, player in connected do
+		local ruler = users[player.UserId]
+		local relation, allied, nap, war = "Unrelated", false, false, false
+		local root = if ruler then ruler.rootRulerId else nil
+		if me and ruler then
+			for _, agreement in (states.Diplomacy or {}).agreements or {} do
+				if (agreement.leftRulerId == localRoot and agreement.rightRulerId == root)
+					or (agreement.rightRulerId == localRoot and agreement.leftRulerId == root) then
+					allied, nap = agreement.alliance == true, agreement.nap == true
+				end
+			end
+			for _, active in (states.Warfare or {}).wars or {} do
+				if (active.attackerRootId == localRoot and active.defenderRootId == root)
+					or (active.defenderRootId == localRoot and active.attackerRootId == root) then war = true end
+			end
+			if player.UserId == localUserId then relation = "You"
+			elseif me.liegeId == ruler.rulerId then relation = "Your liege"
+			elseif ruler.liegeId == me.rulerId then relation = "Your subject"
+			elseif root == localRoot then relation = "Your realm"
+			elseif war then relation = "At war"
+			elseif allied then relation = if nap then "Ally / NAP" else "Ally"
+			elseif nap then relation = "NAP" end
+		end
+		local independent = ruler ~= nil and ruler.independent == true
+		table.insert(rows, {
+			userId = player.UserId, displayName = player.DisplayName, username = player.Name,
+			localPlayer = player.UserId == localUserId, title = if ruler then ruler.titleName else "Pending",
+			rank = if ruler then ruler.titleRank else 0, independent = independent,
+			status = if not ruler then "Awaiting ruler" elseif independent then "Independent" else "Subject",
+			liege = if ruler and ruler.liegeId and ruler.liegeId ~= "" then name(ruler.liegeId) else "None",
+			root = if ruler then name(root) else "Awaiting ruler",
+			personal = if ruler and states.Territory then personal[ruler.rulerId] or 0 else nil,
+			realm = if ruler and states.Territory then realm[root] or 0 else nil,
+			subjectCount = if ruler then #(ruler.vassalIds or {}) else 0,
+			relation = relation, allied = allied, nap = nap, war = war,
+			direct = if player.UserId == localUserId then "Self" elseif not states.Communications then "Awaiting state"
+				elseif direct[player.UserId] then "Available" else "Unavailable",
+			diplomacy = if not me or not ruler then "Awaiting state" elseif independent and me.independent and root ~= localRoot then "Use Diplomacy"
+				elseif root == localRoot then "Internal realm" else "Root ruler acts",
+		})
+	end
+	table.sort(rows, function(a, b)
+		if sortMode == "Name" then
+			-- Names alone below.
+		elseif sortMode == "Title" then
+			if a.rank ~= b.rank then return a.rank > b.rank end
+		elseif sortMode == "Territory" then
+			if (a.personal or -1) ~= (b.personal or -1) then return (a.personal or -1) > (b.personal or -1) end
+		else
+			if a.independent ~= b.independent then return a.independent end
+			if a.rank ~= b.rank then return a.rank > b.rank end
+			if (a.realm or -1) ~= (b.realm or -1) then return (a.realm or -1) > (b.realm or -1) end
+		end
+		local an, bn = string.lower(a.displayName), string.lower(b.displayName)
+		if an ~= bn then return an < bn end
+		if a.username ~= b.username then return a.username < b.username end
+		return a.userId < b.userId
+	end)
+	return rows
+end
+
+return View
+]========],"ReplicatedStorage/Shared/Util/RealmOverviewView.luau source differs")
+assert(game.StarterPlayer.StarterPlayerScripts.Controllers.RealmOverviewController.Source == [========[--!strict
+-- Public political overview only. Existing services remain authoritative.
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local HttpService = game:GetService("HttpService")
+local StarterGui = game:GetService("StarterGui")
+local View = require(ReplicatedStorage.Shared.Util.RealmOverviewView)
+local Theme = require(ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
+local Controller = {}
+local started = false
+local overlay: Frame? = nil
+
+function Controller.SetOpen(open: boolean)
+	if overlay then
+		overlay.Visible = open
+		overlay.Parent:SetAttribute("RealmOverviewOpen", open)
+	end
+end
+
+function Controller.Start()
+	if started then return end
+	started = true
+	local player = Players.LocalPlayer
+	local gui = player:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui") :: ScreenGui
+	overlay = gui:WaitForChild("RealmOverviewOverlay") :: Frame
+	local root = overlay :: Frame
+	local panel = root:WaitForChild("Panel") :: Frame
+	local list = panel:WaitForChild("List") :: ScrollingFrame
+	local detail = panel:WaitForChild("Detail") :: TextLabel
+	local template = gui.Templates:WaitForChild("RealmOverviewRow") :: TextButton
+	local C = Theme.Colors
+	local states: any = {}
+	local rows: { [number]: TextButton } = {}
+	local excluded: { [number]: boolean } = {}
+	local selected: number? = nil
+	local sortMode = "Realm"
+	local pending = false
+	local compact = false
+	local refresh: () -> ()
+	local function disableDefault()
+		local ok = pcall(function() StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false) end)
+		if not ok then
+			-- CoreGui may not have initialized yet; bounded startup retry.
+			task.spawn(function()
+				for _ = 1, 5 do
+					task.wait(0.5)
+					if pcall(function() StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false) end) then return end
+				end
+				warn("[RealmOverview] Could not disable default PlayerList")
+			end)
+		end
+	end
+	local function schedule()
+		if pending then return end
+		pending = true
+		task.defer(function() pending = false; refresh() end)
+	end
+	local function layout()
+		local size = gui.AbsoluteSize
+		local w, h = math.min(1120, size.X - 32), math.max(200, size.Y - 32)
+		compact = w < 720
+		panel.Size = UDim2.fromOffset(w, h)
+		local footer = if selected then (if compact then 110 else 90) else 30
+		list.Position = UDim2.fromOffset(16, if compact then 114 else 134)
+		list.Size = UDim2.new(1, -32, 1, -(if compact then 130 else 150) - footer)
+		panel.Columns.Visible = not compact
+		detail.Size = UDim2.new(1, -32, 0, footer)
+		detail.Position = UDim2.new(0, 16, 1, -footer - 12)
+		detail.TextSize = if compact then 12 else 13
+		for _, row in rows do
+			row.Size = UDim2.new(1, -8, 0, if compact then 94 else 74)
+			row.Identity.Position = UDim2.fromOffset(14, 10)
+			row.Identity.Size = if compact then UDim2.new(0.60, -18, 0, 24) else UDim2.new(0.25, -18, 0, 24)
+			row.Username.Position = UDim2.fromOffset(14, 36)
+			row.Username.Size = row.Identity.Size
+			row.Politics.Position = if compact then UDim2.new(0.60, 0, 0, 10) else UDim2.new(0.25, 0, 0, 10)
+			row.Politics.Size = if compact then UDim2.new(0.40, -14, 0, 46) else UDim2.new(0.18, -8, 0, 52)
+			row.Realm.Position = if compact then UDim2.fromOffset(14, 62) else UDim2.new(0.43, 0, 0, 10)
+			row.Realm.Size = if compact then UDim2.new(0.60, -20, 0, 24) else UDim2.new(0.27, -12, 0, 52)
+			row.Holdings.Position = if compact then UDim2.new(0.60, 0, 0, 62) else UDim2.new(0.70, 0, 0, 10)
+			row.Holdings.Size = if compact then UDim2.new(0.40, -14, 0, 24) else UDim2.new(0.12, -8, 0, 52)
+			row.Relation.Visible = not compact
+		end
+	end
+	refresh = function()
+		layout()
+		local connected = {}
+		for _, current in Players:GetPlayers() do if not excluded[current.UserId] then table.insert(connected, current) end end
+		local projected = View.Build(connected, player.UserId, states, sortMode)
+		local alive, chosen = {}, nil
+		for order, data in projected do
+			local id = data.userId
+			alive[id] = true
+			local row = rows[id]
+			if not row then
+				row = template:Clone()
+				row.Name = "Player_" .. id
+				row.Visible = true
+				row.Parent = list
+				rows[id] = row
+				row.Activated:Connect(function() selected = if selected == id then nil else id; schedule() end)
+			end
+			row.LayoutOrder = order
+			row:SetAttribute("UserId", id)
+			row:SetAttribute("PersonalHoldings", data.personal)
+			row:SetAttribute("RealmHoldings", data.realm)
+			row:SetAttribute("Relationship", data.relation)
+			row.BackgroundColor3 = if selected == id then C.row elseif data.localPlayer then C.well else C.panel
+			row.Accent.BackgroundColor3 = if data.localPlayer then C.accentGold elseif data.war then C.danger elseif data.allied then C.section else C.stroke
+			row.Identity.Text = data.displayName .. (if data.localPlayer then "  ·  YOU" else "")
+			row.Identity.TextColor3 = if data.localPlayer then C.accentGold else C.textPrimary
+			row.Username.Text = "@" .. data.username .. (if compact then "  ·  " .. data.relation else "")
+			row.Politics.Text = data.title .. "\n" .. data.status .. (if data.subjectCount > 0 then " · Liege" else "")
+			row.Realm.Text = "Realm: " .. data.root .. (if data.status == "Subject" then "\nLiege: " .. data.liege else "")
+			row.Holdings.Text = if compact then tostring(data.personal or "—") .. " / " .. tostring(data.realm or "—") .. " land" else tostring(data.personal or "—") .. " personal\n" .. tostring(data.realm or "—") .. " realm"
+			row.Relation.Text = data.relation
+			row.Relation.TextColor3 = if data.war then Color3.fromRGB(238, 135, 128) else C.section
+			if selected == id then chosen = data end
+		end
+		for id, row in rows do if not alive[id] then row:Destroy(); rows[id] = nil end end
+		if selected and not chosen then selected = nil end
+		panel.Subtitle.Text = "Players — " .. #projected .. "   ·   Hold Tab to view"
+		if chosen then
+			detail.Text = chosen.title .. " " .. chosen.displayName .. "  ·  " .. chosen.status .. "  ·  " .. chosen.relation
+				.. "\nRoot: " .. chosen.root .. "  ·  Liege: " .. chosen.liege .. "  ·  Holdings: " .. tostring(chosen.personal or "—") .. " personal / " .. tostring(chosen.realm or "—") .. " realm"
+				.. "\nAlliance: " .. (if chosen.allied then "Yes" else "No") .. "  ·  NAP: " .. (if chosen.nap then "Yes" else "No") .. "  ·  War: " .. (if chosen.war then "Yes" else "No")
+				.. "  ·  Direct: " .. chosen.direct .. "  ·  " .. chosen.diplomacy
+		else detail.Text = "Select a ruler for details.  ·  Holdings: personal / greater realm." end
+		layout()
+	end
+	for _, button in panel.Sorts:GetChildren() do
+		if button:IsA("TextButton") then
+			button.Activated:Connect(function()
+				sortMode = button.Name
+				for _, other in panel.Sorts:GetChildren() do if other:IsA("TextButton") then other.BackgroundColor3 = if other == button then C.action else C.well end end
+				schedule()
+			end)
+		end
+	end
+	panel.Close.Activated:Connect(function() Controller.SetOpen(false) end)
+	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(schedule)
+	Players.PlayerAdded:Connect(function(current) excluded[current.UserId] = nil; schedule() end)
+	Players.PlayerRemoving:Connect(function(current) excluded[current.UserId] = true; schedule() end)
+	player.CharacterAdded:Connect(function() disableDefault(); Controller.SetOpen(false) end)
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	for _, system in { "Hierarchy", "Territory", "Diplomacy", "Warfare", "Communications" } do
+		local push = remotes:WaitForChild(system .. "ServerEvent") :: RemoteEvent
+		push.OnClientEvent:Connect(function(kind: any, payload: any)
+			if kind ~= "State" then return end
+			local ok, decoded = pcall(function() return if typeof(payload) == "string" then HttpService:JSONDecode(payload) else payload end)
+			if ok and typeof(decoded) == "table" then states[system] = decoded; schedule() end
+		end)
+		local intent = remotes:WaitForChild(system .. "ClientEvent") :: RemoteEvent
+		intent:FireServer("Ready")
+	end
+	disableDefault()
+	Controller.SetOpen(false)
+	schedule()
+end
+
+return Controller
+]========],"StarterPlayerScripts/Controllers/RealmOverviewController.luau source differs")
+assert(game.StarterPlayer.StarterPlayerScripts.Controllers.StrategyPresentationController.Source == [========[--!strict
+-- Presentation and navigation only; gameplay controllers retain their contracts.
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local Bindings = require(ReplicatedStorage.Shared.Config.PresentationBindings)
+local Overview = require(script.Parent.RealmOverviewController)
+local Theme = require(ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
+local Controller = {}
+local started = false
+local panels = { Realm = "Main", Titles = "TitlePanel", Territory = "TerritoryInfo", Diplomacy = "DiplomacyPanel", Military = "MilitaryPanel", Economy = "EconomyPanel", Communications = "CommunicationsPanel" }
+function Controller.Start()
+	if started then return end
+	started = true
+	Overview.Start()
+	local gui = Players.LocalPlayer:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui") :: ScreenGui
+	local nav = gui:WaitForChild("StrategyNavigation") :: ScrollingFrame
+	local top = gui:WaitForChild("StrategyTopbar") :: Frame
+	local hint = gui:WaitForChild("MapHint") :: TextLabel
+	local map = gui:WaitForChild("MapStage") :: Frame
+	local selected = "Map"
+	local C = Theme.Colors
+	local commsPanel = gui.CommunicationsPanel
+	commsPanel.BackgroundColor3 = C.panel
+	for _, item in commsPanel:GetDescendants() do
+		if item:IsA("TextLabel") then
+			item.BackgroundTransparency = 1
+			item.Font = Enum.Font.Gotham
+			item.TextSize = 14
+		end
+		if item:IsA("TextButton") and item.Parent == commsPanel then
+			Theme.applyPrimaryButton(item, item.Active)
+		end
+	end
+	commsPanel.Header.Font = Enum.Font.GothamBold
+	commsPanel.Header.TextSize = 16
+	local emptyRulers = Instance.new("TextLabel")
+	emptyRulers.Name = "EmptyRulers"
+	emptyRulers.BackgroundTransparency = 1
+	emptyRulers.Size = UDim2.new(1, -12, 0, 48)
+	emptyRulers.Text = "No other rulers in this match yet."
+	emptyRulers.TextWrapped = true
+	emptyRulers.Font = Enum.Font.Gotham
+	emptyRulers.TextSize = 14
+	emptyRulers.TextColor3 = C.textSecondary
+	emptyRulers.Parent = gui.Main.PlayerList
+	local function updateRulersEmpty()
+		emptyRulers.Visible = gui.Main.PlayerList:FindFirstChildWhichIsA("Frame") == nil
+	end
+	gui.Main.PlayerList.ChildAdded:Connect(updateRulersEmpty)
+	gui.Main.PlayerList.ChildRemoved:Connect(updateRulersEmpty)
+	updateRulersEmpty()
+	local buttons = {}
+	local layout: () -> ()
+	local function position(item: GuiObject, x: number, y: number, w: number, h: number)
+		item.AnchorPoint = Vector2.zero
+		item.Position = UDim2.fromOffset(x,y)
+		item.Size = UDim2.fromOffset(w,h)
+	end
+	local function gotoPanel(name: string)
+		selected = name
+		gui:SetAttribute("SelectedSystem",name)
+		for key, panelName in panels do
+			(gui:FindFirstChild(panelName) :: GuiObject).Visible = key == name
+		end
+		for key, button in buttons do
+			button.BackgroundColor3 = if key == name then C.action else C.well
+			button.TextColor3 = if key == name then C.actionText else C.textSecondary
+		end
+		layout()
+	end
+	local function layer(item: Instance, z: number)
+		if item:IsA("GuiObject") then item.ZIndex = z end
+		for _, child in item:GetDescendants() do
+			if child:IsA("GuiObject") then child.ZIndex = z + 1 end
+		end
+	end
+	layout = function()
+		local size = gui.AbsoluteSize
+		local w,h = size.X,size.Y
+		if w < 1 or h < 1 then return end
+		local rail = if w < 760 then 80 else 100
+		local drawer = math.clamp(w * 0.34,280,380)
+		local open = selected ~= "Map"
+		local left = rail + 20
+		local mapWidth = math.max(180,w-left-12-(if open then drawer+12 else 0))
+		position(top,8,4,w-16,64)
+		position(nav,8,76,rail,math.max(120,h-108))
+		nav.CanvasSize = UDim2.fromOffset(0,488)
+		position(top.Gold,math.floor(w*0.42),8,math.floor(w*0.28)-20,48)
+		position(top.Troops,math.floor(w*0.72),8,math.floor(w*0.28)-24,48)
+		top.Gold.TextSize = if w < 760 then 12 else 14
+		top.Troops.TextSize = if w < 760 then 12 else 14
+		top.Ruler.Size = UDim2.fromOffset(math.max(120,math.floor(w*0.42)-32),22)
+		position(map,left,76,mapWidth,math.max(160,h-108))
+		position(hint,left,h-26,mapWidth,20)
+		hint.Text = "Drag to pan  ·  Wheel to zoom  ·  Select a territory"
+		for _, name in panels do
+			local panel = gui:FindFirstChild(name) :: GuiObject
+			position(panel,w-drawer-12,76,drawer,math.max(180,h-108))
+			layer(panel,20)
+		end
+		local realm = gui.Main
+		realm.TreeScroll.Size = UDim2.new(1,0,0,110)
+		realm.PlayerList.Size = UDim2.new(1,0,0,140)
+		realm.SelfInfo.Size = UDim2.new(1,0,0,90)
+		local dip = gui.DiplomacyPanel
+		dip.Status.Size = UDim2.new(1,0,0,64)
+		dip.List.Size = UDim2.new(1,0,0,math.max(130,h-238))
+		local comms = gui.CommunicationsPanel
+		local cw,ch = drawer,math.max(400,h-108)
+		comms.CanvasSize = UDim2.fromOffset(0,ch)
+		position(comms.Header,12,10,cw-114,24)
+		position(comms.MuteObserver,cw-88,10,76,24)
+		position(comms.Status,12,40,cw-24,32)
+		position(comms.ConvList,12,80,cw-24,72)
+		position(comms.Transcript,12,164,cw-24,ch-260)
+		position(comms.ContactList,12,164,cw-24,ch-260)
+		position(comms.Input,12,ch-86,cw-140,32)
+		position(comms.SendButton,cw-120,ch-86,50,32)
+		position(comms.HelpButton,cw-64,ch-86,52,32)
+		position(comms.DirectButton,12,ch-46,cw-134,32)
+		position(comms.ObserverButton,cw-114,ch-46,102,32)
+		local territory = gui.TerritoryInfo
+		territory.Body.Size = UDim2.new(1,0,0,140)
+		territory.WarStatus.Size = UDim2.new(1,0,0,110)
+		territory.WarStatus.TextTruncate = Enum.TextTruncate.None
+		local title = gui.TitlePanel
+		title.Body.Size = UDim2.new(1,0,1,-116)
+		local military = gui.MilitaryPanel
+		military.CanvasSize = UDim2.fromOffset(0,470)
+		military.Stats.Position = UDim2.fromOffset(12,44)
+		military.Stats.Size = UDim2.new(1,-24,0,72)
+		military.Stats.TextSize = 18
+		military.RecruitBox.Position = UDim2.fromOffset(12,126)
+		military.RecruitBox.Size = UDim2.new(0.5,-18,0,32)
+		military.RecruitButton.Position = UDim2.new(0.5,0,0,126)
+		military.RecruitButton.Size = UDim2.new(0.5,-66,0,32)
+		military.MaxRecruitButton.AnchorPoint = Vector2.zero
+		military.MaxRecruitButton.Position = UDim2.new(1,-60,0,126)
+		military.MaxRecruitButton.Size = UDim2.fromOffset(48,32)
+		military.MaxRecruitButton.Text = "Max"
+		military.CostLabel.Position = UDim2.fromOffset(12,166)
+		military.CostLabel.Size = UDim2.new(1,-24,0,24)
+		military.CommitBody.Position = UDim2.fromOffset(12,200)
+		military.CommitBox.Position = UDim2.fromOffset(12,360)
+		military.CommitBox.Size = UDim2.new(1,-24,0,32)
+		military.LockButton.Position = UDim2.fromOffset(12,402)
+		military.LockButton.Size = UDim2.new(1,-24,0,34)
+		for i,name in {"VassalageOfferOverlay","DiplomacyOfferOverlay"} do
+			local overlay = gui:FindFirstChild(name) :: GuiObject
+			overlay.AnchorPoint = Vector2.new(0.5,0.5)
+			overlay.Position = UDim2.new(0.5,0,0,h/2+(if i == 1 then -93 else 93))
+			overlay.Size = UDim2.fromOffset(math.min(460,w-48),172)
+			layer(overlay,100+i*4)
+		end
+		local toast = gui.ResultToast
+		toast.AnchorPoint = Vector2.new(0.5,0)
+		toast.Position = UDim2.new(0.5,0,0,76)
+		toast.Size = UDim2.fromOffset(math.min(520,w-40),64)
+		layer(toast,140)
+		local inspect = gui:FindFirstChild("AdminInspectPanel")
+		if inspect and inspect:IsA("GuiObject") then
+			inspect.AnchorPoint = Vector2.new(0.5,0.5)
+			inspect.Position = UDim2.fromScale(0.5,0.5)
+			inspect.Size = UDim2.fromOffset(math.min(640,w-48),math.min(400,h-48))
+			layer(inspect,160)
+		end
+	end
+	for _, button in nav:GetChildren() do
+		if button:IsA("TextButton") then
+			local name = button.Name
+			buttons[name] = button
+			button.Activated:Connect(function()
+				if name == "Players" then Overview.SetOpen(true); return end
+				if gui:GetAttribute("RealmOverviewOpen") then return end
+				gotoPanel(if selected == name then "Map" else name)
+			end)
+			button.MouseEnter:Connect(function()
+				if selected ~= name then button.BackgroundColor3=C.row end
+			end)
+			button.MouseLeave:Connect(function()
+				button.BackgroundColor3 = if selected == name then C.action else C.well
+			end)
+		end
+	end
+	local function summaries()
+		local economy = gui.EconomyPanel.Body.Text
+		local gold = string.match(economy,"Gold: ([^\n]+)") or "—"
+		local income = string.match(economy,"Income: ([^\n]+)") or "Loading treasury"
+		top.Gold.Text = "GOLD  "..gold.."\n"..income
+		local stats = gui.MilitaryPanel.Stats.Text
+		top.Troops.Text = "TROOPS  "..(string.match(stats,"Available: ([^\n]+)") or "—").." available\n"..(string.match(stats,"Committed: ([^\n]+)") or "0").." committed"
+		local self = gui.Main.SelfInfo.Text
+		top.Ruler.Text = (string.match(self,"Rank: ([^\n]+)") or "Ruler").."  ·  "..(string.match(self,"Name: ([^\n]+)") or "Connecting")
+		local war = gui.TerritoryInfo.WarStatus.Text
+		buttons.Military.Text = if string.find(war,"No active wars",1,true) then "Military" else "Military  •"
+	end
+	for _, label in {gui.EconomyPanel.Body,gui.MilitaryPanel.Stats,gui.Main.SelfInfo,gui.TerritoryInfo.WarStatus} do
+		label:GetPropertyChangedSignal("Text"):Connect(summaries)
+	end
+	local function style(inst: Instance)
+		if inst:IsA("TextBox") then
+			inst.BackgroundColor3=C.well; inst.TextColor3=C.textPrimary;inst.PlaceholderColor3=C.textMuted
+			inst.Font=Enum.Font.Gotham;inst.TextSize=14;inst.BorderSizePixel=0
+		elseif inst:IsA("ScrollingFrame") then
+			inst.ScrollBarThickness=5;inst.ScrollBarImageColor3=C.section
+		end
+		if inst:IsA("TextButton") and not inst:IsDescendantOf(nav) then
+			inst.MouseEnter:Connect(function() if inst.Active then inst.BackgroundTransparency=0.12 end end)
+			inst.MouseLeave:Connect(function() inst.BackgroundTransparency=0 end)
+			inst.MouseButton1Down:Connect(function() if inst.Active then inst.BackgroundTransparency=0.25 end end)
+			inst.MouseButton1Up:Connect(function() inst.BackgroundTransparency=0 end)
+		end
+	end
+	for _, item in gui:GetDescendants() do style(item) end
+	gui.DescendantAdded:Connect(style)
+	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
+	gui.ChildAdded:Connect(function() task.defer(layout) end)
+	local territoryValue = gui.TerritoryInfo.SelectedTerritoryId
+	local previousCommitment: string? = nil
+	gui.MilitaryPanel.CommitBody:GetPropertyChangedSignal("Text"):Connect(function()
+		local text = gui.MilitaryPanel.CommitBody.Text
+		local active = string.find(text, "Decision:", 1, true) or string.find(text, "Hard timeout:", 1, true)
+		local key = if active then string.match(text, "^[^\n]+") else nil
+		if key and key ~= previousCommitment then
+			gui.MilitaryPanel.CanvasPosition = Vector2.zero
+			gotoPanel("Military")
+		end
+		previousCommitment = key
+	end)
+	territoryValue:GetPropertyChangedSignal("Value"):Connect(function()
+		if territoryValue.Value ~= "" and selected ~= "Military" then gotoPanel("Territory") end
+	end)
+	for _, name in {"VassalageOfferOverlay","DiplomacyOfferOverlay"} do
+		local overlay=gui[name]
+		overlay:GetPropertyChangedSignal("Visible"):Connect(function()
+			nav.RequestNotice.Visible=gui.VassalageOfferOverlay.Visible or gui.DiplomacyOfferOverlay.Visible
+		end)
+	end
+	local tabHeld = false
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if input.KeyCode ~= Bindings.HoldRealmOverview or processed or UserInputService:GetFocusedTextBox() then return end
+		tabHeld = true
+		Overview.SetOpen(true)
+	end)
+	UserInputService.InputEnded:Connect(function(input)
+		if input.KeyCode == Bindings.HoldRealmOverview and tabHeld then
+			tabHeld = false
+			Overview.SetOpen(false)
+		end
+	end)
+	UserInputService.WindowFocusReleased:Connect(function() tabHeld = false; Overview.SetOpen(false) end)
+	UserInputService.TextBoxFocused:Connect(function() if tabHeld then tabHeld = false; Overview.SetOpen(false) end end)
+	summaries()
+	gotoPanel("Map")
+end
+return Controller
+]========],"StarterPlayerScripts/Controllers/StrategyPresentationController.luau source differs")
+assert(game.StarterPlayer.StarterPlayerScripts.Controllers.TerritoryMapController.Source == [========[--!strict
+
+--[[
+	Prototype map renderer and input. Displays server ownership; never mutates it.
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local GuiService = game:GetService("GuiService")
+
+local MapCatalog = require(ReplicatedStorage.Shared.Config.MapCatalog)
+local RealmColors = require(ReplicatedStorage.Shared.Config.RealmColors)
+local MapGeometry = require(ReplicatedStorage.Shared.Util.MapGeometry)
+local MapTriangles = require(ReplicatedStorage.Shared.Util.MapTriangles)
+
+local player = Players.LocalPlayer
+local TerritoryMapController = {}
+
+local MIN_ZOOM = 0.7
+local MAX_ZOOM = 2.8
+local FOV = 25
+local THICK = 6
+local SELECT_COLOR = Color3.fromRGB(255, 214, 64)
+
+local started = false
+
+local function decodeState(payload: any): any?
+	if typeof(payload) == "string" then
+		local ok, decoded = pcall(function()
+			return HttpService:JSONDecode(payload)
+		end)
+		if ok and typeof(decoded) == "table" then
+			return decoded
+		end
+		return nil
+	elseif typeof(payload) == "table" then
+		return payload
+	end
+	return nil
+end
+
+local function scaleFromCentroid(polygon: { { x: number, y: number } }, towardCenter: number)
+	local cx, cy = MapGeometry.Centroid(polygon)
+	local out = {}
+	for _, p in polygon do
+		table.insert(out, {
+			x = p.x + (cx - p.x) * towardCenter,
+			y = p.y + (cy - p.y) * towardCenter,
+		})
+	end
+	return out
+end
+
+function TerritoryMapController.Start()
+	if started or _G.__TerritoryMapV01Started == true then
+		return
+	end
+	started = true
+	_G.__TerritoryMapV01Started = true
+
+	local gui = player:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui", 12)
+	if not (gui and gui:IsA("ScreenGui")) then
+		warn("[Territory] HierarchyPrototypeGui missing; map idle.")
+		started = false
+		_G.__TerritoryMapV01Started = nil
+		return
+	end
+
+	local mapStage = gui:WaitForChild("MapStage") :: Frame
+	local viewport = mapStage:FindFirstChild("MapView")
+	if not (viewport and viewport:IsA("ViewportFrame")) then
+		if viewport then
+			viewport:Destroy()
+		end
+		viewport = Instance.new("ViewportFrame")
+		viewport.Name = "MapView"
+		viewport.BackgroundColor3 = Color3.fromRGB(28, 34, 42)
+		viewport.BorderSizePixel = 0
+		viewport.Size = UDim2.fromScale(1, 1)
+		viewport.ZIndex = 1
+		viewport.Active = false
+		viewport.Ambient = Color3.fromRGB(210, 210, 210)
+		viewport.LightColor = Color3.fromRGB(255, 255, 255)
+		viewport.LightDirection = Vector3.new(0, -1, 0)
+		viewport.Parent = mapStage
+	end
+	viewport.Active = false
+	local info = gui:WaitForChild("TerritoryInfo") :: Frame
+	local infoBody = info:WaitForChild("Body") :: TextLabel
+	local selectedValue = info:FindFirstChild("SelectedTerritoryId")
+
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	local territoryIntent = remotes:WaitForChild("TerritoryClientEvent") :: RemoteEvent
+	local territoryPush = remotes:WaitForChild("TerritoryServerEvent") :: RemoteEvent
+	local hierarchyPush = remotes:WaitForChild("HierarchyServerEvent") :: RemoteEvent
+
+	local mapDef = MapCatalog.GetDefault()
+	local polygons = {}
+	local byId = {}
+	for _, t in mapDef.territories do
+		byId[t.id] = t
+		table.insert(polygons, t.polygon)
+	end
+	local minX, minY, maxX, maxY = MapGeometry.MapBounds(polygons)
+	local spanX = math.max(maxX - minX, 1)
+	local spanY = math.max(maxY - minY, 1)
+	local midX = (minX + maxX) * 0.5
+	local midY = (minY + maxY) * 0.5
+
+	local ownership: { [string]: string } = {}
+	local colorIndex: { [string]: number } = {}
+	local hierarchyById: { [string]: any } = {}
+	local selectedId: string? = nil
+
+	local zoom = 1
+	local lookX = midX
+	local lookZ = midY
+	local dragging = false
+	local dragMoved = false
+	local dragStart: Vector2? = nil
+	local lookStart = Vector2.zero
+
+	local world = Instance.new("WorldModel")
+	world.Parent = viewport
+	local folder = Instance.new("Folder")
+	folder.Name = "Territories"
+	folder.Parent = world
+	local fillParts: { [string]: { WedgePart } } = {}
+	local rimParts: { [string]: { WedgePart } } = {}
+	local selectParts: { [string]: { WedgePart } } = {}
+
+	for _, t in mapDef.territories do
+		local selectFolder = Instance.new("Folder")
+		selectFolder.Name = t.id .. "_select"
+		selectFolder.Parent = folder
+		local rim = Instance.new("Folder")
+		rim.Name = t.id .. "_rim"
+		rim.Parent = folder
+		local fill = Instance.new("Folder")
+		fill.Name = t.id .. "_fill"
+		fill.Parent = folder
+		-- Gold outline above fill/holder so selection does not replace political colors.
+		selectParts[t.id] = MapTriangles.DrawRing(
+			selectFolder,
+			t.polygon,
+			SELECT_COLOR,
+			t.id .. "select",
+			THICK,
+			10,
+			THICK * 0.75,
+			true
+		)
+		for _, p in selectParts[t.id] do
+			p.Transparency = 1
+			p.Material = Enum.Material.Neon
+			p.Color = SELECT_COLOR
+		end
+		rimParts[t.id] = MapTriangles.DrawQuad(rim, t.polygon, RealmColors.Unclaimed, t.id .. "rim", THICK, THICK * 0.2)
+		fillParts[t.id] = MapTriangles.DrawQuad(
+			fill,
+			scaleFromCentroid(t.polygon, 0.18),
+			RealmColors.Unclaimed,
+			t.id .. "fill",
+			THICK,
+			THICK * 0.55
+		)
+	end
+
+	local camera = Instance.new("Camera")
+	camera.FieldOfView = FOV
+	camera.Parent = viewport
+	viewport.CurrentCamera = camera
+	-- Noninteractive province names use the same projection as map picking.
+	local provinceLabels = {}
+	for _, t in mapDef.territories do
+		local label = Instance.new("TextLabel")
+		label.Name = "ProvinceName_" .. t.id
+		label.BackgroundTransparency = 1
+		label.AnchorPoint = Vector2.new(0.5, 0.5)
+		label.Text = t.displayName
+		label.Font = Enum.Font.GothamMedium
+		label.TextSize = 12
+		label.TextColor3 = Color3.fromRGB(25, 34, 42)
+		label.TextStrokeColor3 = Color3.fromRGB(235, 231, 219)
+		label.TextStrokeTransparency = 0.65
+		label.Active = false
+		label.ZIndex = 2
+		label.Parent = mapStage
+		provinceLabels[t.id] = label
+	end
+
+	local function rulerOf(rulerId: string?): any?
+		if not rulerId or rulerId == "" then
+			return nil
+		end
+		return hierarchyById[rulerId]
+	end
+
+	local function ownerColor(ownerId: string): Color3
+		local idx = colorIndex[ownerId]
+		if typeof(idx) == "number" then
+			return RealmColors.ByIndex(idx)
+		end
+		return RealmColors.ByIndex(1)
+	end
+
+	local function cameraHeight(): number
+		local size = mapStage.AbsoluteSize
+		local aspect = if size.Y > 0 then size.X / size.Y else 1
+		local half = math.max(spanX / aspect, spanY) * 0.55 / zoom
+		return half / math.tan(math.rad(FOV * 0.5))
+	end
+
+	local function applyCamera()
+		local h = cameraHeight()
+		local size = mapStage.AbsoluteSize
+		local aspect = if size.Y > 0 then size.X / size.Y else 1
+		local halfZ = h * math.tan(math.rad(FOV * 0.5))
+		local halfX = halfZ * aspect
+		local pad = 20
+		local loX = minX - pad + halfX
+		local hiX = maxX + pad - halfX
+		if loX <= hiX then
+			lookX = math.clamp(lookX, loX, hiX)
+		else
+			lookX = midX
+		end
+		local loZ = minY - pad + halfZ
+		local hiZ = maxY + pad - halfZ
+		if loZ <= hiZ then
+			lookZ = math.clamp(lookZ, loZ, hiZ)
+		else
+			lookZ = midY
+		end
+		camera.CFrame = CFrame.lookAt(Vector3.new(lookX, h, lookZ), Vector3.new(lookX, 0, lookZ), Vector3.new(0, 0, -1))
+		for _, t in mapDef.territories do
+			local cx, cy = MapGeometry.Centroid(t.polygon)
+			local label = provinceLabels[t.id]
+			local px = (0.5 + (cx - lookX) / (2 * halfX)) * size.X
+			local py = (0.5 + (cy - lookZ) / (2 * halfZ)) * size.Y
+			local x1, _, x2 = MapGeometry.PolygonBounds(t.polygon)
+			local width = (x2 - x1) / (2 * halfX) * size.X * 0.85
+			label.Position = UDim2.fromOffset(px, py)
+			label.Size = UDim2.fromOffset(width, 24)
+			label.TextSize = if width < 90 then 10 else 12
+			label.Visible = width >= 54 and px > 0 and py > 0 and px < size.X and py < size.Y
+		end
+	end
+
+	local function screenToMap(screen: Vector2): (number?, number?)
+		local abs = viewport.AbsolutePosition
+		local size = viewport.AbsoluteSize
+		if size.X < 1 or size.Y < 1 then
+			return nil, nil
+		end
+		local u = (screen.X - abs.X) / size.X
+		local v = (screen.Y - abs.Y) / size.Y
+		if u < 0 or v < 0 or u > 1 or v > 1 then
+			return nil, nil
+		end
+		local h = cameraHeight()
+		local aspect = size.X / size.Y
+		local halfZ = h * math.tan(math.rad(FOV * 0.5))
+		local halfX = halfZ * aspect
+		local mx = lookX + (u - 0.5) * 2 * halfX
+		local my = lookZ + (v - 0.5) * 2 * halfZ
+		return mx, my
+	end
+
+	local function hitTerritory(mx: number, my: number): string?
+		for _, t in mapDef.territories do
+			if MapGeometry.PointInPolygon(mx, my, t.polygon) then
+				return t.id
+			end
+		end
+		return nil
+	end
+
+	local function updateInfo()
+		if not selectedId then
+			infoBody.Text = "No territory selected.\nClick the map to inspect a province."
+			return
+		end
+		local def = byId[selectedId]
+		if not def then
+			infoBody.Text = "Unknown territory."
+			return
+		end
+		local ownerId = ownership[selectedId]
+		if not ownerId or ownerId == "" then
+			infoBody.Text = string.format(
+				"%s\nID: %s\nOwner: Unclaimed\nRank: —\nStatus: —\nGreater realm: —",
+				def.displayName,
+				def.id
+			)
+			return
+		end
+		local owner = rulerOf(ownerId)
+		local root = if owner then rulerOf(owner.rootRulerId) else nil
+		infoBody.Text = string.format(
+			"%s\nID: %s\nOwner: %s\nRank: %s\nStatus: %s\nGreater realm: %s",
+			def.displayName,
+			def.id,
+			if owner then owner.displayName else ownerId,
+			if owner then owner.titleName else "—",
+			if owner then (if owner.independent then "Independent" else "Subject") else "—",
+			if root then root.displayName else (if owner then owner.displayName else "—")
+		)
+	end
+
+	local function colorize()
+		for _, t in mapDef.territories do
+			local ownerId = ownership[t.id]
+			local fill = RealmColors.Unclaimed
+			local rim = Color3.fromRGB(40, 44, 50)
+			if ownerId and ownerId ~= "" then
+				local owner = rulerOf(ownerId)
+				local rootId = if owner and typeof(owner.rootRulerId) == "string" and owner.rootRulerId ~= "" then owner.rootRulerId else ownerId
+				fill = ownerColor(rootId)
+				rim = ownerColor(ownerId)
+			end
+			for _, p in fillParts[t.id] do
+				p.Color = fill
+				p.Material = Enum.Material.SmoothPlastic
+			end
+			for _, p in rimParts[t.id] do
+				p.Color = rim
+			end
+			local selected = selectedId == t.id
+			for _, p in selectParts[t.id] do
+				p.Color = SELECT_COLOR
+				p.Material = Enum.Material.Neon
+				p.Transparency = if selected then 0 else 1
+			end
+		end
+		updateInfo()
+		applyCamera()
+		if selectedValue and selectedValue:IsA("StringValue") then
+			selectedValue.Value = selectedId or ""
+		end
+	end
+
+	local function applyTerritoryState(data: any)
+		ownership = {}
+		if typeof(data.territories) == "table" then
+			for _, row in data.territories do
+				if typeof(row.territoryId) == "string" then
+					ownership[row.territoryId] = if row.hasOwner == true then (tostring(row.ownerRulerId)) else ""
+				end
+			end
+		end
+		colorIndex = {}
+		if typeof(data.rulerColors) == "table" then
+			for _, row in data.rulerColors do
+				if typeof(row.rulerId) == "string" and typeof(row.colorIndex) == "number" then
+					colorIndex[row.rulerId] = row.colorIndex
+				end
+			end
+		end
+		print("[Territory] State received map=", tostring(data.mapId))
+		colorize()
+	end
+
+	local function applyHierarchyState(data: any)
+		hierarchyById = {}
+		if typeof(data.rulers) == "table" then
+			for _, ruler in data.rulers do
+				if typeof(ruler.rulerId) == "string" then
+					hierarchyById[ruler.rulerId] = ruler
+				end
+			end
+		end
+		colorize()
+	end
+
+	territoryPush.OnClientEvent:Connect(function(kind: any, payload: any)
+		if kind == "State" then
+			local data = decodeState(payload)
+			if data then
+				applyTerritoryState(data)
+			else
+				warn("[Territory] State decode failed")
+			end
+		end
+	end)
+
+	hierarchyPush.OnClientEvent:Connect(function(kind: any, payload: any)
+		if kind == "State" then
+			local data = decodeState(payload)
+			if data then
+				applyHierarchyState(data)
+			end
+		end
+	end)
+
+	local function pointerScreen(): Vector2
+		return UserInputService:GetMouseLocation() - GuiService:GetGuiInset()
+	end
+
+	local function mouseOverMap(screen: Vector2): boolean
+		local abs = mapStage.AbsolutePosition
+		local size = mapStage.AbsoluteSize
+		return screen.X >= abs.X and screen.Y >= abs.Y and screen.X <= abs.X + size.X and screen.Y <= abs.Y + size.Y
+	end
+
+	-- Map is the lowest input layer. Higher project GUI at this point owns the pointer.
+	-- ResultToast is informational and is not treated as a blocking layer.
+	-- AdminInspectPanel, EconomyPanel, MilitaryPanel, and visible Kohl command/dashboard chrome block the map.
+	local function isKohlBlockingGui(obj: GuiObject): boolean
+		local screenGui = obj:FindFirstAncestorWhichIsA("ScreenGui")
+		if not screenGui then
+			return false
+		end
+		local guiName = screenGui.Name
+		if
+			guiName ~= "FluxUILayerTopbar"
+			and guiName ~= "FluxUILayerTop"
+			and guiName ~= "FluxUILayerDefault"
+			and guiName ~= "FluxUILayerBottom"
+		then
+			return false
+		end
+		local current: Instance? = obj
+		while current and current ~= screenGui do
+			if current:IsA("GuiObject") and current.Visible then
+				local n = current.Name
+				if n == "CommandBar" or n == "Window" or n == "Dialog" or n == "Cmdbar2" or n == "KADashboardButton" or n == "KACommandsButton" then
+					return true
+				end
+			end
+			current = current.Parent
+		end
+		return false
+	end
+	local function isMapDescendant(obj: Instance): boolean
+		local current: Instance? = obj
+		while current and current ~= gui do
+			if current == mapStage then
+				return true
+			end
+			current = current.Parent
+		end
+		return false
+	end
+
+	local function blockingPanelOf(obj: Instance): GuiObject?
+		local current: Instance? = obj
+		while current and current ~= gui do
+			if current:IsA("GuiObject") and current.Parent == gui then
+				local name = current.Name
+				if name == "RealmOverviewOverlay" or name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" or name == "EconomyPanel" or name == "MilitaryPanel" or name == "CommunicationsPanel" or name == "StrategyNavigation" or name == "StrategyTopbar" then
+					return current
+				end
+			end
+			current = current.Parent
+		end
+		return nil
+	end
+
+	local function pointerOnHigherGui(screen: Vector2): boolean
+		local objects = player.PlayerGui:GetGuiObjectsAtPosition(screen.X, screen.Y)
+		for _, obj in objects do
+			if obj:IsA("GuiObject") and obj.Visible and not isMapDescendant(obj) then
+				if isKohlBlockingGui(obj) then
+					return true
+				end
+				local panel = blockingPanelOf(obj)
+				if panel and panel.Visible then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local mapPress = false
+
+	-- Press must start on the map surface (MapStage / MapView), not on higher panels.
+	-- Drag uses inset-corrected cursor position so GuiObject vs UIS coordinates cannot cancel pan.
+	gui:GetAttributeChangedSignal("RealmOverviewOpen"):Connect(function()
+		if gui:GetAttribute("RealmOverviewOpen") then mapPress = false; dragging = false; dragStart = nil end
+	end)
+	local function beginMapPress(input: InputObject)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+			return
+		end
+		if gui:GetAttribute("RealmOverviewOpen") or pointerOnHigherGui(pointerScreen()) then
+			return
+		end
+		mapPress = true
+		dragging = true
+		dragMoved = false
+		dragStart = pointerScreen()
+		lookStart = Vector2.new(lookX, lookZ)
+	end
+
+	mapStage.InputBegan:Connect(beginMapPress)
+	viewport.InputBegan:Connect(beginMapPress)
+
+	UserInputService.InputChanged:Connect(function(input, _gameProcessed)
+		if dragging and mapPress and input.UserInputType == Enum.UserInputType.MouseMovement and dragStart then
+			local now = pointerScreen()
+			if (now - dragStart).Magnitude > 6 then
+				dragMoved = true
+			end
+			if dragMoved then
+				local size = viewport.AbsoluteSize
+				if size.X < 1 or size.Y < 1 then
+					return
+				end
+				local h = cameraHeight()
+				local halfZ = h * math.tan(math.rad(FOV * 0.5))
+				local halfX = halfZ * (size.X / size.Y)
+				local dx = (now.X - dragStart.X) / size.X * 2 * halfX
+				local dz = (now.Y - dragStart.Y) / size.Y * 2 * halfZ
+				lookX = lookStart.X - dx
+				lookZ = lookStart.Y - dz
+				applyCamera()
+			end
+		elseif input.UserInputType == Enum.UserInputType.MouseWheel then
+			-- Active MapStage marks wheel as gameProcessed. That is the map surface, not a higher panel.
+			local pos = pointerScreen()
+			if gui:GetAttribute("RealmOverviewOpen") or not mouseOverMap(pos) or pointerOnHigherGui(pos) then
+				return
+			end
+			if input.Position.Z > 0 then
+				zoom = math.clamp(zoom * 1.12, MIN_ZOOM, MAX_ZOOM)
+			else
+				zoom = math.clamp(zoom / 1.12, MIN_ZOOM, MAX_ZOOM)
+			end
+			applyCamera()
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+			return
+		end
+		local wasMapPress = mapPress
+		local wasDrag = dragMoved
+		mapPress = false
+		dragging = false
+		dragMoved = false
+		if not wasMapPress or wasDrag then
+			return
+		end
+		local pos = pointerScreen()
+		if pointerOnHigherGui(pos) then
+			return
+		end
+		local mx, my = screenToMap(pos)
+		if not mx or not my then
+			return
+		end
+		selectedId = hitTerritory(mx, my)
+		colorize()
+	end)
+
+	mapStage:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		applyCamera()
+	end)
+
+	applyCamera()
+	territoryIntent:FireServer("Ready")
+	print("[Territory] controller started; Ready sent")
+	colorize()
+end
+
+return TerritoryMapController
+]========],"StarterPlayerScripts/Controllers/TerritoryMapController.luau source differs")
+local g=game.StarterGui.HierarchyPrototypeGui;assert(not g.ResetOnSpawn);assert(not g.RealmOverviewOverlay.Visible);assert(g.Templates.RealmOverviewRow:IsA("TextButton"));assert(g.StrategyNavigation.Players:IsA("TextButton"));for _,v in game.ServerScriptService:GetDescendants() do assert(not string.find(v.Name,"RealmOverviewVerification",1,true) and v.Name ~= "RealmOverviewBorderVerification","Runtime fixture persisted") end;print("REALM_OVERVIEW_FINAL_INTEGRITY_PASS",5)

@@ -18,7 +18,9 @@ local Title = require(script.Parent.TitleProgressionService)
 local Warfare = require(script.Parent.WarfareService)
 local Economy = require(script.Parent.EconomyService)
 local Military = require(script.Parent.MilitaryService)
+local Communications = require(script.Parent.CommunicationsService)
 
+local MatchState = require(script.Parent.MatchState)
 local AdminBridge = {}
 
 export type ExecuteResult = {
@@ -39,6 +41,9 @@ function AdminBridge.HelpText(): string
 		"GameTester commands (UserId allowlist; Kohl rank is not enough).",
 		"Studio Local Server only: synthetic UserIds < 0 are allowed for testing.",
 		";adminhelp",
+		";inspectvictory / ;checkvictory",
+		";inspectneutral <territoryId>",
+		";setneutraldefense <territoryId> <defenders>",
 		";inspectwars",
 		";inspectterritory <territoryId>",
 		";inspectruler <player|rulerId>",
@@ -52,6 +57,7 @@ function AdminBridge.HelpText(): string
 		";settroops <player|rulerId> <number>",
 		";addtroops <player|rulerId> <number>",
 		";inspectmilitary <warId>",
+		";inspectcomms",
 		";inspectcontest",
 		";resolvewar <warId> attacker|defender",
 		"Studio fallback: ServerScriptService.AdminDebug.Invoke",
@@ -142,7 +148,7 @@ local function inspectWars(): (boolean, string)
 				"%s\n  attacker: %s\n  defender: %s\n  target: %s",
 				tostring(war.warId),
 				rulerLabel(war.attackerRootId),
-				rulerLabel(war.defenderRootId),
+				if war.targetKind == "Unclaimed" then "Unclaimed militia" else rulerLabel(war.defenderRootId),
 				tostring(war.targetTerritoryId)
 			)
 		)
@@ -384,9 +390,20 @@ function AdminBridge.Execute(actorUserId: number?, operation: string, a: any, b:
 		return done(fail("Need operation."))
 	end
 	local op = operation
+	if MatchState.IsEnded() and ({ SetOwner = true, SetPrestige = true, SetGold = true, AddGold = true, SpendGold = true, SetTroops = true, AddTroops = true, ResolveWar = true, SetNeutralDefense = true })[op] then return done(false, "Match ended.") end
 	print("[Admin] Execute", actorUserId or "studio", op, a, b, c)
 	if op == "Help" then
 		return done(true, AdminBridge.HelpText())
+	elseif op == "InspectVictory" then
+		return done(true, HttpService:JSONEncode(require(script.Parent.VictoryService).GetSnapshot()))
+	elseif op == "CheckVictory" then
+		require(script.Parent.VictoryService).Evaluate()
+		return done(true, HttpService:JSONEncode(require(script.Parent.VictoryService).GetSnapshot()))
+	elseif op == "InspectNeutral" then
+		local state = require(script.Parent.NeutralDefenseService).Get(tostring(a))
+		return done(state ~= nil, HttpService:JSONEncode(state or { error = "Not Unclaimed" }))
+	elseif op == "SetNeutralDefense" then
+		return done(require(script.Parent.NeutralDefenseService).DebugSet(tostring(a), tonumber(b)))
 	elseif op == "InspectWars" then
 		return done(inspectWars())
 	elseif op == "InspectTerritory" then
@@ -411,6 +428,8 @@ function AdminBridge.Execute(actorUserId: number?, operation: string, a: any, b:
 		return done(setTroops(a, b))
 	elseif op == "AddTroops" then
 		return done(addTroops(a, b))
+	elseif op == "InspectComms" then
+		return done(true, HttpService:JSONEncode(Communications.DebugInspect()))
 	elseif op == "InspectMilitary" then
 		return done(inspectMilitary(a))
 	elseif op == "InspectContest" then

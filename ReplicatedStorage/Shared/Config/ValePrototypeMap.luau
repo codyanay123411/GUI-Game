@@ -94,6 +94,8 @@ local ValePrototypeMap = {
 	mapId = "vale_prototype_16",
 	displayName = "The Vale (Prototype)",
 	territories = territories,
+	unclaimedDefenders = 300,
+	victory = { type = "Domination", territoryControlPercent = 0.70 },
 	titleRequirements = {
 		{
 			rank = 2,

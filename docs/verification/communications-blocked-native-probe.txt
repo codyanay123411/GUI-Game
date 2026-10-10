@@ -1,0 +1,7 @@
+
+local R=game.ReplicatedStorage.Remotes
+local body=game.Players.LocalPlayer.PlayerGui.HierarchyPrototypeGui.CommunicationsPanel.Transcript.Body
+local channel=game.TextChatService.TextChannels["Comms_council:Player_-2"]
+local ok,result=pcall(function() return channel:SendAsync("NATIVE BLOCKED COUNCIL SEND") end)
+task.wait(0.8)
+R.CommunicationsReceiptAudit:FireServer({event="BlockedRenderCheck",ok=ok,status=ok and result and tostring(result.Status) or tostring(result),displayed=string.find(body.Text,"NATIVE BLOCKED COUNCIL SEND",1,true)~=nil})

@@ -20,6 +20,8 @@ local Territory = require(ServerScriptService.Services.TerritoryMapService)
 local Economy = require(ServerScriptService.Services.EconomyService)
 local Warfare = require(ServerScriptService.Services.WarfareService)
 
+local MatchState = require(script.Parent.MatchState)
+local Neutral = require(script.Parent.NeutralDefenseService)
 local MilitaryService = {}
 
 type SideState = {
@@ -41,6 +43,8 @@ type Engagement = {
 	presentationUntil: number?,
 	battle: MilitaryCombat.BattleResult?,
 	concluded: boolean,
+	targetKind: string,
+	targetRevision: number,
 }
 
 local started = false
@@ -167,7 +171,7 @@ local function playerPayload(rulerId: string)
 			local mine = sideFor(eng, rulerId) :: SideState
 			local role = if rulerId == eng.attackerRootId then "Attacker" else "Defender"
 			local bothLocked = eng.attacker.locked and eng.defender.locked
-			local opponentState = "Opponent preparing forces"
+			local opponentState = if eng.targetKind == "Unclaimed" then "Militia ready — lock your commitment" else "Opponent preparing forces"
 			if mine.locked and not bothLocked then
 				opponentState = "Waiting for opponent"
 			end
@@ -176,6 +180,8 @@ local function playerPayload(rulerId: string)
 				targetTerritoryId = eng.targetTerritoryId,
 				targetDisplayName = territoryName(eng.targetTerritoryId),
 				role = role,
+				targetKind = eng.targetKind,
+				neutralDefenders = if eng.targetKind == "Unclaimed" then eng.defender.lockedAmount else nil,
 				intended = if mine.interacted then mine.intended else nil,
 				locked = mine.locked,
 				windowEndsAt = eng.startedAt + MilitaryConfig.CommitWindowSeconds,
@@ -330,7 +336,11 @@ local function concludeEngagement(eng: Engagement)
 		local function resultFor(role: string)
 			local won = (role == "Attacker" and battle.winner == "Attacker") or (role == "Defender" and battle.winner == "Defender")
 			local title
-			if battle.unopposed then
+			local attacker = findRuler(eng.attackerRootId)
+			local staleNeutral = eng.targetKind == "Unclaimed" and (not Warfare.IsTargetCurrent(eng.warId) or not attacker or not attacker.independent)
+			if staleNeutral and role == "Attacker" then
+				title = "BATTLE ENDED — TARGET NO LONGER AVAILABLE"
+			elseif battle.unopposed then
 				title = "UNOPPOSED — " .. string.upper(territoryName(eng.targetTerritoryId)) .. " TAKEN"
 			elseif won and role == "Attacker" then
 				title = "VICTORY — " .. string.upper(territoryName(eng.targetTerritoryId)) .. " CAPTURED"
@@ -394,11 +404,16 @@ local function resolveBattle(eng: Engagement)
 		noticeRulerId(eng.attackerRootId, "Attack cancelled: you committed 0 Troops.")
 		return
 	end
+	if eng.targetKind == "Unclaimed" and (not Warfare.IsTargetCurrent(eng.warId) or not (findRuler(eng.attackerRootId) and findRuler(eng.attackerRootId).independent)) then
+		cancelEngagement(eng, "stale target")
+		return
+	end
 	local battle = MilitaryCombat.Resolve(atk, def, makeRng())
 	eng.battle = battle
 	eng.mechanicallyResolved = true
 	eng.presentationUntil = now() + MilitaryConfig.PresentationSeconds
 	applyCasualties(eng, battle)
+	if eng.targetKind == "Unclaimed" then Neutral.ApplySurvivors(eng.targetTerritoryId, eng.targetRevision, battle.defenderSurvivors) end
 	diag("battle resolved", eng.warId, battle.winner, battle.band or "unopposed")
 	pushAllPlayers()
 end
@@ -422,6 +437,13 @@ local function tryLock(eng: Engagement, side: SideState, amount: number)
 	else
 		pushAllPlayers()
 	end
+end
+
+function MilitaryService.FreezeMatch()
+	for _, eng in engagements do returnSurvivors(eng) end
+	table.clear(engagements)
+	table.clear(reserved)
+	pushAllPlayers()
 end
 
 function MilitaryService.IsMechanicallyResolved(warId: string): boolean
@@ -457,7 +479,11 @@ function MilitaryService.OnWarCreated(war: any)
 		targetTerritoryId = war.targetTerritoryId,
 		startedAt = now(),
 		attacker = { intended = nil, interacted = false, locked = false, lockedAmount = nil },
-		defender = { intended = nil, interacted = false, locked = false, lockedAmount = nil },
+		defender = if war.targetKind == "Unclaimed"
+			then { intended = war.neutralDefenders, interacted = true, locked = true, lockedAmount = war.neutralDefenders }
+			else { intended = nil, interacted = false, locked = false, lockedAmount = nil },
+		targetKind = war.targetKind or "Player",
+		targetRevision = war.targetRevision or 0,
 		mechanicallyResolved = false,
 		presentationUntil = nil,
 		battle = nil,
@@ -467,6 +493,7 @@ function MilitaryService.OnWarCreated(war: any)
 end
 
 function MilitaryService.Recruit(rulerId: string, troopAmount: any): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if totalByRuler[rulerId] == nil then
 		return false, "No troop state."
 	end
@@ -496,6 +523,7 @@ function MilitaryService.Recruit(rulerId: string, troopAmount: any): (boolean, s
 end
 
 function MilitaryService.RecruitMax(rulerId: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if totalByRuler[rulerId] == nil then
 		return false, "No troop state."
 	end
@@ -511,6 +539,7 @@ function MilitaryService.RecruitMax(rulerId: string): (boolean, string)
 end
 
 function MilitaryService.SetCommit(rulerId: string, warId: string, amountAny: any): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local eng = engagements[warId]
 	if not eng or eng.concluded then
 		return false, "No active engagement."
@@ -550,6 +579,7 @@ function MilitaryService.SetCommit(rulerId: string, warId: string, amountAny: an
 end
 
 function MilitaryService.LockCommit(rulerId: string, warId: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local eng = engagements[warId]
 	if not eng or eng.concluded then
 		return false, "No active engagement."
@@ -617,6 +647,7 @@ function MilitaryService.GetEngagementInspect(warId: string)
 end
 
 function MilitaryService.DebugSetTroops(rulerId: string, value: number): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if totalByRuler[rulerId] == nil then
 		return false, "No troop state."
 	end
@@ -633,6 +664,7 @@ function MilitaryService.DebugSetTroops(rulerId: string, value: number): (boolea
 end
 
 function MilitaryService.DebugAddTroops(rulerId: string, value: number): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if totalByRuler[rulerId] == nil then
 		return false, "No troop state."
 	end
@@ -670,12 +702,14 @@ local function stillOpen(eng: Engagement): boolean
 end
 
 local function tickEngagements()
+	if MatchState.IsEnded() then return end
 	local t = now()
 	local snapshot = {}
 	for _, eng in engagements do
 		table.insert(snapshot, eng)
 	end
 	for _, eng in snapshot do
+		if MatchState.IsEnded() then break end
 		if not eng.concluded then
 			if eng.mechanicallyResolved then
 				if eng.presentationUntil and t >= eng.presentationUntil then

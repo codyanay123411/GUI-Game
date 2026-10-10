@@ -1,0 +1,83 @@
+00:30:28.320  Unable to load plugin icon: rbxassetid://68073628  -  Studio
+  00:30:28.708  [Hierarchy] controller started listening Player1  -  Client - PoliticalHierarchyController:67
+  00:30:28.708  [Hierarchy] render Player1 rulers= 0 otherRows= 0 incoming= 0  -  Client - PoliticalHierarchyController:288
+  00:30:28.708  [Hierarchy] remote Ready sent Player1  -  Client - PoliticalHierarchyController:333
+  00:30:28.720  [Territory] controller started; Ready sent  -  Client - TerritoryMapController:567
+  00:30:28.721  [Title] controller started; Ready sent  -  Client - TitleProgressionController:144
+  00:30:28.721  [Diplomacy] controller started; Ready sent  -  Client - DiplomacyController:306
+  00:30:28.721  [Warfare] controller started; Ready sent  -  Client - WarfareController:463
+  00:30:28.732  [Admin] feedback controller started.  -  Client - AdminFeedbackController:223
+  00:30:28.736  [Hierarchy] State received Player1 rulers= 1 requests= 0  -  Client - PoliticalHierarchyController:324
+  00:30:28.736  [Hierarchy] render Player1 rulers= 1 otherRows= 0 incoming= 0  -  Client - PoliticalHierarchyController:288
+  00:30:28.736  [Hierarchy] State received Player1 rulers= 1 requests= 0  -  Client - PoliticalHierarchyController:324
+  00:30:28.737  [Hierarchy] render Player1 rulers= 1 otherRows= 0 incoming= 0  -  Client - PoliticalHierarchyController:288
+  00:30:28.737  [Territory] State received map= vale_prototype_16  -  Client - TerritoryMapController:362
+  00:30:28.758  [Hierarchy] State received Player1 rulers= 1 requests= 0  -  Client - PoliticalHierarchyController:324
+  00:30:28.758  [Hierarchy] render Player1 rulers= 1 otherRows= 0 incoming= 0  -  Client - PoliticalHierarchyController:288
+  00:30:28.758  [Territory] State received map= vale_prototype_16  -  Client - TerritoryMapController:362
+  00:30:28.759  [Hierarchy] State received Player1 rulers= 1 requests= 0  -  Client - PoliticalHierarchyController:324
+  00:30:28.759  [Hierarchy] render Player1 rulers= 1 otherRows= 0 incoming= 0  -  Client - PoliticalHierarchyController:288
+  00:30:28.759  [Territory] State received map= vale_prototype_16  -  Client - TerritoryMapController:362
+  00:30:28.833  Overriding Kohl's Admin command: adminhelp  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: inspectwars  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: inspectterritory  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: inspectruler  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: setowner  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: setprestige  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: inspectgold  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: setgold  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: addgold  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: spendgold  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: inspecttroops  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: settroops  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: addtroops  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: inspectmilitary  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: inspectcomms  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: inspectcontest  -  Client - Registry:163
+  00:30:28.833  Overriding Kohl's Admin command: resolvewar  -  Client - Registry:163
+  00:30:48.980  [Hierarchy] State received Player1 rulers= 2 requests= 0  -  Client - PoliticalHierarchyController:324
+  00:30:48.981  [Hierarchy] render Player1 rulers= 2 otherRows= 1 incoming= 0  -  Client - PoliticalHierarchyController:288
+  00:30:48.981  [Territory] State received map= vale_prototype_16  -  Client - TerritoryMapController:362
+  00:31:29.811  [Hierarchy] State received Player1 rulers= 3 requests= 0  -  Client - PoliticalHierarchyController:324
+  00:31:29.813  [Hierarchy] render Player1 rulers= 3 otherRows= 2 incoming= 0  -  Client - PoliticalHierarchyController:288
+  00:31:29.815  [Territory] State received map= vale_prototype_16  -  Client - TerritoryMapController:362
+  00:32:25.875  [Hierarchy] State received Player1 rulers= 3 requests= 0  -  Client - PoliticalHierarchyController:324
+  00:32:25.876  [Hierarchy] render Player1 rulers= 3 otherRows= 2 incoming= 0  -  Client - PoliticalHierarchyController:288
+  00:32:25.876   ▶ [Territory] State received map= vale_prototype_16 (x19)  -  Client - TerritoryMapController:362
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  00:33:05.697  > local g=game.Players.LocalPlayer.PlayerGui.HierarchyPrototypeGui;local l=g.RealmOverviewOverlay.Panel.List;assert(l.Player_1==nil);assert(l["Player_-1"].Politics.Text:find("Duke"));assert(l["Player_-2"]:GetAttribute("Relationship")=="Ally / NAP");assert(l["Player_-3"]:GetAttribute("Relationship")=="At war");print("MP_RELATION_ROWS_PASS",g.AbsoluteSize);print("MP_DETAIL",g.RealmOverviewOverlay.Panel.Detail.Text)  -  Studio
+  00:33:05.704  Player_1 is not a valid member of ScrollingFrame "Players.Player1.PlayerGui.HierarchyPrototypeGui.RealmOverviewOverlay.Panel.List"  -  Client
+  00:33:05.704  Stack Begin  -  Studio
+  00:33:05.704  Script 'CommandBar', Line 1  -  Studio
+  00:33:05.704  Stack End  -  Studio
+  00:33:05.737  Player_1 is not a valid member of ScrollingFrame "Players.Player1.PlayerGui.HierarchyPrototypeGui.RealmOverviewOverlay.Panel.List"  -  Studio
+  00:33:07.092  [Territory] State received map= vale_prototype_16  -  Client - TerritoryMapController:362
+  00:33:07.094  [Hierarchy] State received Player1 rulers= 3 requests= 1  -  Client - PoliticalHierarchyController:324
+  00:33:07.095  [Hierarchy] render Player1 rulers= 3 otherRows= 2 incoming= 1  -  Client - PoliticalHierarchyController:288
+  00:33:07.097  [Hierarchy] State received Player1 rulers= 3 requests= 0  -  Client - PoliticalHierarchyController:324
+  00:33:07.098  [Hierarchy] render Player1 rulers= 3 otherRows= 2 incoming= 0  -  Client - PoliticalHierarchyController:288
+  00:33:31.892  > local g=game.Players.LocalPlayer.PlayerGui.HierarchyPrototypeGui;local l=g.RealmOverviewOverlay.Panel.List;assert(l["Player_-1"]:GetAttribute("PersonalHoldings")==2);assert(l["Player_-1"]:GetAttribute("RealmHoldings")==3);assert(l["Player_-2"]:GetAttribute("Relationship")=="Your subject");assert(l["Player_-2"]:GetAttribute("RealmHoldings")==3);assert(l["Player_-3"]:GetAttribute("Relationship")=="Unrelated");print("MP_HIERARCHY_HOLDINGS_CLEANUP_PASS");print("DETAIL_AFTER_CHANGE",g.RealmOverviewOverlay.Panel.Detail.Text)  -  Studio
+  00:33:31.903  MP_HIERARCHY_HOLDINGS_CLEANUP_PASS  -  Client
+  00:33:31.903  DETAIL_AFTER_CHANGE Lord Player2  ·  Subject  ·  Your subject Root: Player1  ·  Liege: Player1  ·  Holdings: 1 personal / 3 realm Alliance: No  ·  NAP: No  ·  War: No  ·  Direct: Available  ·  Internal realm  -  Client
+  00:35:10.220  [Hierarchy] State received Player1 rulers= 2 requests= 0  -  Client - PoliticalHierarchyController:324
+  00:35:10.220  [Hierarchy] render Player1 rulers= 2 otherRows= 1 incoming= 0  -  Client - PoliticalHierarchyController:288
+  00:35:10.221  [Territory] State received map= vale_prototype_16  -  Client - TerritoryMapController:362
+  00:35:14.754  > local g=game.Players.LocalPlayer.PlayerGui.HierarchyPrototypeGui;local l=g.RealmOverviewOverlay.Panel.List;assert(l:FindFirstChild("Player_-3")==nil);local n=0;for _,r in l:GetChildren() do if r:IsA("TextButton") then n+=1 end end;assert(n==2);assert(g.RealmOverviewOverlay.Panel.Detail.Text:find("Select a ruler"));print("MP_DISCONNECT_DETAIL_CLEANUP_PASS",n)  -  Studio
+  00:35:14.767  MP_DISCONNECT_DETAIL_CLEANUP_PASS 2  -  Client

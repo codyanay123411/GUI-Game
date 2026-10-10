@@ -1,0 +1,15 @@
+-- Runtime-only: existing synthetic root -1, fresh clients -4/-5/-6.
+assert(game:GetService("RunService"):IsStudio())
+local S=game.ServerScriptService.Services
+local H,T,V=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.VictoryService)
+local a,b,c=H.GetRulerIdForUserId(-1),H.GetRulerIdForUserId(-4),H.GetRulerIdForUserId(-5)
+assert(a and b and c)
+for _,land in T.GetMapDefinition().territories do assert(T.SetOwner(land.id,nil)) end
+assert(H.SetTitleRank(a,3));assert(H.SetTitleRank(b,2))
+for i,land in T.GetMapDefinition().territories do if i<=6 then assert(T.SetOwner(land.id,a)) elseif i<=11 then assert(T.SetOwner(land.id,b)) elseif i==12 then assert(T.SetOwner(land.id,c)) end end
+local ok,r=H.OfferFealty(b,a);assert(ok,r);assert(H.AcceptFealty(r,a));assert(V.GetSnapshot().counts[a]==11 and not V.GetSnapshot().ended)
+game.Players:GetPlayerByUserId(-1):Kick("Agent verification: root disconnect makes subject independent")
+task.wait(2)
+local f=V.GetSnapshot();assert(not f.ended and f.counts[a]==nil and f.counts[b]==5 and f.total==16)
+for _,ruler in H.GetSnapshot().rulers do if ruler.rulerId==b then assert(ruler.independent and ruler.rootRulerId==b) end end
+print("UC_VIC_LIVE_INDEPENDENCE_RECOUNT_PASS")

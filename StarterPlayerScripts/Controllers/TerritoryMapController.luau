@@ -172,6 +172,24 @@ function TerritoryMapController.Start()
 	camera.FieldOfView = FOV
 	camera.Parent = viewport
 	viewport.CurrentCamera = camera
+	-- Noninteractive province names use the same projection as map picking.
+	local provinceLabels = {}
+	for _, t in mapDef.territories do
+		local label = Instance.new("TextLabel")
+		label.Name = "ProvinceName_" .. t.id
+		label.BackgroundTransparency = 1
+		label.AnchorPoint = Vector2.new(0.5, 0.5)
+		label.Text = t.displayName
+		label.Font = Enum.Font.GothamMedium
+		label.TextSize = 12
+		label.TextColor3 = Color3.fromRGB(25, 34, 42)
+		label.TextStrokeColor3 = Color3.fromRGB(235, 231, 219)
+		label.TextStrokeTransparency = 0.65
+		label.Active = false
+		label.ZIndex = 2
+		label.Parent = mapStage
+		provinceLabels[t.id] = label
+	end
 
 	local function rulerOf(rulerId: string?): any?
 		if not rulerId or rulerId == "" then
@@ -217,6 +235,18 @@ function TerritoryMapController.Start()
 			lookZ = midY
 		end
 		camera.CFrame = CFrame.lookAt(Vector3.new(lookX, h, lookZ), Vector3.new(lookX, 0, lookZ), Vector3.new(0, 0, -1))
+		for _, t in mapDef.territories do
+			local cx, cy = MapGeometry.Centroid(t.polygon)
+			local label = provinceLabels[t.id]
+			local px = (0.5 + (cx - lookX) / (2 * halfX)) * size.X
+			local py = (0.5 + (cy - lookZ) / (2 * halfZ)) * size.Y
+			local x1, _, x2 = MapGeometry.PolygonBounds(t.polygon)
+			local width = (x2 - x1) / (2 * halfX) * size.X * 0.85
+			label.Position = UDim2.fromOffset(px, py)
+			label.Size = UDim2.fromOffset(width, 24)
+			label.TextSize = if width < 90 then 10 else 12
+			label.Visible = width >= 54 and px > 0 and py > 0 and px < size.X and py < size.Y
+		end
 	end
 
 	local function screenToMap(screen: Vector2): (number?, number?)
@@ -420,7 +450,7 @@ function TerritoryMapController.Start()
 		while current and current ~= gui do
 			if current:IsA("GuiObject") and current.Parent == gui then
 				local name = current.Name
-				if name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" or name == "EconomyPanel" or name == "MilitaryPanel" then
+				if name == "VictoryOverlay" or name == "RealmOverviewOverlay" or name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" or name == "EconomyPanel" or name == "MilitaryPanel" or name == "CommunicationsPanel" or name == "StrategyNavigation" or name == "StrategyTopbar" then
 					return current
 				end
 			end
@@ -449,11 +479,17 @@ function TerritoryMapController.Start()
 
 	-- Press must start on the map surface (MapStage / MapView), not on higher panels.
 	-- Drag uses inset-corrected cursor position so GuiObject vs UIS coordinates cannot cancel pan.
+	gui:GetAttributeChangedSignal("RealmOverviewOpen"):Connect(function()
+		if gui:GetAttribute("RealmOverviewOpen") then mapPress = false; dragging = false; dragStart = nil end
+	end)
+	gui:GetAttributeChangedSignal("VictoryOverlayOpen"):Connect(function()
+		if gui:GetAttribute("VictoryOverlayOpen") then mapPress = false; dragging = false; dragStart = nil end
+	end)
 	local function beginMapPress(input: InputObject)
 		if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
 			return
 		end
-		if pointerOnHigherGui(pointerScreen()) then
+		if gui:GetAttribute("RealmOverviewOpen") or pointerOnHigherGui(pointerScreen()) then
 			return
 		end
 		mapPress = true
@@ -489,7 +525,7 @@ function TerritoryMapController.Start()
 		elseif input.UserInputType == Enum.UserInputType.MouseWheel then
 			-- Active MapStage marks wheel as gameProcessed. That is the map surface, not a higher panel.
 			local pos = pointerScreen()
-			if not mouseOverMap(pos) or pointerOnHigherGui(pos) then
+			if gui:GetAttribute("RealmOverviewOpen") or not mouseOverMap(pos) or pointerOnHigherGui(pos) then
 				return
 			end
 			if input.Position.Z > 0 then

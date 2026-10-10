@@ -1,0 +1,61 @@
+{
+  "checks": [
+    {
+      "path": "ServerScriptService.Services.CommunicationsService",
+      "unchanged": true,
+      "bytes": 33175,
+      "sha256": "59e20ee5846de35fb6fa19a5b6c427b178d083cdab8cc0afca98a441edf149b5"
+    },
+    {
+      "path": "StarterPlayer.StarterPlayerScripts.Bootstrap",
+      "unchanged": true,
+      "bytes": 1579,
+      "sha256": "ffd2fe8e55c1ddfe27cf99c5ce532b9ab7e7a51bc6ef0973dba202801639e071"
+    },
+    {
+      "path": "ReplicatedStorage.Shared.Config.CommunicationsConfig",
+      "unchanged": true,
+      "bytes": 826,
+      "sha256": "9eecd31a840e2d32dc2884cb82b749a4ba13896e310373ccbf7499e33ea33507"
+    },
+    {
+      "path": "ServerScriptService.Bootstrap",
+      "unchanged": true,
+      "bytes": 1641,
+      "sha256": "969ae50ac8f3fa1e5fc31535c98b14e9471f768eed6ef2e5a38adc3465bb4364"
+    },
+    {
+      "path": "StarterPlayer.StarterPlayerScripts.Controllers.CommunicationsController",
+      "unchanged": true,
+      "bytes": 12256,
+      "sha256": "437bd343279aa5f9bbb87c5597b0dbcaa7ab12adc0520b10180b3838fcdba52b"
+    }
+  ],
+  "temporaryDiagnosticsPresent": false,
+  "gui": {
+    "ObserverBody": {
+      "TextWrapped": "true",
+      "Position": "{0, 0}, {0, 244}",
+      "TextYAlignment": "Enum.TextYAlignment.Top",
+      "ClipsDescendants": "false",
+      "Size": "{1, -70}, {0, 46}"
+    },
+    "Transcript": {
+      "TextWrapped": "true",
+      "Position": "{0, 0}, {0, 108}",
+      "TextYAlignment": "Enum.TextYAlignment.Top",
+      "ClipsDescendants": "true",
+      "Size": "{1, 0}, {0, 86}"
+    },
+    "CommunicationsPanel": {
+      "ClipsDescendants": "false",
+      "Position": "{0, 264}, {1, -272}",
+      "Size": "{0, 280}, {0, 292}"
+    }
+  },
+  "textChat": {
+    "CreateDefaultTextChannels": "true",
+    "CreateDefaultCommands": "true",
+    "ChatVersion": "Enum.ChatVersion.TextChatService"
+  }
+}

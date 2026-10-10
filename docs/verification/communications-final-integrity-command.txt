@@ -1,0 +1,2718 @@
+local r={sources={},archive={},activeBootstraps={}}
+table.insert(r.sources,{file="ServerScriptService/Services/CommunicationsService.luau",match=game.ServerScriptService.Services.CommunicationsService.Source:gsub("\r","")==([========[--!strict
+
+-- Player text never passes through these remotes. TextChannel owns delivery.
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
+local HttpService = game:GetService("HttpService")
+local Hierarchy = require(script.Parent.PoliticalHierarchyService)
+local Territory = require(script.Parent.TerritoryMapService)
+local Diplomacy = require(script.Parent.DiplomacyService)
+local AdminConfig = require(script.Parent.AdminConfig)
+local Policy = require(script.Parent.CommunicationsPolicy)
+local Service = {}
+
+type Context = {
+	id: string, kind: string, label: string, owner: string?, instanceId: string?,
+	left: number?, right: number?, channel: TextChannel?, adding: { [number]: boolean },
+}
+local contexts: { [string]: Context } = {}
+local started = false
+local push: RemoteEvent
+local intent: RemoteEvent
+local channels: Instance
+local queued = false
+local excluded: { [number]: boolean } = {}
+local lastIntent: { [number]: number } = {}
+local snapshotValue: StringValue
+
+local function world(): any
+	return Policy.World(Hierarchy.GetSnapshot().rulers, Diplomacy.GetSnapshot().agreements,
+		Territory.GetOwnedTerritoryIds, Territory.AreAdjacent)
+end
+
+local function observer(player: Player): boolean
+	return not excluded[player.UserId] and AdminConfig.IsGameTester(player.UserId)
+end
+
+local function eligible(w: any, context: Context, player: Player): boolean
+	return not excluded[player.UserId] and Policy.Member(w, context, w.users[player.UserId])
+end
+
+local function relationContext(w: any, context: Context): string
+	if context.kind == "diplomatic" then
+		return "Diplomatic / public political reach"
+	end
+	if context.kind ~= "direct" then
+		return context.label
+	end
+	local a, b = w.users[context.left], w.users[context.right]
+	if a and b then
+		local relation = if a.liegeId == b.rulerId or b.liegeId == a.rulerId then "Liege ↔ Subject"
+			else "Neighboring rulers"
+		return context.label .. " / " .. relation
+	end
+	return context.label
+end
+
+local function canDeliver(context: Context, message: TextChatMessage, target: TextSource): boolean
+	local source = message.TextSource
+	if not source or not source.CanSend or not context.channel or source.Parent ~= context.channel then
+		return false
+	end
+	local from, to = Players:GetPlayerByUserId(source.UserId), Players:GetPlayerByUserId(target.UserId)
+	if not from or not to or excluded[from.UserId] or excluded[to.UserId] then
+		return false
+	end
+	-- No yielding permission calls or cached membership in this callback.
+	local w = world()
+	local ordinary = Policy.Deliver(w, context, from.UserId, to.UserId, false)
+	local observing = observer(to) and Policy.Deliver(w, context, from.UserId, to.UserId, true)
+	if not ordinary and not observing then
+		return false
+	end
+	-- Labels alone cannot display text: client joins this envelope to native Success receipt.
+	push:FireClient(to, "Identity", {
+		messageId = message.MessageId, contextId = context.id, kind = context.kind,
+		label = context.label, ordinary = ordinary, observing = observing,
+		prefix = Policy.Prefix(w, context, from.UserId, to.UserId, false),
+		observerPrefix = "[" .. relationContext(w, context) .. "] " .. Policy.Prefix(w, context, from.UserId, to.UserId, true),
+	})
+	return true
+end
+
+local function create(id: string, kind: string, label: string, fields: any?): Context
+	local existing = contexts[id]
+	if existing then
+		return existing
+	end
+	local context: Context = {
+		id = id, kind = kind, label = label, adding = {},
+		owner = fields and fields.owner, instanceId = fields and fields.instanceId,
+		left = fields and fields.left, right = fields and fields.right,
+	}
+	local channel = Instance.new("TextChannel")
+	channel.Name = "Comms_" .. id
+	channel:SetAttribute("CommunicationsContextId", id)
+	channel.Parent = channels
+	context.channel = channel
+	contexts[id] = context
+	channel.ShouldDeliverCallback = function(message, target)
+		return canDeliver(context, message, target)
+	end
+	return context
+end
+
+local function stateFor(player: Player, w: any): any
+	local rows, contacts = {}, {}
+	for _, context in contexts do
+		local member = eligible(w, context, player)
+		if member or observer(player) then
+			table.insert(rows, { id = context.id, kind = context.kind, label = context.label,
+				channelName = context.channel and context.channel.Name or "", canSend = member, observerOnly = not member })
+		end
+	end
+	local me = w.users[player.UserId]
+	for _, other in Players:GetPlayers() do
+		if other ~= player and not excluded[other.UserId] and Policy.Direct(w, me, w.users[other.UserId]) then
+			table.insert(contacts, { userId = other.UserId, name = other.Name })
+		end
+	end
+	table.sort(rows, function(a, b) return a.id < b.id end)
+	table.sort(contacts, function(a, b) return a.name < b.name end)
+	return { contexts = rows, contacts = contacts, isAdmin = observer(player) }
+end
+
+local function sync()
+	local w = world()
+	create("diplomatic", "diplomatic", "Diplomatic")
+	for _, ruler in w.rulers do
+		if #ruler.vassalIds > 0 then
+			create("council:" .. ruler.rulerId, "council", "Council — " .. ruler.displayName, { owner = ruler.rulerId })
+		end
+	end
+	for _, agreement in w.agreements do
+		if agreement.alliance and agreement.allianceInstanceId ~= "" then
+			local a, b = w.rulers[agreement.leftRulerId], w.rulers[agreement.rightRulerId]
+			if a and b then
+				create("alliance:" .. agreement.allianceInstanceId, "alliance", "Allies — " .. a.displayName .. " ↔ " .. b.displayName,
+					{ instanceId = agreement.allianceInstanceId })
+			end
+		end
+	end
+	for _, context in contexts do
+		local channel = context.channel
+		if not channel then continue end
+		local wanted: { [number]: boolean } = {}
+		for _, player in Players:GetPlayers() do
+			if eligible(w, context, player) or observer(player) then wanted[player.UserId] = true end
+		end
+		local present: { [number]: boolean } = {}
+		for _, source in channel:GetChildren() do
+			if source:IsA("TextSource") then
+				local player = Players:GetPlayerByUserId(source.UserId)
+				if not wanted[source.UserId] or not player then
+					source.CanSend = false
+					source:Destroy() -- History is local; retained recipients are not history.
+				else
+					source.CanSend = eligible(w, context, player)
+					present[source.UserId] = true
+				end
+			end
+		end
+		for userId in wanted do
+			if present[userId] or context.adding[userId] then continue end
+			context.adding[userId] = true
+			task.spawn(function()
+				local ok, source = pcall(function() return channel:AddUserAsync(userId) end)
+				context.adding[userId] = nil
+				if ok and source and source:IsA("TextSource") then
+					local player = Players:GetPlayerByUserId(userId)
+					local fresh = world()
+					if not player or not (eligible(fresh, context, player) or observer(player)) then
+						source:Destroy()
+					else
+						source.CanSend = eligible(fresh, context, player)
+					end
+				elseif not ok then
+					warn("[Communications] native membership denied:", userId, tostring(source))
+				end
+			end)
+		end
+	end
+	for _, player in Players:GetPlayers() do
+		if not excluded[player.UserId] then push:FireClient(player, "State", stateFor(player, w)) end
+	end
+	if snapshotValue then snapshotValue.Value = HttpService:JSONEncode(Service.DebugInspect()) end
+end
+
+local function queueSync()
+	if queued then return end
+	queued = true
+	task.defer(function() queued = false; sync() end)
+end
+
+function Service.OpenDirect(player: Player, targetId: any): (boolean, string)
+	if typeof(targetId) ~= "number" or targetId % 1 ~= 0 or targetId == player.UserId then
+		return false, "Invalid contact."
+	end
+	local target = Players:GetPlayerByUserId(targetId)
+	local w = world()
+	if not target or excluded[player.UserId] or excluded[targetId] or not Policy.Direct(w, w.users[player.UserId], w.users[targetId]) then
+		return false, "Direct requires a current border."
+	end
+	local left, right = math.min(player.UserId, targetId), math.max(player.UserId, targetId)
+	local id = "direct:" .. left .. ":" .. right
+	local context = contexts[id]
+	if not context then
+		context = create(id, "direct", "Direct — " .. player.Name .. " ↔ " .. target.Name, { left = left, right = right })
+		local ok, err = pcall(function() (context.channel :: TextChannel):SetDirectChatRequester(player) end)
+		if not ok then
+			(context.channel :: TextChannel):Destroy()
+			contexts[id] = nil
+			return false, "Native Direct unavailable: " .. tostring(err)
+		end
+	end
+	sync()
+	push:FireClient(player, "Opened", id)
+	return true, id
+end
+
+function Service.DebugInspect(): any
+	local w = world()
+	local result: any = { implementation = "NativeDeliveryV01", contexts = {} }
+	for _, context in contexts do
+		local members, sources = {}, {}
+		for _, player in Players:GetPlayers() do
+			if eligible(w, context, player) then table.insert(members, player.UserId) end
+		end
+		if context.channel then
+			for _, source in context.channel:GetChildren() do
+				if source:IsA("TextSource") then table.insert(sources, { userId = source.UserId, canSend = source.CanSend }) end
+			end
+		end
+		table.insert(result.contexts, { id = context.id, kind = context.kind, members = members, sources = sources })
+	end
+	return result
+end
+
+function Service.DebugCanDeliver(id: string, from: number, to: number, asObserver: boolean?): boolean
+	local context = contexts[id]
+	if not context or excluded[from] or excluded[to] then return false end
+	return Policy.Deliver(world(), context, from, to, asObserver == true)
+end
+
+function Service.Start()
+	if started then return end
+	started = true
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	intent = remotes:WaitForChild("CommunicationsClientEvent") :: RemoteEvent
+	push = remotes:WaitForChild("CommunicationsServerEvent") :: RemoteEvent
+	channels = TextChatService:FindFirstChild("TextChannels") :: Instance
+	if not channels then
+		channels = Instance.new("Folder")
+		channels.Name = "TextChannels"
+		channels.Parent = TextChatService
+	end
+	-- No unrestricted parallel default room, team room, or whisper path.
+	for _, child in channels:GetChildren() do
+		if child:IsA("TextChannel") then child.ShouldDeliverCallback = function() return false end end
+	end
+	channels.ChildAdded:Connect(function(child)
+		if child:IsA("TextChannel") and not child:GetAttribute("CommunicationsContextId") then
+			child.ShouldDeliverCallback = function() return false end
+		end
+	end)
+	Hierarchy.StateChanged:Connect(queueSync)
+	Territory.OwnershipChanged:Connect(queueSync)
+	Diplomacy.StateChanged:Connect(queueSync)
+	Players.PlayerAdded:Connect(function(player) excluded[player.UserId] = nil; queueSync() end)
+	Players.PlayerRemoving:Connect(function(player) excluded[player.UserId] = true; lastIntent[player.UserId] = nil; queueSync() end)
+	intent.OnServerEvent:Connect(function(player, action, arg)
+		local now = os.clock()
+		if now - (lastIntent[player.UserId] or -math.huge) < 0.15 then return end
+		lastIntent[player.UserId] = now
+		if action == "Ready" then
+			push:FireClient(player, "State", stateFor(player, world()))
+		elseif action == "OpenDirect" then
+			local ok, message = Service.OpenDirect(player, arg)
+			if not ok then push:FireClient(player, "Notice", message) end
+		else
+			push:FireClient(player, "Notice", "Unsupported Communications intent.")
+		end
+	end)
+	local debugFolder = Instance.new("Folder")
+	debugFolder.Name = "CommunicationsDebug"
+	debugFolder.Parent = script.Parent.Parent
+	snapshotValue = Instance.new("StringValue")
+	snapshotValue.Name = "LastSnapshot"
+	snapshotValue.Parent = debugFolder
+	local invoke = Instance.new("BindableFunction")
+	invoke.Name = "Invoke"
+	invoke.Parent = debugFolder
+	invoke.OnInvoke = function(action, a, b, c)
+		if action == "Inspect" then return Service.DebugInspect() end
+		if action == "Sync" then sync(); return true end
+		if action == "CanDeliver" then return Service.DebugCanDeliver(a, b, c) end
+		if action == "OpenDirect" then
+			local player = Players:GetPlayerByUserId(a)
+			if player then return Service.OpenDirect(player, b) end
+		end
+		return false, "Unknown debug operation."
+	end
+	sync()
+	print("[Communications] NativeDeliveryV01 started.")
+end
+
+return Service
+]========]):gsub("\r","")})
+table.insert(r.sources,{file="ServerScriptService/Services/CommunicationsPolicy.luau",match=game.ServerScriptService.Services.CommunicationsPolicy.Source:gsub("\r","")==([========[--!strict
+
+-- Derived views only. Callers supply fresh authority snapshots for each action.
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Graph = require(ReplicatedStorage.Shared.Util.RealmGraph)
+local Config = require(ReplicatedStorage.Shared.Config.CommunicationsConfig)
+local Policy = {}
+
+function Policy.World(rulers: { any }, agreements: { any }, owned: (string) -> { string }, adjacent: (string, string) -> boolean): any
+	local world: any = { rulers = {}, users = {}, agreements = agreements, owned = owned, adjacent = adjacent }
+	for _, ruler in rulers do
+		world.rulers[ruler.rulerId] = ruler
+		if ruler.hasUser and ruler.userId ~= 0 then
+			world.users[ruler.userId] = ruler
+		end
+	end
+	world.lands = Graph.LandsByRoot(rulers, owned)
+	world.neighbors = Graph.BuildNeighborSet(world.lands, adjacent)
+	return world
+end
+
+function Policy.Distance(world: any, a: any, b: any): number?
+	return Graph.Distance(a.rootRulerId, b.rootRulerId, world.neighbors)
+end
+
+function Policy.Direct(world: any, a: any, b: any): boolean
+	if not a or not b or a.rulerId == b.rulerId then
+		return false
+	end
+	return Policy.Distance(world, a, b) == 1
+end
+
+function Policy.Member(world: any, context: any, ruler: any): boolean
+	if not ruler then
+		return false
+	end
+	if context.kind == "diplomatic" then
+		return true
+	elseif context.kind == "council" then
+		return world.rulers[context.owner] ~= nil and (ruler.rulerId == context.owner or ruler.liegeId == context.owner)
+	elseif context.kind == "alliance" then
+		for _, agreement in world.agreements do
+			if agreement.alliance and agreement.allianceInstanceId == context.instanceId then
+				local left, right = world.rulers[agreement.leftRulerId], world.rulers[agreement.rightRulerId]
+				return left ~= nil and right ~= nil and left.independent and right.independent
+					and (ruler.rulerId == left.rulerId or ruler.rulerId == right.rulerId)
+			end
+		end
+	elseif context.kind == "direct" then
+		local a, b = world.users[context.left], world.users[context.right]
+		return Policy.Direct(world, a, b) and (ruler.userId == context.left or ruler.userId == context.right)
+	end
+	return false
+end
+
+function Policy.Deliver(world: any, context: any, senderId: number, recipientId: number, observer: boolean): boolean
+	local sender, recipient = world.users[senderId], world.users[recipientId]
+	if not Policy.Member(world, context, sender) then
+		return false
+	end
+	if observer then
+		return true -- Roblox's native filtering/privacy still controls this read-only source.
+	end
+	if not Policy.Member(world, context, recipient) then
+		return false
+	end
+	if context.kind == "diplomatic" then
+		local distance = Policy.Distance(world, sender, recipient)
+		return distance ~= nil and distance <= Config.DiplomaticMaxDistance
+	end
+	return true
+end
+
+function Policy.Prefix(world: any, context: any, senderId: number, viewerId: number, observer: boolean): string
+	local sender, viewer = world.users[senderId], world.users[viewerId]
+	if not sender then
+		return ""
+	end
+	local tag = ""
+	if not observer and viewer and (context.kind == "diplomatic" or context.kind == "direct") then
+		if viewer.liegeId == sender.rulerId then
+			tag = " [Liege]"
+		elseif sender.liegeId == viewer.rulerId then
+			tag = " [Subject]"
+		else
+			for _, agreement in world.agreements do
+				if agreement.alliance and ((agreement.leftRulerId == sender.rulerId and agreement.rightRulerId == viewer.rulerId)
+					or (agreement.rightRulerId == sender.rulerId and agreement.leftRulerId == viewer.rulerId)) then
+					tag = " [Ally]"
+					break
+				end
+			end
+		end
+	end
+	return "[" .. sender.titleName .. "]" .. tag .. " " .. sender.displayName .. ": "
+end
+
+return Policy
+]========]):gsub("\r","")})
+table.insert(r.sources,{file="ServerScriptService/Services/DiplomacyService.luau",match=game.ServerScriptService.Services.DiplomacyService.Source:gsub("\r","")==([========[--!strict
+
+--[[
+	Diplomacy V0.1.
+
+	Server-authoritative Alliance and NAP between independent root rulers.
+	Consumes Political Hierarchy; does not duplicate the tree.
+	No warfare, map, or title effects.
+]]
+
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ServerScriptService = game:GetService("ServerScriptService")
+
+local Config = require(ReplicatedStorage.Shared.Config.DiplomacyConfig)
+local Hierarchy = require(ServerScriptService.Services.PoliticalHierarchyService)
+
+local DiplomacyService = {}
+
+local stateChangedBindable = Instance.new("BindableEvent")
+DiplomacyService.StateChanged = stateChangedBindable.Event
+
+type Agreement = {
+	leftId: string,
+	rightId: string,
+	alliance: boolean,
+	allianceInstanceId: string?,
+	nap: boolean,
+}
+
+type DipRequest = {
+	requestId: string,
+	agreementType: string,
+	fromRulerId: string,
+	toRulerId: string,
+	createdAt: number,
+	expiresAt: number,
+	expireThread: thread?,
+}
+
+local started = false
+local agreementsByKey: { [string]: Agreement } = {}
+local requestsById: { [string]: DipRequest } = {}
+local clientIntent: RemoteEvent
+local serverPush: RemoteEvent
+local debugSnapshot: StringValue?
+
+local function now(): number
+	return os.clock()
+end
+
+local function pairKey(a: string, b: string): string
+	if a < b then
+		return a .. "|" .. b
+	end
+	return b .. "|" .. a
+end
+
+local function orderedPair(a: string, b: string): (string, string)
+	if a < b then
+		return a, b
+	end
+	return b, a
+end
+
+local function lifetime(): number
+	local value = Config.RequestLifetimeSeconds
+	if typeof(value) ~= "number" or value <= 0 then
+		return 30
+	end
+	return value
+end
+
+local function findRuler(rulerId: string): any?
+	for _, ruler in Hierarchy.GetSnapshot().rulers do
+		if ruler.rulerId == rulerId then
+			return ruler
+		end
+	end
+	return nil
+end
+
+local function isIndependentRoot(ruler: any?): boolean
+	return ruler ~= nil and ruler.independent == true
+end
+
+local function noticePlayer(player: Player, message: string)
+	print("[Diplomacy] notice ->", player.Name, message)
+	serverPush:FireClient(player, "Notice", message)
+end
+
+local function noticeRulerId(rulerId: string, message: string)
+	local ruler = findRuler(rulerId)
+	local userId = ruler and tonumber(ruler.userId)
+	if typeof(userId) == "number" and userId ~= 0 then
+		local player = Players:GetPlayerByUserId(userId)
+		if player then
+			noticePlayer(player, message)
+		end
+	end
+end
+
+local function cancelExpire(request: DipRequest)
+	local thread = request.expireThread
+	request.expireThread = nil
+	if thread then
+		pcall(function()
+			task.cancel(thread)
+		end)
+	end
+end
+
+local function removeRequest(requestId: string)
+	local request = requestsById[requestId]
+	if not request then
+		return
+	end
+	cancelExpire(request)
+	requestsById[requestId] = nil
+end
+
+local function getOrCreateAgreement(a: string, b: string): Agreement
+	local key = pairKey(a, b)
+	local existing = agreementsByKey[key]
+	if existing then
+		return existing
+	end
+	local left, right = orderedPair(a, b)
+	local created: Agreement = {
+		leftId = left,
+		rightId = right,
+		alliance = false,
+		nap = false,
+	}
+	agreementsByKey[key] = created
+	return created
+end
+
+local function pruneEmpty(agreement: Agreement)
+	if not agreement.alliance and not agreement.nap then
+		agreementsByKey[pairKey(agreement.leftId, agreement.rightId)] = nil
+	end
+end
+
+local function findPendingSameType(a: string, b: string, agreementType: string): DipRequest?
+	local t = now()
+	for _, request in requestsById do
+		if request.agreementType == agreementType and request.expiresAt > t then
+			local same = pairKey(request.fromRulerId, request.toRulerId) == pairKey(a, b)
+			if same then
+				return request
+			end
+		end
+	end
+	return nil
+end
+
+local function buildSnapshot()
+	local agreements = {}
+	for _, agreement in agreementsByKey do
+		if agreement.alliance or agreement.nap then
+			table.insert(agreements, {
+				leftRulerId = agreement.leftId,
+				rightRulerId = agreement.rightId,
+				alliance = agreement.alliance,
+				allianceInstanceId = agreement.allianceInstanceId or "",
+				nap = agreement.nap,
+			})
+		end
+	end
+	table.sort(agreements, function(x, y)
+		if x.leftRulerId ~= y.leftRulerId then
+			return x.leftRulerId < y.leftRulerId
+		end
+		return x.rightRulerId < y.rightRulerId
+	end)
+	local requests = {}
+	local t = now()
+	for _, request in requestsById do
+		if request.expiresAt > t then
+			table.insert(requests, {
+				requestId = request.requestId,
+				agreementType = request.agreementType,
+				fromRulerId = request.fromRulerId,
+				toRulerId = request.toRulerId,
+				expiresAt = request.expiresAt,
+			})
+		end
+	end
+	return {
+		agreements = agreements,
+		requests = requests,
+	}
+end
+
+local function pushState(toPlayer: Player?)
+	if not toPlayer then
+		stateChangedBindable:Fire()
+	end
+	local payload = buildSnapshot()
+	local encoded = HttpService:JSONEncode(payload)
+	if debugSnapshot then
+		debugSnapshot.Value = encoded
+	end
+	if toPlayer then
+		print("[Diplomacy] push State to", toPlayer.Name)
+		serverPush:FireClient(toPlayer, "State", encoded)
+	else
+		print("[Diplomacy] push State all clients agreements=", #payload.agreements, "requests=", #payload.requests)
+		serverPush:FireAllClients("State", encoded)
+	end
+end
+
+local function typeLabel(agreementType: string): string
+	if agreementType == "NAP" then
+		return "Non-Aggression Pact"
+	end
+	return "Alliance"
+end
+
+function DiplomacyService.GetSnapshot()
+	return buildSnapshot()
+end
+
+function DiplomacyService.AreAllied(rulerA: string, rulerB: string): boolean
+	local a = findRuler(rulerA)
+	local b = findRuler(rulerB)
+	if not a or not b then
+		return false
+	end
+	local ra = a.rootRulerId
+	local rb = b.rootRulerId
+	if ra == rb then
+		return false
+	end
+	local agreement = agreementsByKey[pairKey(ra, rb)]
+	return agreement ~= nil and agreement.alliance == true
+end
+
+function DiplomacyService.HasNonAggressionPact(rulerA: string, rulerB: string): boolean
+	local a = findRuler(rulerA)
+	local b = findRuler(rulerB)
+	if not a or not b then
+		return false
+	end
+	local ra = a.rootRulerId
+	local rb = b.rootRulerId
+	if ra == rb then
+		return false
+	end
+	local agreement = agreementsByKey[pairKey(ra, rb)]
+	return agreement ~= nil and agreement.nap == true
+end
+
+local function dissolveInvolving(rulerId: string, reason: string)
+	local removedAny = false
+	for key, agreement in agreementsByKey do
+		if agreement.leftId == rulerId or agreement.rightId == rulerId then
+			local other = if agreement.leftId == rulerId then agreement.rightId else agreement.leftId
+			if agreement.alliance then
+				noticeRulerId(other, "Alliance dissolved (" .. reason .. ").")
+			end
+			if agreement.nap then
+				noticeRulerId(other, "Non-Aggression Pact dissolved (" .. reason .. ").")
+			end
+			agreementsByKey[key] = nil
+			removedAny = true
+		end
+	end
+	local t = now()
+	for requestId, request in requestsById do
+		if request.fromRulerId == rulerId or request.toRulerId == rulerId then
+			if request.expiresAt > t then
+				local other = if request.fromRulerId == rulerId then request.toRulerId else request.fromRulerId
+				noticeRulerId(other, typeLabel(request.agreementType) .. " offer is no longer valid.")
+			end
+			removeRequest(requestId)
+			removedAny = true
+		end
+	end
+	if removedAny then
+		noticeRulerId(rulerId, "External diplomatic agreements ended (" .. reason .. ").")
+		pushState()
+	end
+end
+
+function DiplomacyService.Offer(fromRulerId: string, toRulerId: string, agreementType: string): (boolean, string)
+	if agreementType ~= "Alliance" and agreementType ~= "NAP" then
+		return false, "Unknown agreement type."
+	end
+	if fromRulerId == toRulerId then
+		return false, "Cannot conduct diplomacy with yourself."
+	end
+	local fromRuler = findRuler(fromRulerId)
+	local toRuler = findRuler(toRulerId)
+	if not isIndependentRoot(fromRuler) or not isIndependentRoot(toRuler) then
+		return false, "Only independent rulers may conduct this diplomacy."
+	end
+	local agreement = agreementsByKey[pairKey(fromRulerId, toRulerId)]
+	if agreementType == "Alliance" and agreement and agreement.alliance then
+		return false, "Alliance already exists."
+	end
+	if agreementType == "NAP" and agreement and agreement.nap then
+		return false, "Non-Aggression Pact already exists."
+	end
+	if findPendingSameType(fromRulerId, toRulerId, agreementType) then
+		return false, "A matching offer is already pending."
+	end
+	local requestId = HttpService:GenerateGUID(false)
+	local created = now()
+	local ttl = lifetime()
+	local request: DipRequest = {
+		requestId = requestId,
+		agreementType = agreementType,
+		fromRulerId = fromRulerId,
+		toRulerId = toRulerId,
+		createdAt = created,
+		expiresAt = created + ttl,
+		expireThread = nil,
+	}
+	request.expireThread = task.delay(ttl, function()
+		local expired = requestsById[requestId]
+		if expired then
+			expired.expireThread = nil
+			removeRequest(requestId)
+			pushState()
+			noticeRulerId(expired.fromRulerId, typeLabel(expired.agreementType) .. " offer expired.")
+			noticeRulerId(expired.toRulerId, typeLabel(expired.agreementType) .. " offer expired.")
+		end
+	end)
+	requestsById[requestId] = request
+	pushState()
+	noticeRulerId(toRulerId, typeLabel(agreementType) .. " offered.")
+	return true, requestId
+end
+
+function DiplomacyService.Decline(requestId: string, actorRulerId: string): (boolean, string)
+	local request = requestsById[requestId]
+	if not request then
+		return false, "Request is no longer valid."
+	end
+	if now() >= request.expiresAt then
+		removeRequest(requestId)
+		pushState()
+		return false, "Request has expired."
+	end
+	if actorRulerId ~= request.toRulerId then
+		return false, "Only the recipient may decline this offer."
+	end
+	local fromId = request.fromRulerId
+	local toId = request.toRulerId
+	local label = typeLabel(request.agreementType)
+	removeRequest(requestId)
+	pushState()
+	noticeRulerId(toId, label .. " declined.")
+	noticeRulerId(fromId, label .. " declined.")
+	return true, label .. " declined."
+end
+
+function DiplomacyService.Accept(requestId: string, actorRulerId: string): (boolean, string)
+	local request = requestsById[requestId]
+	if not request then
+		return false, "Request is no longer valid."
+	end
+	if now() >= request.expiresAt then
+		removeRequest(requestId)
+		pushState()
+		return false, "Request has expired."
+	end
+	if actorRulerId ~= request.toRulerId then
+		return false, "Only the recipient may accept this offer."
+	end
+	local fromRuler = findRuler(request.fromRulerId)
+	local toRuler = findRuler(request.toRulerId)
+	if not isIndependentRoot(fromRuler) or not isIndependentRoot(toRuler) then
+		removeRequest(requestId)
+		pushState()
+		return false, "Only independent rulers may conduct this diplomacy."
+	end
+	local agreement = getOrCreateAgreement(request.fromRulerId, request.toRulerId)
+	if request.agreementType == "Alliance" then
+		if agreement.alliance then
+			removeRequest(requestId)
+			pushState()
+			return false, "Alliance already exists."
+		end
+		agreement.alliance = true
+		agreement.allianceInstanceId = HttpService:GenerateGUID(false)
+	else
+		if agreement.nap then
+			removeRequest(requestId)
+			pushState()
+			return false, "Non-Aggression Pact already exists."
+		end
+		agreement.nap = true
+	end
+	local label = typeLabel(request.agreementType)
+	removeRequest(requestId)
+	pushState()
+	noticeRulerId(request.toRulerId, label .. " accepted.")
+	noticeRulerId(request.fromRulerId, label .. " accepted.")
+	return true, label .. " accepted."
+end
+
+function DiplomacyService.Break(fromRulerId: string, toRulerId: string, agreementType: string): (boolean, string)
+	if agreementType ~= "Alliance" and agreementType ~= "NAP" then
+		return false, "Unknown agreement type."
+	end
+	local fromRuler = findRuler(fromRulerId)
+	if not isIndependentRoot(fromRuler) then
+		return false, "Only independent rulers may break this agreement."
+	end
+	local agreement = agreementsByKey[pairKey(fromRulerId, toRulerId)]
+	if not agreement then
+		return false, "No such agreement."
+	end
+	if agreementType == "Alliance" then
+		if not agreement.alliance then
+			return false, "No Alliance with that realm."
+		end
+		agreement.alliance = false
+		agreement.allianceInstanceId = nil
+	else
+		if not agreement.nap then
+			return false, "No Non-Aggression Pact with that realm."
+		end
+		agreement.nap = false
+	end
+	pruneEmpty(agreement)
+	pushState()
+	local label = typeLabel(agreementType)
+	noticeRulerId(fromRulerId, label .. " broken.")
+	noticeRulerId(toRulerId, label .. " broken.")
+	return true, label .. " broken."
+end
+
+local function onClientIntent(player: Player, action: any, a: any, b: any)
+	if typeof(action) ~= "string" then
+		noticePlayer(player, "Invalid request.")
+		return
+	end
+	if action == "Ready" then
+		print("[Diplomacy] Ready from", player.Name)
+		pushState(player)
+		return
+	end
+	local fromId = Hierarchy.GetRulerIdForUserId(player.UserId)
+	if not fromId then
+		noticePlayer(player, "No ruler record.")
+		return
+	end
+	if action == "OfferAlliance" or action == "OfferNAP" then
+		if typeof(a) ~= "string" then
+			noticePlayer(player, "Invalid target.")
+			return
+		end
+		local kind = if action == "OfferAlliance" then "Alliance" else "NAP"
+		local ok, result = DiplomacyService.Offer(fromId, a, kind)
+		if not ok then
+			noticePlayer(player, result)
+		else
+			noticePlayer(player, typeLabel(kind) .. " offered.")
+		end
+		return
+	end
+	if action == "Accept" or action == "Decline" then
+		if typeof(a) ~= "string" then
+			noticePlayer(player, "Invalid request.")
+			return
+		end
+		local ok, result
+		if action == "Accept" then
+			ok, result = DiplomacyService.Accept(a, fromId)
+		else
+			ok, result = DiplomacyService.Decline(a, fromId)
+		end
+		if not ok then
+			noticePlayer(player, result)
+		end
+		return
+	end
+	if action == "BreakAlliance" or action == "BreakNAP" then
+		if typeof(a) ~= "string" then
+			noticePlayer(player, "Invalid target.")
+			return
+		end
+		local kind = if action == "BreakAlliance" then "Alliance" else "NAP"
+		local ok, result = DiplomacyService.Break(fromId, a, kind)
+		if not ok then
+			noticePlayer(player, result)
+		end
+		return
+	end
+	noticePlayer(player, "Unknown action.")
+end
+
+local function syncIndependence()
+	for _, ruler in Hierarchy.GetSnapshot().rulers do
+		if ruler.independent ~= true then
+			dissolveInvolving(ruler.rulerId, "no longer independent")
+		end
+	end
+end
+
+function DiplomacyService.Start()
+	if started then
+		return
+	end
+	started = true
+
+	local remotesFolder = ReplicatedStorage:WaitForChild("Remotes") :: Folder
+	clientIntent = remotesFolder:WaitForChild("DiplomacyClientEvent") :: RemoteEvent
+	serverPush = remotesFolder:WaitForChild("DiplomacyServerEvent") :: RemoteEvent
+	clientIntent.OnServerEvent:Connect(onClientIntent)
+
+	local debugFolder = ServerScriptService:FindFirstChild("DiplomacyDebug")
+	if debugFolder then
+		debugFolder:Destroy()
+	end
+	debugFolder = Instance.new("Folder")
+	debugFolder.Name = "DiplomacyDebug"
+	debugFolder.Parent = ServerScriptService
+	debugSnapshot = Instance.new("StringValue")
+	debugSnapshot.Name = "LastSnapshot"
+	debugSnapshot.Parent = debugFolder
+	local help = Instance.new("StringValue")
+	help.Name = "Help"
+	help.Value =
+		"Prototype only. Invoke Offer/Accept/Decline/Break; or DipOffer=fromId=toId=Alliance|NAP; Accept=requestId=actorId; Break=fromId=toId=Alliance|NAP"
+	help.Parent = debugFolder
+	local invoke = Instance.new("BindableFunction")
+	invoke.Name = "Invoke"
+	invoke.Parent = debugFolder
+	invoke.OnInvoke = function(action: any, a: any, b: any, c: any)
+		if action == "Offer" then
+			local ok, result = DiplomacyService.Offer(a, b, c)
+			print("[Diplomacy] debug Invoke Offer", ok, result)
+			return ok, result
+		elseif action == "Accept" then
+			local ok, result = DiplomacyService.Accept(a, b)
+			print("[Diplomacy] debug Invoke Accept", ok, result)
+			return ok, result
+		elseif action == "Decline" then
+			local ok, result = DiplomacyService.Decline(a, b)
+			print("[Diplomacy] debug Invoke Decline", ok, result)
+			return ok, result
+		elseif action == "Break" then
+			local ok, result = DiplomacyService.Break(a, b, c)
+			print("[Diplomacy] debug Invoke Break", ok, result)
+			return ok, result
+		end
+		return false, "Unknown debug action."
+	end
+
+	debugFolder:GetAttributeChangedSignal("DipOffer"):Connect(function()
+		local raw = debugFolder:GetAttribute("DipOffer")
+		if typeof(raw) ~= "string" then
+			return
+		end
+		local fromId, toId, kind = string.match(raw, "^(.-)=(.-)=(Alliance|NAP)$")
+		if fromId and toId and kind then
+			local ok, result = DiplomacyService.Offer(fromId, toId, kind)
+			print("[Diplomacy] debug Offer", ok, result)
+		end
+	end)
+	debugFolder:GetAttributeChangedSignal("Accept"):Connect(function()
+		local raw = debugFolder:GetAttribute("Accept")
+		if typeof(raw) ~= "string" then
+			return
+		end
+		local requestId, actorId = string.match(raw, "^(.-)=(.+)$")
+		if requestId and actorId then
+			local ok, result = DiplomacyService.Accept(requestId, actorId)
+			print("[Diplomacy] debug Accept", ok, result)
+		end
+	end)
+	debugFolder:GetAttributeChangedSignal("Break"):Connect(function()
+		local raw = debugFolder:GetAttribute("Break")
+		if typeof(raw) ~= "string" then
+			return
+		end
+		local fromId, toId, kind = string.match(raw, "^(.-)=(.-)=(Alliance|NAP)$")
+		if fromId and toId and kind then
+			local ok, result = DiplomacyService.Break(fromId, toId, kind)
+			print("[Diplomacy] debug Break", ok, result)
+		end
+	end)
+
+	_G.__DiplomacyV01 = DiplomacyService
+
+	Hierarchy.StateChanged:Connect(syncIndependence)
+	Hierarchy.RulerRemoving:Connect(function(rulerId: string)
+		dissolveInvolving(rulerId, "left the match")
+	end)
+
+	Players.PlayerAdded:Connect(function(player)
+		task.defer(function()
+			if player.Parent then
+				pushState(player)
+			end
+		end)
+	end)
+
+	pushState()
+	print("[Diplomacy] service started")
+end
+
+return DiplomacyService
+]========]):gsub("\r","")})
+table.insert(r.sources,{file="ServerScriptService/Services/AdminBridge.luau",match=game.ServerScriptService.Services.AdminBridge.Source:gsub("\r","")==([========[--!strict
+
+--[[
+	Project Admin Bridge V0.1.
+
+	Kohl's Admin (and Studio debug) call this module. Gameplay services do not
+	require Kohl. All mutations go through existing authoritative APIs.
+]]
+
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local AdminConfig = require(script.Parent.AdminConfig)
+local Hierarchy = require(script.Parent.PoliticalHierarchyService)
+local Territory = require(script.Parent.TerritoryMapService)
+local Title = require(script.Parent.TitleProgressionService)
+local Warfare = require(script.Parent.WarfareService)
+local Economy = require(script.Parent.EconomyService)
+local Military = require(script.Parent.MilitaryService)
+local Communications = require(script.Parent.CommunicationsService)
+
+local AdminBridge = {}
+
+export type ExecuteResult = {
+	ok: boolean,
+	message: string,
+}
+
+local function fail(message: string): (boolean, string)
+	return false, message
+end
+
+function AdminBridge.IsGameTester(userId: number): boolean
+	return AdminConfig.IsGameTester(userId)
+end
+
+function AdminBridge.HelpText(): string
+	return table.concat({
+		"GameTester commands (UserId allowlist; Kohl rank is not enough).",
+		"Studio Local Server only: synthetic UserIds < 0 are allowed for testing.",
+		";adminhelp",
+		";inspectwars",
+		";inspectterritory <territoryId>",
+		";inspectruler <player|rulerId>",
+		";setowner <territoryId> <player|rulerId|unclaimed>",
+		";setprestige <player|rulerId> <number>",
+		";inspectgold <player|rulerId>",
+		";setgold <player|rulerId> <number>",
+		";addgold <player|rulerId> <number>",
+		";spendgold <player|rulerId> <number>",
+		";inspecttroops <player|rulerId>",
+		";settroops <player|rulerId> <number>",
+		";addtroops <player|rulerId> <number>",
+		";inspectmilitary <warId>",
+		";inspectcomms",
+		";inspectcontest",
+		";resolvewar <warId> attacker|defender",
+		"Studio fallback: ServerScriptService.AdminDebug.Invoke",
+	}, "\n")
+end
+
+local function rulerLabel(rulerId: string): string
+	for _, ruler in Hierarchy.GetSnapshot().rulers do
+		if ruler.rulerId == rulerId then
+			return string.format("%s (%s)", ruler.displayName, rulerId)
+		end
+	end
+	return rulerId
+end
+
+local function firstPlayer(value: any): Player?
+	if typeof(value) == "Instance" and value:IsA("Player") then
+		return value
+	end
+	if typeof(value) == "table" then
+		local first = (value :: any)[1]
+		if typeof(first) == "Instance" and first:IsA("Player") then
+			return first
+		end
+	end
+	return nil
+end
+
+function AdminBridge.ResolveRulerId(ref: any): (string?, string?)
+	if ref == nil then
+		return nil, "Need a player, rulerId, or unclaimed."
+	end
+	local player = firstPlayer(ref)
+	if player then
+		local mapped = Hierarchy.GetRulerIdForUserId(player.UserId)
+		if mapped then
+			return mapped, nil
+		end
+		return nil, "No ruler for player " .. player.Name
+	end
+	if typeof(ref) ~= "string" then
+		ref = tostring(ref)
+	end
+	local s = ref :: string
+	if s == "" then
+		return nil, "Need a player, rulerId, or unclaimed."
+	end
+	local snap = Hierarchy.GetSnapshot()
+	for _, ruler in snap.rulers do
+		if ruler.rulerId == s then
+			return s, nil
+		end
+	end
+	local asUser = tonumber(s)
+	if asUser then
+		local mapped = Hierarchy.GetRulerIdForUserId(asUser)
+		if mapped then
+			return mapped, nil
+		end
+	end
+	local lower = string.lower(s)
+	for _, p in Players:GetPlayers() do
+		if string.lower(p.Name) == lower or string.lower(p.DisplayName) == lower then
+			local mapped = Hierarchy.GetRulerIdForUserId(p.UserId)
+			if mapped then
+				return mapped, nil
+			end
+			return nil, "No ruler for player " .. p.Name
+		end
+	end
+	for _, ruler in snap.rulers do
+		if typeof(ruler.displayName) == "string" and string.lower(ruler.displayName) == lower then
+			return ruler.rulerId, nil
+		end
+	end
+	return nil, "Could not resolve ruler: " .. s
+end
+
+local function inspectWars(): (boolean, string)
+	local snap = Warfare.GetSnapshot()
+	local wars = snap.wars or {}
+	local cooldowns = snap.cooldowns or {}
+	local lines = { string.format("Active wars: %d", #wars) }
+	for _, war in wars do
+		table.insert(
+			lines,
+			string.format(
+				"%s\n  attacker: %s\n  defender: %s\n  target: %s",
+				tostring(war.warId),
+				rulerLabel(war.attackerRootId),
+				rulerLabel(war.defenderRootId),
+				tostring(war.targetTerritoryId)
+			)
+		)
+	end
+	if #cooldowns > 0 then
+		table.insert(lines, string.format("Post-war cooldowns: %d", #cooldowns))
+		for _, row in cooldowns do
+			table.insert(lines, string.format("  %s until %s", tostring(row.territoryId), tostring(row.endsAt)))
+		end
+	end
+	if #wars == 0 and #cooldowns == 0 then
+		return true, "No active wars."
+	end
+	return true, table.concat(lines, "\n")
+end
+
+local function inspectTerritory(territoryId: string): (boolean, string)
+	if typeof(territoryId) ~= "string" or territoryId == "" then
+		return fail("Need territoryId.")
+	end
+	territoryId = string.lower(territoryId)
+	local owner = Territory.GetOwnerRulerId(territoryId)
+	return true, HttpService:JSONEncode({
+		territoryId = territoryId,
+		hasOwner = owner ~= nil,
+		ownerRulerId = owner or "",
+	})
+end
+
+local function inspectRuler(ref: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(ref)
+	if not rulerId then
+		return fail(err or "Ruler not found.")
+	end
+	for _, ruler in Hierarchy.GetSnapshot().rulers do
+		if ruler.rulerId == rulerId then
+			return true, HttpService:JSONEncode(ruler)
+		end
+	end
+	return fail("Ruler not found.")
+end
+
+local function setOwner(territoryId: string, ownerRef: any): (boolean, string)
+	if typeof(territoryId) ~= "string" or territoryId == "" then
+		return fail("Need territoryId.")
+	end
+	territoryId = string.lower(territoryId)
+	if ownerRef == nil then
+		return fail("Need player, rulerId, or unclaimed.")
+	end
+	if typeof(ownerRef) == "string" then
+		local lower = string.lower(ownerRef)
+		if lower == "" or lower == "unclaimed" then
+			return Territory.SetOwner(territoryId, nil)
+		end
+	end
+	local rulerId, err = AdminBridge.ResolveRulerId(ownerRef)
+	if not rulerId then
+		return fail(err or "Could not resolve owner.")
+	end
+	return Territory.SetOwner(territoryId, rulerId)
+end
+
+local function setPrestige(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Prestige.")
+	end
+	local ok, callErr = pcall(function()
+		Title.DebugSetPrestige(rulerId, value)
+	end)
+	if not ok then
+		return fail(tostring(callErr))
+	end
+	return true, string.format("Prestige set to %s for %s.", tostring(value), rulerLabel(rulerId))
+end
+
+local function inspectGold(rulerRef: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local snap = Economy.GetInspect(rulerId)
+	if not snap then
+		return fail("No economy state for " .. rulerLabel(rulerId))
+	end
+	return true, HttpService:JSONEncode(snap)
+end
+
+local function setGold(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Gold.")
+	end
+	return Economy.DebugSetGold(rulerId, value)
+end
+
+local function addGold(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Gold.")
+	end
+	return Economy.AddGold(rulerId, value)
+end
+
+local function spendGold(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Gold.")
+	end
+	return Economy.TrySpend(rulerId, value)
+end
+
+local function inspectTroops(rulerRef: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local snap = Military.GetInspect(rulerId)
+	if not snap then
+		return fail("No troop state for " .. rulerLabel(rulerId))
+	end
+	return true, HttpService:JSONEncode(snap)
+end
+
+local function setTroops(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Troops.")
+	end
+	return Military.DebugSetTroops(rulerId, value)
+end
+
+local function addTroops(rulerRef: any, valueAny: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(rulerRef)
+	if not rulerId then
+		return fail(err or "Need player or rulerId.")
+	end
+	local value = tonumber(valueAny)
+	if value == nil then
+		return fail("Need numeric Troops.")
+	end
+	return Military.DebugAddTroops(rulerId, value)
+end
+
+local function inspectMilitary(warId: any): (boolean, string)
+	if typeof(warId) ~= "string" or warId == "" then
+		return fail("Need warId.")
+	end
+	local snap = Military.GetEngagementInspect(warId)
+	if not snap then
+		return fail("No military engagement.")
+	end
+	return true, HttpService:JSONEncode(snap)
+end
+
+local function inspectContest(): (boolean, string)
+	return true, HttpService:JSONEncode(Warfare.GetContestInspect())
+end
+
+local function resolveWar(warId: string, outcome: string): (boolean, string)
+	if typeof(warId) ~= "string" or warId == "" then
+		return fail("Need warId.")
+	end
+	if typeof(outcome) ~= "string" then
+		return fail("Need Attacker or Defender.")
+	end
+	local normalized = outcome
+	local lower = string.lower(outcome)
+	if lower == "attacker" then
+		normalized = "Attacker"
+	elseif lower == "defender" then
+		normalized = "Defender"
+	end
+	return Warfare.DebugResolveWar(warId, normalized)
+end
+
+--[[
+	actorUserId: Player.UserId for Kohl/live commands.
+	nil = Studio/server BindableFunction (already server-only).
+]]
+local function pushFeedback(actorUserId: number?, operation: string, ok: boolean, message: string)
+	local remotes = ReplicatedStorage:FindFirstChild("Remotes")
+	local event = remotes and remotes:FindFirstChild("AdminFeedbackEvent")
+	if not (event and event:IsA("RemoteEvent")) then
+		return
+	end
+	local payload = {
+		ok = ok,
+		operation = operation,
+		message = message,
+	}
+	if actorUserId ~= nil then
+		local player = Players:GetPlayerByUserId(actorUserId)
+		if player then
+			event:FireClient(player, payload)
+		end
+		return
+	end
+	for _, player in Players:GetPlayers() do
+		if AdminConfig.IsGameTester(player.UserId) then
+			event:FireClient(player, payload)
+		end
+	end
+end
+
+function AdminBridge.Execute(actorUserId: number?, operation: string, a: any, b: any, c: any): (boolean, string)
+	local function done(ok: boolean, message: string): (boolean, string)
+		pushFeedback(actorUserId, if typeof(operation) == "string" then operation else "Unknown", ok, message)
+		return ok, message
+	end
+	if actorUserId ~= nil then
+		if not AdminConfig.IsGameTester(actorUserId) then
+			print("[Admin] denied userId", actorUserId, operation)
+			return done(fail("Not a GameTester."))
+		end
+	end
+	if typeof(operation) ~= "string" then
+		return done(fail("Need operation."))
+	end
+	local op = operation
+	print("[Admin] Execute", actorUserId or "studio", op, a, b, c)
+	if op == "Help" then
+		return done(true, AdminBridge.HelpText())
+	elseif op == "InspectWars" then
+		return done(inspectWars())
+	elseif op == "InspectTerritory" then
+		return done(inspectTerritory(a))
+	elseif op == "InspectRuler" then
+		return done(inspectRuler(a))
+	elseif op == "SetOwner" then
+		return done(setOwner(a, b))
+	elseif op == "SetPrestige" then
+		return done(setPrestige(a, b))
+	elseif op == "InspectGold" then
+		return done(inspectGold(a))
+	elseif op == "SetGold" then
+		return done(setGold(a, b))
+	elseif op == "AddGold" then
+		return done(addGold(a, b))
+	elseif op == "SpendGold" then
+		return done(spendGold(a, b))
+	elseif op == "InspectTroops" then
+		return done(inspectTroops(a))
+	elseif op == "SetTroops" then
+		return done(setTroops(a, b))
+	elseif op == "AddTroops" then
+		return done(addTroops(a, b))
+	elseif op == "InspectComms" then
+		return true, HttpService:JSONEncode(Communications.DebugInspect())
+	elseif op == "InspectMilitary" then
+		return done(inspectMilitary(a))
+	elseif op == "InspectContest" then
+		return done(inspectContest())
+	elseif op == "ResolveWar" then
+		return done(resolveWar(a, b))
+	end
+	local _ = c
+	return done(fail("Unknown operation."))
+end
+
+return AdminBridge
+]========]):gsub("\r","")})
+table.insert(r.sources,{file="ServerScriptService/Services/AdminKohlAddon.luau",match=game.ServerScriptService.Services.AdminKohlAddon.Source:gsub("\r","")==([========[--!strict
+
+--[[
+	Kohl's Admin addon (shared; gameplay only in server `run`).
+
+	Must live under Kohl's Admin > Config > Addons (tagged "Kohl's Admin Addon").
+	Do not put "Client" or "Server" in this ModuleScript's name.
+	Does not contain gameplay logic — only AdminBridge.Execute.
+	`run` is server-only (Kohl uses runClient on the client).
+]]
+
+return function(_K)
+	local Players = game:GetService("Players")
+	local RunService = game:GetService("RunService")
+	local ServerScriptService = game:GetService("ServerScriptService")
+
+	-- Suggestion-only types: Kohl must not validate/resolve targets.
+	-- AdminBridge remains the resolver for player names, rulerIds, and special tokens.
+	local function playerNameSuggestions(): { any }
+		local names = {}
+		local list = Players:GetPlayers()
+		table.sort(list, function(a: Player, b: Player)
+			return a.Name < b.Name
+		end)
+		for _, player in list do
+			local aliases = { player.Name }
+			if player.DisplayName ~= "" and player.DisplayName ~= player.Name then
+				table.insert(aliases, player.DisplayName)
+			end
+			table.insert(names, { aliases, player.Name })
+		end
+		return names
+	end
+
+	local function acceptRawToken(v: any): (boolean, string?)
+		if v == nil then
+			return false, "Need a target"
+		end
+		return true, nil
+	end
+
+	local function parseRawToken(v: any): string
+		return tostring(v)
+	end
+
+	local function registerRawTargetType(typeName: string, displayName: string, extraSuggestions: { any }?)
+		if _K.Registry.types[typeName] then
+			return
+		end
+		_K.Registry.registerType(typeName, {
+			displayName = displayName,
+			filterLog = true,
+			validate = acceptRawToken,
+			parse = parseRawToken,
+			suggestions = function()
+				local names = playerNameSuggestions()
+				if extraSuggestions then
+					for _, extra in extraSuggestions do
+						table.insert(names, extra)
+					end
+				end
+				return names
+			end,
+		})
+	end
+
+	registerRawTargetType("adminRulerToken", "player or rulerId", nil)
+	registerRawTargetType("adminOwnerToken", "player, rulerId, or unclaimed", {
+		{ { "unclaimed" }, "unclaimed" },
+	})
+
+	local function runOp(context, operation: string, a: any, b: any)
+		if not RunService:IsServer() then
+			return
+		end
+		local userId = context.from
+		if typeof(userId) ~= "number" then
+			local player = context.fromPlayer
+			if typeof(player) == "Instance" and player:IsA("Player") then
+				userId = player.UserId
+			end
+		end
+		if typeof(userId) ~= "number" then
+			return
+		end
+		local AdminBridge = require(ServerScriptService.Services.AdminBridge)
+		AdminBridge.Execute(userId, operation, a, b, nil)
+		-- Kohl Command:run does pcall(run) then treats the first return as an error
+		-- string (Process.escapeRichText). Do not return true/false/Execute results.
+	end
+
+	local function register(def)
+		_K.Registry.registerCommand(_K, def)
+	end
+
+	register({
+		name = "adminhelp",
+		aliases = { "gameadminhelp" },
+		description = "List GameTester project commands (not Kohl rank help).",
+		group = "Creator",
+		run = function(context)
+			runOp(context, "Help")
+		end,
+	})
+
+	register({
+		name = "inspectwars",
+		aliases = { "warsnapshot" },
+		description = "List active territory-specific wars.",
+		group = "Creator",
+		run = function(context)
+			runOp(context, "InspectWars")
+		end,
+	})
+
+	register({
+		name = "inspectterritory",
+		description = "Inspect territory ownership.",
+		group = "Creator",
+		args = {
+			{ type = "rawString", name = "territoryId", description = "Territory id (e.g. greyfen)" },
+		},
+		run = function(context, territoryId)
+			runOp(context, "InspectTerritory", territoryId)
+		end,
+	})
+
+	register({
+		name = "inspectruler",
+		description = "Inspect a hierarchy ruler.",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player, rulerId, or userId" },
+		},
+		run = function(context, who)
+			runOp(context, "InspectRuler", who)
+		end,
+	})
+
+	register({
+		name = "setowner",
+		description = "Set territory owner via TerritoryMapService.",
+		group = "Creator",
+		args = {
+			{ type = "rawString", name = "territoryId", description = "Territory id" },
+			{ type = "adminOwnerToken", name = "owner", description = "Player, rulerId, or unclaimed" },
+		},
+		run = function(context, territoryId, owner)
+			runOp(context, "SetOwner", territoryId, owner)
+		end,
+	})
+
+	register({
+		name = "setprestige",
+		description = "Set Title V0.1 test Prestige (not spent).",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Prestige" },
+		},
+		run = function(context, who, value)
+			runOp(context, "SetPrestige", who, value)
+		end,
+	})
+
+	register({
+		name = "inspectgold",
+		description = "Inspect Economy V0.1 Gold for a ruler.",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+		},
+		run = function(context, who)
+			runOp(context, "InspectGold", who)
+		end,
+	})
+
+	register({
+		name = "setgold",
+		description = "Set Economy V0.1 Gold (whole number >= 0).",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Gold" },
+		},
+		run = function(context, who, value)
+			runOp(context, "SetGold", who, value)
+		end,
+	})
+
+	register({
+		name = "addgold",
+		description = "Add Economy V0.1 Gold.",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Gold to add" },
+		},
+		run = function(context, who, value)
+			runOp(context, "AddGold", who, value)
+		end,
+	})
+
+	register({
+		name = "spendgold",
+		description = "Spend Economy V0.1 Gold (rejects if unaffordable).",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Gold to spend" },
+		},
+		run = function(context, who, value)
+			runOp(context, "SpendGold", who, value)
+		end,
+	})
+
+	register({
+		name = "inspecttroops",
+		description = "Inspect Military V0.1 Troop state for a ruler.",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+		},
+		run = function(context, who)
+			runOp(context, "InspectTroops", who)
+		end,
+	})
+
+	register({
+		name = "settroops",
+		description = "Set Military V0.1 Total Troops (whole number >= committed).",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Troops" },
+		},
+		run = function(context, who, value)
+			runOp(context, "SetTroops", who, value)
+		end,
+	})
+
+	register({
+		name = "addtroops",
+		description = "Add Military V0.1 Troops.",
+		group = "Creator",
+		args = {
+			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
+			{ type = "number", name = "value", description = "Troops to add" },
+		},
+		run = function(context, who, value)
+			runOp(context, "AddTroops", who, value)
+		end,
+	})
+
+	register({
+		name = "inspectmilitary",
+		description = "Inspect hidden Military commitment/battle state for a warId.",
+		group = "Creator",
+		args = {
+			{ type = "rawString", name = "warId", description = "warId from inspectwars" },
+		},
+		run = function(context, warId)
+			runOp(context, "InspectMilitary", warId)
+		end,
+	})
+
+	register({
+		name = "inspectcomms",
+		description = "Inspect authoritative Communications membership (no message text).",
+		group = "Creator",
+		args = {},
+		run = function(context)
+			runOp(context, "InspectComms")
+		end,
+	})
+
+	register({
+		name = "inspectcontest",
+		description = "Inspect Warfare contest and post-war cooldown state.",
+		group = "Creator",
+		args = {},
+		run = function(context)
+			runOp(context, "InspectContest")
+		end,
+	})
+
+	register({
+		name = "resolvewar",
+		aliases = { "warresolve" },
+		description = "Resolve a war via WarfareService.DebugResolveWar.",
+		group = "Creator",
+		args = {
+			{ type = "rawString", name = "warId", description = "warId from inspectwars" },
+			{ type = "rawString", name = "outcome", description = "attacker or defender" },
+		},
+		run = function(context, warId, outcome)
+			runOp(context, "ResolveWar", warId, outcome)
+		end,
+	})
+end
+]========]):gsub("\r","")})
+table.insert(r.sources,{file="ServerScriptService/Bootstrap.server.luau",match=game.ServerScriptService.Bootstrap.Source:gsub("\r","")==([========[--!strict
+
+--[[
+	Server entry point.
+
+	This script is the thin bootstrap for authoritative server startup.
+	When services exist under ServerScriptService.Services, require and
+	start them from here in a defined order.
+
+	Order: Hierarchy → Territory → Title → Diplomacy → Warfare → Economy → Military → Admin.
+	Economy starts after Territory (ownership/config) and Hierarchy (ruler lifecycle).
+	Military starts after Warfare (war lifecycle) and Economy (Gold spend).
+
+	Do not put gameplay, GUI, or client-trusted logic in this file.
+	Keep it an orchestrator so systems stay in their own modules.
+]]
+
+local PoliticalHierarchyService = require(script.Parent.Services.PoliticalHierarchyService)
+local TerritoryMapService = require(script.Parent.Services.TerritoryMapService)
+local TitleProgressionService = require(script.Parent.Services.TitleProgressionService)
+local DiplomacyService = require(script.Parent.Services.DiplomacyService)
+local WarfareService = require(script.Parent.Services.WarfareService)
+local EconomyService = require(script.Parent.Services.EconomyService)
+local MilitaryService = require(script.Parent.Services.MilitaryService)
+local AdminService = require(script.Parent.Services.AdminService)
+local CommunicationsService = require(script.Parent.Services.CommunicationsService)
+PoliticalHierarchyService.Start()
+TerritoryMapService.Start()
+TitleProgressionService.Start()
+DiplomacyService.Start()
+WarfareService.Start()
+EconomyService.Start()
+MilitaryService.Start()
+CommunicationsService.Start()
+AdminService.Start()
+]========]):gsub("\r","")})
+table.insert(r.sources,{file="StarterPlayerScripts/Controllers/CommunicationsController.luau",match=game.StarterPlayer.StarterPlayerScripts.Controllers.CommunicationsController.Source:gsub("\r","")==([========[--!strict
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TextChatService = game:GetService("TextChatService")
+local TextService = game:GetService("TextService")
+local Config = require(ReplicatedStorage.Shared.Config.CommunicationsConfig)
+local Controller = {}
+local started = false
+
+function Controller.Start()
+	if started then return end
+	started = true
+	local player = Players.LocalPlayer
+	local panel = player:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui"):WaitForChild("CommunicationsPanel") :: Frame
+	local transcript = panel:WaitForChild("Transcript") :: ScrollingFrame
+	local body = transcript:WaitForChild("Body") :: TextLabel
+	local list = panel:WaitForChild("ConvList") :: ScrollingFrame
+	local contacts = panel:WaitForChild("ContactList") :: ScrollingFrame
+	local input = panel:WaitForChild("Input") :: TextBox
+	local send = panel:WaitForChild("SendButton") :: TextButton
+	local help = panel:WaitForChild("HelpButton") :: TextButton
+	local direct = panel:WaitForChild("DirectButton") :: TextButton
+	local observe = panel:WaitForChild("ObserverButton") :: TextButton
+	local muteButton = panel:WaitForChild("MuteObserver") :: TextButton
+	local status = panel:WaitForChild("Status") :: TextLabel
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	local intent = remotes:WaitForChild("CommunicationsClientEvent") :: RemoteEvent
+	local push = remotes:WaitForChild("CommunicationsServerEvent") :: RemoteEvent
+	local channels = TextChatService:WaitForChild("TextChannels")
+	local rows: { [string]: any } = {}
+	local logs: { [string]: { string } } = {}
+	local shown: { [string]: boolean } = {}
+	local unread: { [string]: number } = {}
+	local identity: { [string]: any } = {}
+	local pending: { [string]: TextChatMessage } = {}
+	local seen: { [string]: boolean } = {}
+	local submitted: { [string]: string } = {}
+	local observerLog: { string } = {}
+	local selected = "diplomatic"
+	local observing, muted, sending = false, false, false
+	local availableContacts = {}
+	local renderList: () -> ()
+
+	local function fitTranscript()
+		local height = TextService:GetTextSize(body.Text, body.TextSize, body.Font,
+			Vector2.new(math.max(1, transcript.AbsoluteSize.X - 10), 100000)).Y + 8
+		body.AutomaticSize = Enum.AutomaticSize.None
+		body.Size = UDim2.new(1, -10, 0, height)
+		transcript.AutomaticCanvasSize = Enum.AutomaticSize.None
+		transcript.CanvasSize = UDim2.fromOffset(0, height)
+		transcript.CanvasPosition = Vector2.new(0, math.max(0, height - transcript.AbsoluteWindowSize.Y))
+	end
+	transcript:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitTranscript)
+	TextChatService.ChatWindowConfiguration.Enabled = false
+	TextChatService.ChatInputBarConfiguration.Enabled = false
+	TextChatService.BubbleChatConfiguration.Enabled = false
+	TextChatService.ChannelTabsConfiguration.Enabled = false
+
+	local function refresh()
+		local row = rows[selected]
+		local canSend = row ~= nil and row.canSend == true and not observing
+		input.TextEditable = canSend
+		send.Active = canSend and not sending
+		send.Text = if sending then "…" else "Send"
+		status.Text = if observing then "Observer (native receipts only)" elseif row then
+			row.label .. (if canSend then "" else " — unavailable") else "History — unavailable"
+		body.Text = table.concat(if observing then observerLog else logs[selected] or {}, "\n\n")
+		fitTranscript()
+		muteButton.Visible = observing
+		muteButton.Text = if muted then "Unmute" else "Mute"
+		task.defer(function()
+			transcript.CanvasPosition = Vector2.new(0, math.max(0, transcript.AbsoluteCanvasSize.Y - transcript.AbsoluteWindowSize.Y))
+		end)
+	end
+	local function append(id: string, line: string)
+		local log = logs[id]
+		if not log then log = {}; logs[id] = log end
+		table.insert(log, line)
+		while #log > Config.HistoryLimit do table.remove(log, 1) end
+	end
+	local function explain()
+		local row = rows[selected]
+		if row and not observing then
+			append(selected, "[SYSTEM] " .. (Config.Help[row.kind] or "This context is unavailable."))
+			shown[selected] = true
+		end
+		refresh()
+	end
+	local function selectContext(id: string)
+		selected, observing = id, false
+		contacts.Visible = false
+		transcript.Visible = true
+		unread[id] = 0
+		if not shown[id] then explain() else refresh() end
+		renderList()
+	end
+	local function button(parent: Instance, text: string, y: number, callback: () -> ())
+		local item = Instance.new("TextButton")
+		item.Size = UDim2.new(1, -8, 0, 24)
+		item.Position = UDim2.fromOffset(0, y)
+		item.BackgroundColor3 = Color3.fromRGB(47, 115, 70)
+		item.BorderSizePixel = 0
+		item.TextColor3 = Color3.fromRGB(230, 234, 240)
+		item.Font = Enum.Font.SourceSans
+		item.TextSize = 14
+		item.Text = text
+		item.Parent = parent
+		item.Activated:Connect(callback)
+	end
+	renderList = function()
+		for _, child in list:GetChildren() do if child:IsA("TextButton") then child:Destroy() end end
+		local ids = {}
+		for id, row in rows do if not row.observerOnly or logs[id] then table.insert(ids, id) end end
+		for id in logs do if not rows[id] then table.insert(ids, id) end end
+		table.sort(ids)
+		for i, id in ids do
+			local row = rows[id]
+			local label = if row then row.label else id .. " (history)"
+			local count = unread[id] or 0
+			button(list, (if id == selected then "› " else "") .. label .. (if count > 0 then " (" .. count .. ")" else ""), (i - 1) * 26,
+				function() selectContext(id) end)
+		end
+		list.CanvasSize = UDim2.fromOffset(0, #ids * 26)
+	end
+	local function received(id: string)
+		local message, meta = pending[id], identity[id]
+		if not message or not meta or seen[id] then return end
+		seen[id] = true
+		if message.TextSource and message.TextSource.UserId == player.UserId and submitted[id] then
+			if input.Text == submitted[id] then input.Text = "" end
+			submitted[id] = nil
+			sending = false
+		end
+		pending[id], identity[id] = nil, nil
+		if meta.ordinary then
+			append(meta.contextId, meta.prefix .. message.Text)
+			if selected ~= meta.contextId or observing then unread[meta.contextId] = (unread[meta.contextId] or 0) + 1 end
+		end
+		if meta.observing and not muted then
+			table.insert(observerLog, meta.observerPrefix .. message.Text)
+			while #observerLog > Config.HistoryLimit do table.remove(observerLog, 1) end
+		end
+		renderList()
+		refresh()
+		task.delay(30, function() seen[id] = nil end)
+	end
+	TextChatService.MessageReceived:Connect(function(message)
+		local channel = message.TextChannel
+		if message.Status ~= Enum.TextChatMessageStatus.Success or not message.TextSource
+			or not channel or not channel:GetAttribute("CommunicationsContextId") then return end
+		local id = message.MessageId
+		pending[id] = message
+		received(id)
+		task.delay(30, function() pending[id], identity[id] = nil, nil end)
+	end)
+	push.OnClientEvent:Connect(function(action, data)
+		if action == "Identity" and typeof(data) == "table" and typeof(data.messageId) == "string" then
+			identity[data.messageId] = data
+			received(data.messageId)
+			task.delay(30, function() identity[data.messageId] = nil end)
+		elseif action == "State" and typeof(data) == "table" then
+			rows = {}
+			for _, row in data.contexts do rows[row.id] = row end
+			availableContacts = data.contacts
+			observe.Visible = data.isAdmin
+			if not data.isAdmin then observing = false end
+			if not shown[selected] and rows[selected] and not rows[selected].observerOnly then explain() end
+			renderList()
+			refresh()
+		elseif action == "Opened" and typeof(data) == "string" then selectContext(data)
+		elseif action == "Notice" and typeof(data) == "string" then status.Text = data end
+	end)
+	local function submit()
+		local row = rows[selected]
+		local text = string.match(input.Text, "^%s*(.-)%s*$") or ""
+		if observing or sending or not row or not row.canSend or text == "" then return end
+		if string.lower(text) == "help" then input.Text = ""; explain(); return end
+		local channel = channels:FindFirstChild(row.channelName)
+		if not channel or not channel:IsA("TextChannel") then status.Text = "Native channel unavailable."; return end
+		sending = true
+		refresh()
+		task.spawn(function()
+			local ok, result = pcall(function() return channel:SendAsync(text) end)
+			sending = false
+			refresh()
+			if not ok or not result then
+				status.Text = "Message not delivered by Roblox."
+			elseif result.Status == Enum.TextChatMessageStatus.Sending or result.Status == Enum.TextChatMessageStatus.Success then
+				submitted[result.MessageId] = text
+				if seen[result.MessageId] then
+					if input.Text == text then input.Text = "" end
+					submitted[result.MessageId] = nil
+				end
+				task.delay(15, function()
+					if submitted[result.MessageId] then
+						submitted[result.MessageId] = nil
+						status.Text = "Delivery not confirmed by Roblox."
+					end
+				end)
+			else
+				status.Text = "Message blocked by Roblox."
+			end
+			-- Only native MessageReceived + authoritative label can append player text.
+		end)
+	end
+	send.Activated:Connect(submit)
+	input.FocusLost:Connect(function(enter) if enter then submit() end end)
+	help.Activated:Connect(explain)
+	direct.Activated:Connect(function()
+		contacts.Visible = not contacts.Visible
+		transcript.Visible = not contacts.Visible
+		for _, child in contacts:GetChildren() do if child:IsA("TextButton") then child:Destroy() end end
+		for i, contact in availableContacts do button(contacts, contact.name, (i - 1) * 26, function() intent:FireServer("OpenDirect", contact.userId) end) end
+		contacts.CanvasSize = UDim2.fromOffset(0, #availableContacts * 26)
+		if #availableContacts == 0 then status.Text = "No currently neighboring contact." end
+	end)
+	observe.Activated:Connect(function()
+		observing = not observing
+		contacts.Visible = false
+		transcript.Visible = true
+		refresh()
+	end)
+	muteButton.Activated:Connect(function() muted = not muted; refresh() end)
+	intent:FireServer("Ready")
+	refresh()
+end
+return Controller
+]========]):gsub("\r","")})
+table.insert(r.sources,{file="StarterPlayerScripts/Controllers/TerritoryMapController.luau",match=game.StarterPlayer.StarterPlayerScripts.Controllers.TerritoryMapController.Source:gsub("\r","")==([========[--!strict
+
+--[[
+	Prototype map renderer and input. Displays server ownership; never mutates it.
+]]
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+local HttpService = game:GetService("HttpService")
+local GuiService = game:GetService("GuiService")
+
+local MapCatalog = require(ReplicatedStorage.Shared.Config.MapCatalog)
+local RealmColors = require(ReplicatedStorage.Shared.Config.RealmColors)
+local MapGeometry = require(ReplicatedStorage.Shared.Util.MapGeometry)
+local MapTriangles = require(ReplicatedStorage.Shared.Util.MapTriangles)
+
+local player = Players.LocalPlayer
+local TerritoryMapController = {}
+
+local MIN_ZOOM = 0.7
+local MAX_ZOOM = 2.8
+local FOV = 25
+local THICK = 6
+local SELECT_COLOR = Color3.fromRGB(255, 214, 64)
+
+local started = false
+
+local function decodeState(payload: any): any?
+	if typeof(payload) == "string" then
+		local ok, decoded = pcall(function()
+			return HttpService:JSONDecode(payload)
+		end)
+		if ok and typeof(decoded) == "table" then
+			return decoded
+		end
+		return nil
+	elseif typeof(payload) == "table" then
+		return payload
+	end
+	return nil
+end
+
+local function scaleFromCentroid(polygon: { { x: number, y: number } }, towardCenter: number)
+	local cx, cy = MapGeometry.Centroid(polygon)
+	local out = {}
+	for _, p in polygon do
+		table.insert(out, {
+			x = p.x + (cx - p.x) * towardCenter,
+			y = p.y + (cy - p.y) * towardCenter,
+		})
+	end
+	return out
+end
+
+function TerritoryMapController.Start()
+	if started or _G.__TerritoryMapV01Started == true then
+		return
+	end
+	started = true
+	_G.__TerritoryMapV01Started = true
+
+	local gui = player:WaitForChild("PlayerGui"):WaitForChild("HierarchyPrototypeGui", 12)
+	if not (gui and gui:IsA("ScreenGui")) then
+		warn("[Territory] HierarchyPrototypeGui missing; map idle.")
+		started = false
+		_G.__TerritoryMapV01Started = nil
+		return
+	end
+
+	local mapStage = gui:WaitForChild("MapStage") :: Frame
+	local viewport = mapStage:FindFirstChild("MapView")
+	if not (viewport and viewport:IsA("ViewportFrame")) then
+		if viewport then
+			viewport:Destroy()
+		end
+		viewport = Instance.new("ViewportFrame")
+		viewport.Name = "MapView"
+		viewport.BackgroundColor3 = Color3.fromRGB(28, 34, 42)
+		viewport.BorderSizePixel = 0
+		viewport.Size = UDim2.fromScale(1, 1)
+		viewport.ZIndex = 1
+		viewport.Active = false
+		viewport.Ambient = Color3.fromRGB(210, 210, 210)
+		viewport.LightColor = Color3.fromRGB(255, 255, 255)
+		viewport.LightDirection = Vector3.new(0, -1, 0)
+		viewport.Parent = mapStage
+	end
+	viewport.Active = false
+	local info = gui:WaitForChild("TerritoryInfo") :: Frame
+	local infoBody = info:WaitForChild("Body") :: TextLabel
+	local selectedValue = info:FindFirstChild("SelectedTerritoryId")
+
+	local remotes = ReplicatedStorage:WaitForChild("Remotes")
+	local territoryIntent = remotes:WaitForChild("TerritoryClientEvent") :: RemoteEvent
+	local territoryPush = remotes:WaitForChild("TerritoryServerEvent") :: RemoteEvent
+	local hierarchyPush = remotes:WaitForChild("HierarchyServerEvent") :: RemoteEvent
+
+	local mapDef = MapCatalog.GetDefault()
+	local polygons = {}
+	local byId = {}
+	for _, t in mapDef.territories do
+		byId[t.id] = t
+		table.insert(polygons, t.polygon)
+	end
+	local minX, minY, maxX, maxY = MapGeometry.MapBounds(polygons)
+	local spanX = math.max(maxX - minX, 1)
+	local spanY = math.max(maxY - minY, 1)
+	local midX = (minX + maxX) * 0.5
+	local midY = (minY + maxY) * 0.5
+
+	local ownership: { [string]: string } = {}
+	local colorIndex: { [string]: number } = {}
+	local hierarchyById: { [string]: any } = {}
+	local selectedId: string? = nil
+
+	local zoom = 1
+	local lookX = midX
+	local lookZ = midY
+	local dragging = false
+	local dragMoved = false
+	local dragStart: Vector2? = nil
+	local lookStart = Vector2.zero
+
+	local world = Instance.new("WorldModel")
+	world.Parent = viewport
+	local folder = Instance.new("Folder")
+	folder.Name = "Territories"
+	folder.Parent = world
+	local fillParts: { [string]: { WedgePart } } = {}
+	local rimParts: { [string]: { WedgePart } } = {}
+	local selectParts: { [string]: { WedgePart } } = {}
+
+	for _, t in mapDef.territories do
+		local selectFolder = Instance.new("Folder")
+		selectFolder.Name = t.id .. "_select"
+		selectFolder.Parent = folder
+		local rim = Instance.new("Folder")
+		rim.Name = t.id .. "_rim"
+		rim.Parent = folder
+		local fill = Instance.new("Folder")
+		fill.Name = t.id .. "_fill"
+		fill.Parent = folder
+		-- Gold outline above fill/holder so selection does not replace political colors.
+		selectParts[t.id] = MapTriangles.DrawRing(
+			selectFolder,
+			t.polygon,
+			SELECT_COLOR,
+			t.id .. "select",
+			THICK,
+			10,
+			THICK * 0.75,
+			true
+		)
+		for _, p in selectParts[t.id] do
+			p.Transparency = 1
+			p.Material = Enum.Material.Neon
+			p.Color = SELECT_COLOR
+		end
+		rimParts[t.id] = MapTriangles.DrawQuad(rim, t.polygon, RealmColors.Unclaimed, t.id .. "rim", THICK, THICK * 0.2)
+		fillParts[t.id] = MapTriangles.DrawQuad(
+			fill,
+			scaleFromCentroid(t.polygon, 0.18),
+			RealmColors.Unclaimed,
+			t.id .. "fill",
+			THICK,
+			THICK * 0.55
+		)
+	end
+
+	local camera = Instance.new("Camera")
+	camera.FieldOfView = FOV
+	camera.Parent = viewport
+	viewport.CurrentCamera = camera
+
+	local function rulerOf(rulerId: string?): any?
+		if not rulerId or rulerId == "" then
+			return nil
+		end
+		return hierarchyById[rulerId]
+	end
+
+	local function ownerColor(ownerId: string): Color3
+		local idx = colorIndex[ownerId]
+		if typeof(idx) == "number" then
+			return RealmColors.ByIndex(idx)
+		end
+		return RealmColors.ByIndex(1)
+	end
+
+	local function cameraHeight(): number
+		local size = mapStage.AbsoluteSize
+		local aspect = if size.Y > 0 then size.X / size.Y else 1
+		local half = math.max(spanX / aspect, spanY) * 0.55 / zoom
+		return half / math.tan(math.rad(FOV * 0.5))
+	end
+
+	local function applyCamera()
+		local h = cameraHeight()
+		local size = mapStage.AbsoluteSize
+		local aspect = if size.Y > 0 then size.X / size.Y else 1
+		local halfZ = h * math.tan(math.rad(FOV * 0.5))
+		local halfX = halfZ * aspect
+		local pad = 20
+		local loX = minX - pad + halfX
+		local hiX = maxX + pad - halfX
+		if loX <= hiX then
+			lookX = math.clamp(lookX, loX, hiX)
+		else
+			lookX = midX
+		end
+		local loZ = minY - pad + halfZ
+		local hiZ = maxY + pad - halfZ
+		if loZ <= hiZ then
+			lookZ = math.clamp(lookZ, loZ, hiZ)
+		else
+			lookZ = midY
+		end
+		camera.CFrame = CFrame.lookAt(Vector3.new(lookX, h, lookZ), Vector3.new(lookX, 0, lookZ), Vector3.new(0, 0, -1))
+	end
+
+	local function screenToMap(screen: Vector2): (number?, number?)
+		local abs = viewport.AbsolutePosition
+		local size = viewport.AbsoluteSize
+		if size.X < 1 or size.Y < 1 then
+			return nil, nil
+		end
+		local u = (screen.X - abs.X) / size.X
+		local v = (screen.Y - abs.Y) / size.Y
+		if u < 0 or v < 0 or u > 1 or v > 1 then
+			return nil, nil
+		end
+		local h = cameraHeight()
+		local aspect = size.X / size.Y
+		local halfZ = h * math.tan(math.rad(FOV * 0.5))
+		local halfX = halfZ * aspect
+		local mx = lookX + (u - 0.5) * 2 * halfX
+		local my = lookZ + (v - 0.5) * 2 * halfZ
+		return mx, my
+	end
+
+	local function hitTerritory(mx: number, my: number): string?
+		for _, t in mapDef.territories do
+			if MapGeometry.PointInPolygon(mx, my, t.polygon) then
+				return t.id
+			end
+		end
+		return nil
+	end
+
+	local function updateInfo()
+		if not selectedId then
+			infoBody.Text = "No territory selected.\nClick the map to inspect a province."
+			return
+		end
+		local def = byId[selectedId]
+		if not def then
+			infoBody.Text = "Unknown territory."
+			return
+		end
+		local ownerId = ownership[selectedId]
+		if not ownerId or ownerId == "" then
+			infoBody.Text = string.format(
+				"%s\nID: %s\nOwner: Unclaimed\nRank: —\nStatus: —\nGreater realm: —",
+				def.displayName,
+				def.id
+			)
+			return
+		end
+		local owner = rulerOf(ownerId)
+		local root = if owner then rulerOf(owner.rootRulerId) else nil
+		infoBody.Text = string.format(
+			"%s\nID: %s\nOwner: %s\nRank: %s\nStatus: %s\nGreater realm: %s",
+			def.displayName,
+			def.id,
+			if owner then owner.displayName else ownerId,
+			if owner then owner.titleName else "—",
+			if owner then (if owner.independent then "Independent" else "Subject") else "—",
+			if root then root.displayName else (if owner then owner.displayName else "—")
+		)
+	end
+
+	local function colorize()
+		for _, t in mapDef.territories do
+			local ownerId = ownership[t.id]
+			local fill = RealmColors.Unclaimed
+			local rim = Color3.fromRGB(40, 44, 50)
+			if ownerId and ownerId ~= "" then
+				local owner = rulerOf(ownerId)
+				local rootId = if owner and typeof(owner.rootRulerId) == "string" and owner.rootRulerId ~= "" then owner.rootRulerId else ownerId
+				fill = ownerColor(rootId)
+				rim = ownerColor(ownerId)
+			end
+			for _, p in fillParts[t.id] do
+				p.Color = fill
+				p.Material = Enum.Material.SmoothPlastic
+			end
+			for _, p in rimParts[t.id] do
+				p.Color = rim
+			end
+			local selected = selectedId == t.id
+			for _, p in selectParts[t.id] do
+				p.Color = SELECT_COLOR
+				p.Material = Enum.Material.Neon
+				p.Transparency = if selected then 0 else 1
+			end
+		end
+		updateInfo()
+		applyCamera()
+		if selectedValue and selectedValue:IsA("StringValue") then
+			selectedValue.Value = selectedId or ""
+		end
+	end
+
+	local function applyTerritoryState(data: any)
+		ownership = {}
+		if typeof(data.territories) == "table" then
+			for _, row in data.territories do
+				if typeof(row.territoryId) == "string" then
+					ownership[row.territoryId] = if row.hasOwner == true then (tostring(row.ownerRulerId)) else ""
+				end
+			end
+		end
+		colorIndex = {}
+		if typeof(data.rulerColors) == "table" then
+			for _, row in data.rulerColors do
+				if typeof(row.rulerId) == "string" and typeof(row.colorIndex) == "number" then
+					colorIndex[row.rulerId] = row.colorIndex
+				end
+			end
+		end
+		print("[Territory] State received map=", tostring(data.mapId))
+		colorize()
+	end
+
+	local function applyHierarchyState(data: any)
+		hierarchyById = {}
+		if typeof(data.rulers) == "table" then
+			for _, ruler in data.rulers do
+				if typeof(ruler.rulerId) == "string" then
+					hierarchyById[ruler.rulerId] = ruler
+				end
+			end
+		end
+		colorize()
+	end
+
+	territoryPush.OnClientEvent:Connect(function(kind: any, payload: any)
+		if kind == "State" then
+			local data = decodeState(payload)
+			if data then
+				applyTerritoryState(data)
+			else
+				warn("[Territory] State decode failed")
+			end
+		end
+	end)
+
+	hierarchyPush.OnClientEvent:Connect(function(kind: any, payload: any)
+		if kind == "State" then
+			local data = decodeState(payload)
+			if data then
+				applyHierarchyState(data)
+			end
+		end
+	end)
+
+	local function pointerScreen(): Vector2
+		return UserInputService:GetMouseLocation() - GuiService:GetGuiInset()
+	end
+
+	local function mouseOverMap(screen: Vector2): boolean
+		local abs = mapStage.AbsolutePosition
+		local size = mapStage.AbsoluteSize
+		return screen.X >= abs.X and screen.Y >= abs.Y and screen.X <= abs.X + size.X and screen.Y <= abs.Y + size.Y
+	end
+
+	-- Map is the lowest input layer. Higher project GUI at this point owns the pointer.
+	-- ResultToast is informational and is not treated as a blocking layer.
+	-- AdminInspectPanel, EconomyPanel, MilitaryPanel, and visible Kohl command/dashboard chrome block the map.
+	local function isKohlBlockingGui(obj: GuiObject): boolean
+		local screenGui = obj:FindFirstAncestorWhichIsA("ScreenGui")
+		if not screenGui then
+			return false
+		end
+		local guiName = screenGui.Name
+		if
+			guiName ~= "FluxUILayerTopbar"
+			and guiName ~= "FluxUILayerTop"
+			and guiName ~= "FluxUILayerDefault"
+			and guiName ~= "FluxUILayerBottom"
+		then
+			return false
+		end
+		local current: Instance? = obj
+		while current and current ~= screenGui do
+			if current:IsA("GuiObject") and current.Visible then
+				local n = current.Name
+				if n == "CommandBar" or n == "Window" or n == "Dialog" or n == "Cmdbar2" or n == "KADashboardButton" or n == "KACommandsButton" then
+					return true
+				end
+			end
+			current = current.Parent
+		end
+		return false
+	end
+	local function isMapDescendant(obj: Instance): boolean
+		local current: Instance? = obj
+		while current and current ~= gui do
+			if current == mapStage then
+				return true
+			end
+			current = current.Parent
+		end
+		return false
+	end
+
+	local function blockingPanelOf(obj: Instance): GuiObject?
+		local current: Instance? = obj
+		while current and current ~= gui do
+			if current:IsA("GuiObject") and current.Parent == gui then
+				local name = current.Name
+				if name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" or name == "EconomyPanel" or name == "MilitaryPanel" or name == "CommunicationsPanel" then
+					return current
+				end
+			end
+			current = current.Parent
+		end
+		return nil
+	end
+
+	local function pointerOnHigherGui(screen: Vector2): boolean
+		local objects = player.PlayerGui:GetGuiObjectsAtPosition(screen.X, screen.Y)
+		for _, obj in objects do
+			if obj:IsA("GuiObject") and obj.Visible and not isMapDescendant(obj) then
+				if isKohlBlockingGui(obj) then
+					return true
+				end
+				local panel = blockingPanelOf(obj)
+				if panel and panel.Visible then
+					return true
+				end
+			end
+		end
+		return false
+	end
+
+	local mapPress = false
+
+	-- Press must start on the map surface (MapStage / MapView), not on higher panels.
+	-- Drag uses inset-corrected cursor position so GuiObject vs UIS coordinates cannot cancel pan.
+	local function beginMapPress(input: InputObject)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+			return
+		end
+		if pointerOnHigherGui(pointerScreen()) then
+			return
+		end
+		mapPress = true
+		dragging = true
+		dragMoved = false
+		dragStart = pointerScreen()
+		lookStart = Vector2.new(lookX, lookZ)
+	end
+
+	mapStage.InputBegan:Connect(beginMapPress)
+	viewport.InputBegan:Connect(beginMapPress)
+
+	UserInputService.InputChanged:Connect(function(input, _gameProcessed)
+		if dragging and mapPress and input.UserInputType == Enum.UserInputType.MouseMovement and dragStart then
+			local now = pointerScreen()
+			if (now - dragStart).Magnitude > 6 then
+				dragMoved = true
+			end
+			if dragMoved then
+				local size = viewport.AbsoluteSize
+				if size.X < 1 or size.Y < 1 then
+					return
+				end
+				local h = cameraHeight()
+				local halfZ = h * math.tan(math.rad(FOV * 0.5))
+				local halfX = halfZ * (size.X / size.Y)
+				local dx = (now.X - dragStart.X) / size.X * 2 * halfX
+				local dz = (now.Y - dragStart.Y) / size.Y * 2 * halfZ
+				lookX = lookStart.X - dx
+				lookZ = lookStart.Y - dz
+				applyCamera()
+			end
+		elseif input.UserInputType == Enum.UserInputType.MouseWheel then
+			-- Active MapStage marks wheel as gameProcessed. That is the map surface, not a higher panel.
+			local pos = pointerScreen()
+			if not mouseOverMap(pos) or pointerOnHigherGui(pos) then
+				return
+			end
+			if input.Position.Z > 0 then
+				zoom = math.clamp(zoom * 1.12, MIN_ZOOM, MAX_ZOOM)
+			else
+				zoom = math.clamp(zoom / 1.12, MIN_ZOOM, MAX_ZOOM)
+			end
+			applyCamera()
+		end
+	end)
+
+	UserInputService.InputEnded:Connect(function(input)
+		if input.UserInputType ~= Enum.UserInputType.MouseButton1 then
+			return
+		end
+		local wasMapPress = mapPress
+		local wasDrag = dragMoved
+		mapPress = false
+		dragging = false
+		dragMoved = false
+		if not wasMapPress or wasDrag then
+			return
+		end
+		local pos = pointerScreen()
+		if pointerOnHigherGui(pos) then
+			return
+		end
+		local mx, my = screenToMap(pos)
+		if not mx or not my then
+			return
+		end
+		selectedId = hitTerritory(mx, my)
+		colorize()
+	end)
+
+	mapStage:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+		applyCamera()
+	end)
+
+	applyCamera()
+	territoryIntent:FireServer("Ready")
+	print("[Territory] controller started; Ready sent")
+	colorize()
+end
+
+return TerritoryMapController
+]========]):gsub("\r","")})
+table.insert(r.sources,{file="StarterPlayerScripts/Bootstrap.local.luau",match=game.StarterPlayer.StarterPlayerScripts.Bootstrap.Source:gsub("\r","")==([========[--!strict
+
+--[[
+	Client entry point.
+
+	This script is the thin bootstrap for local player startup.
+	When controllers exist under StarterPlayer.StarterPlayerScripts.Controllers,
+	require and start them from here in a defined order.
+
+	Controllers own client behavior and GUI control only.
+	Never treat client input or GUI state as authoritative game truth.
+
+	Must be a LocalScript (Script Sync: Bootstrap.local.luau). A Script with
+	RunContext=Client under StarterPlayerScripts runs twice and duplicates GUI.
+]]
+
+local PoliticalHierarchyController = require(script.Parent.Controllers.PoliticalHierarchyController)
+local TerritoryMapController = require(script.Parent.Controllers.TerritoryMapController)
+local TitleProgressionController = require(script.Parent.Controllers.TitleProgressionController)
+local DiplomacyController = require(script.Parent.Controllers.DiplomacyController)
+local WarfareController = require(script.Parent.Controllers.WarfareController)
+local EconomyController = require(script.Parent.Controllers.EconomyController)
+local MilitaryController = require(script.Parent.Controllers.MilitaryController)
+local AdminFeedbackController = require(script.Parent.Controllers.AdminFeedbackController)
+local CommunicationsController = require(script.Parent.Controllers.CommunicationsController)
+PoliticalHierarchyController.Start()
+TerritoryMapController.Start()
+TitleProgressionController.Start()
+DiplomacyController.Start()
+WarfareController.Start()
+EconomyController.Start()
+MilitaryController.Start()
+CommunicationsController.Start()
+AdminFeedbackController.Start()
+]========]):gsub("\r","")})
+table.insert(r.sources,{file="ReplicatedStorage/Shared/Util/RealmGraph.luau",match=game.ReplicatedStorage.Shared.Util.RealmGraph.Source:gsub("\r","")==([========[--!strict
+
+--[[
+	Greater-realm adjacency graph. Uses Territory adjacency + Hierarchy roots.
+	Not visual proximity. Server must recompute from live ownership.
+]]
+
+local RealmGraph = {}
+
+local function rootOf(ruler: any): string?
+	if typeof(ruler) ~= "table" then
+		return nil
+	end
+	if typeof(ruler.rootRulerId) == "string" and ruler.rootRulerId ~= "" then
+		return ruler.rootRulerId
+	end
+	if typeof(ruler.rulerId) == "string" then
+		return ruler.rulerId
+	end
+	return nil
+end
+
+function RealmGraph.LandsByRoot(rulers: { any }, ownedByRuler: (string) -> { string }): { [string]: { string } }
+	local lands: { [string]: { string } } = {}
+	local seen: { [string]: { [string]: boolean } } = {}
+	for _, ruler in rulers do
+		local rootId = rootOf(ruler)
+		local rulerId = ruler.rulerId
+		if typeof(rootId) == "string" and typeof(rulerId) == "string" then
+			if seen[rootId] == nil then
+				seen[rootId] = {}
+				lands[rootId] = {}
+			end
+			for _, territoryId in ownedByRuler(rulerId) do
+				if seen[rootId][territoryId] ~= true then
+					seen[rootId][territoryId] = true
+					table.insert(lands[rootId], territoryId)
+				end
+			end
+		end
+	end
+	return lands
+end
+
+function RealmGraph.AreRealmsAdjacent(
+	landsA: { string },
+	landsB: { string },
+	areAdjacent: (string, string) -> boolean
+): boolean
+	for _, a in landsA do
+		for _, b in landsB do
+			if areAdjacent(a, b) then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+function RealmGraph.Distance(
+	fromRoot: string,
+	toRoot: string,
+	neighborSet: { [string]: { string } }
+): number?
+	if fromRoot == toRoot then
+		return 0
+	end
+	local visited: { [string]: boolean } = { [fromRoot] = true }
+	local queue = { { id = fromRoot, d = 0 } }
+	local head = 1
+	while head <= #queue do
+		local cur = queue[head]
+		head += 1
+		local neighbors = neighborSet[cur.id]
+		if neighbors then
+			for _, nxt in neighbors do
+				if visited[nxt] ~= true then
+					if nxt == toRoot then
+						return cur.d + 1
+					end
+					visited[nxt] = true
+					table.insert(queue, { id = nxt, d = cur.d + 1 })
+				end
+			end
+		end
+	end
+	return nil
+end
+
+function RealmGraph.BuildNeighborSet(
+	landsByRoot: { [string]: { string } },
+	areAdjacent: (string, string) -> boolean
+): { [string]: { string } }
+	local roots = {}
+	for rootId in landsByRoot do
+		table.insert(roots, rootId)
+	end
+	table.sort(roots)
+	local neighborSet: { [string]: { string } } = {}
+	for _, id in roots do
+		neighborSet[id] = {}
+	end
+	for i = 1, #roots do
+		for j = i + 1, #roots do
+			local a = roots[i]
+			local b = roots[j]
+			if RealmGraph.AreRealmsAdjacent(landsByRoot[a], landsByRoot[b], areAdjacent) then
+				table.insert(neighborSet[a], b)
+				table.insert(neighborSet[b], a)
+			end
+		end
+	end
+	return neighborSet
+end
+
+return RealmGraph
+]========]):gsub("\r","")})
+table.insert(r.sources,{file="ReplicatedStorage/Shared/Config/CommunicationsConfig.luau",match=game.ReplicatedStorage.Shared.Config.CommunicationsConfig.Source:gsub("\r","")==([========[--!strict
+
+local CommunicationsConfig = {}
+CommunicationsConfig.DiplomaticMaxDistance = 2
+CommunicationsConfig.HistoryLimit = 80
+CommunicationsConfig.Help = {
+	diplomatic = "Public political communication with nearby realms. Messages reach rulers within realm-graph distance 2. Audience may differ between rulers.",
+	council = "Private communication between a ruler and their direct subjects. Geographic distance does not restrict Council communication.",
+	alliance = "Private communication between the rulers participating in this specific Alliance. Subjects and NAP partners do not receive these messages.",
+	direct = "Private 1:1 communication with a neighboring ruler. Realms must currently share a border for normal communication.",
+}
+return CommunicationsConfig
+]========]):gsub("\r","")})
+for _,s in game.ServerStorage.CommunicationsRecoveryArchive:GetChildren() do table.insert(r.archive,{name=s.Name,class=s.ClassName,disabled=(s:IsA("BaseScript") and s.Disabled or nil)}) end; for _,s in game:GetDescendants() do if s:IsA("BaseScript") and s.Name=="Bootstrap" and not s.Disabled then table.insert(r.activeBootstraps,s:GetFullName()) end end; local v=Instance.new("StringValue"); v.Name="CommunicationsFinalIntegrity"; v.Value=game.HttpService:JSONEncode(r); v.Parent=game.ServerStorage; print("FINAL_INTEGRITY_READY")

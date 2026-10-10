@@ -17,6 +17,7 @@ local TitleRequirements = require(ReplicatedStorage.Shared.Util.TitleRequirement
 local Hierarchy = require(ServerScriptService.Services.PoliticalHierarchyService)
 local Territory = require(ServerScriptService.Services.TerritoryMapService)
 
+local MatchState = require(script.Parent.MatchState)
 local TitleProgressionService = {}
 
 local DEFAULT_PRESTIGE = 0
@@ -166,6 +167,7 @@ end
 
 -- Prototype/debug only. Not a client remote.
 function TitleProgressionService.DebugSetPrestige(rulerId: string, value: number)
+	if MatchState.IsEnded() then return end
 	assert(typeof(value) == "number", "Prestige must be a number")
 	assert(findRuler(rulerId), "Missing ruler")
 	prestigeByRuler[rulerId] = value
@@ -174,6 +176,7 @@ function TitleProgressionService.DebugSetPrestige(rulerId: string, value: number
 end
 
 function TitleProgressionService.EstablishForPlayer(player: Player): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local rulerId = Hierarchy.GetRulerIdForUserId(player.UserId)
 	if not rulerId then
 		return false, "No ruler record."

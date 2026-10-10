@@ -1,0 +1,255 @@
+{
+  "inspect": {
+    "implementation": "NativeDeliveryV01",
+    "contexts": [
+      {
+        "id": "council:Player_-1",
+        "kind": "council",
+        "members": [
+          -1,
+          -2
+        ],
+        "sources": [
+          {
+            "userId": -3,
+            "canSend": false
+          },
+          {
+            "userId": -2,
+            "canSend": true
+          },
+          {
+            "userId": -1,
+            "canSend": true
+          }
+        ]
+      },
+      {
+        "id": "direct:-2:-1",
+        "kind": "direct",
+        "members": [
+          -1,
+          -2
+        ],
+        "sources": [
+          {
+            "userId": -1,
+            "canSend": true
+          },
+          {
+            "userId": -3,
+            "canSend": false
+          },
+          {
+            "userId": -2,
+            "canSend": true
+          }
+        ]
+      },
+      {
+        "id": "diplomatic",
+        "kind": "diplomatic",
+        "members": [
+          -1,
+          -2,
+          -3
+        ],
+        "sources": [
+          {
+            "userId": -1,
+            "canSend": true
+          },
+          {
+            "userId": -2,
+            "canSend": true
+          },
+          {
+            "userId": -3,
+            "canSend": true
+          }
+        ]
+      },
+      {
+        "id": "council:Player_-2",
+        "kind": "council",
+        "members": [
+          -2,
+          -3
+        ],
+        "sources": [
+          {
+            "userId": -3,
+            "canSend": true
+          },
+          {
+            "userId": -2,
+            "canSend": true
+          },
+          {
+            "userId": -1,
+            "canSend": false
+          }
+        ]
+      }
+    ]
+  },
+  "pass": true,
+  "checks": [
+    {
+      "id": "CLIENT_COUNT",
+      "expected": 3,
+      "pass": true,
+      "actual": 3
+    },
+    {
+      "id": "ROOTS_ADJACENT_VIA_SUBJECT",
+      "expected": 1,
+      "pass": true,
+      "actual": 1
+    },
+    {
+      "id": "SUBJECT_HOLDINGS_NOT_PERSONAL",
+      "expected": false,
+      "pass": true,
+      "actual": false
+    },
+    {
+      "id": "SAME_ROOT_DISTANCE_ZERO",
+      "expected": 0,
+      "pass": true,
+      "actual": 0
+    },
+    {
+      "id": "SAME_ROOT_LIEGE_SUBJECT_ADJACENT",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "SAME_ROOT_ADJACENT_REVERSE",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "OPEN_SAME_ROOT_ADJACENT",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "DIRECT_NATIVE_POLICY_SEND",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "EXACTLY_TWO_ORDINARY",
+      "expected": false,
+      "pass": true,
+      "actual": false
+    },
+    {
+      "id": "COUNCIL_AND_DIRECT_COEXIST",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "SAME_ROOT_LIEGE_SUBJECT_NONADJACENT",
+      "expected": false,
+      "pass": true,
+      "actual": false
+    },
+    {
+      "id": "OPEN_SAME_ROOT_NONADJACENT",
+      "expected": false,
+      "pass": true,
+      "actual": false
+    },
+    {
+      "id": "COUNCIL_NONADJACENT_UNRESTRICTED",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "BORDER_LOSS_BEFORE_SYNC",
+      "expected": false,
+      "pass": true,
+      "actual": false
+    },
+    {
+      "id": "COUNCIL_AFTER_BORDER_LOSS",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "BORDER_RESTORED_BEFORE_SYNC",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "SELF_DIRECT_DENIED",
+      "expected": false,
+      "pass": true,
+      "actual": false
+    },
+    {
+      "id": "SELF_OPEN_DENIED",
+      "expected": false,
+      "pass": true,
+      "actual": false
+    },
+    {
+      "id": "MALFORMED_OPEN_DENIED",
+      "expected": false,
+      "pass": true,
+      "actual": false
+    },
+    {
+      "id": "RELATION_INDEPENDENT_fellow_subjects",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "RELATION_INDEPENDENT_allies",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "RELATION_INDEPENDENT_enemies",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "RELATION_INDEPENDENT_NAP",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "RELATION_INDEPENDENT_unrelated",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    },
+    {
+      "id": "LANDLESS_DIRECT_DENIED",
+      "expected": false,
+      "pass": true,
+      "actual": false
+    },
+    {
+      "id": "DIPLOMATIC_SAME_ROOT_UNCHANGED",
+      "expected": true,
+      "pass": true,
+      "actual": true
+    }
+  ]
+}

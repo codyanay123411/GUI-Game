@@ -1,0 +1,232 @@
+{
+  "conversations": [
+    {
+      "active": true,
+      "id": "council:Player_-2",
+      "channel": "Council_Player__2",
+      "hasHistory": true,
+      "canSend": true,
+      "kind": "council",
+      "recipientArmed": true,
+      "presidingRulerId": "Player_-2"
+    },
+    {
+      "active": true,
+      "id": "council:Player_-1",
+      "channel": "Council_Player__1",
+      "hasHistory": true,
+      "canSend": true,
+      "kind": "council",
+      "recipientArmed": true,
+      "presidingRulerId": "Player_-1"
+    },
+    {
+      "active": true,
+      "id": "alliance:27460854-c3c1-4b1b-a4f5-af0468743f88",
+      "partyA": "Player_-1",
+      "channel": "Alliance_27460854",
+      "hasHistory": true,
+      "partyB": "Player_-3",
+      "canSend": true,
+      "allianceInstanceId": "27460854-c3c1-4b1b-a4f5-af0468743f88",
+      "kind": "alliance",
+      "recipientArmed": true
+    },
+    {
+      "active": false,
+      "id": "direct:Player_-1|Player_-2",
+      "partyA": "Player_-1",
+      "channel": "Direct_Player_-1_Player_-2",
+      "hasHistory": true,
+      "partyB": "Player_-2",
+      "canSend": false,
+      "kind": "direct",
+      "recipientArmed": true
+    },
+    {
+      "active": true,
+      "id": "diplomatic",
+      "channel": "Diplomatic",
+      "hasHistory": true,
+      "canSend": true,
+      "kind": "diplomatic",
+      "recipientArmed": true
+    },
+    {
+      "active": false,
+      "id": "alliance:c1e59b5d-1d88-416f-a8ad-afb83e664100",
+      "partyA": "Player_-1",
+      "channel": "Alliance_c1e59b5d",
+      "hasHistory": true,
+      "partyB": "Player_-2",
+      "canSend": false,
+      "allianceInstanceId": "c1e59b5d-1d88-416f-a8ad-afb83e664100",
+      "kind": "alliance",
+      "recipientArmed": true
+    }
+  ],
+  "sources": {
+    "Council_Player__1": [
+      {
+        "userId": -1,
+        "canSend": true
+      },
+      {
+        "userId": -2,
+        "canSend": true
+      }
+    ],
+    "Council_Player__2": [
+      {
+        "userId": -2,
+        "canSend": true
+      },
+      {
+        "userId": -3,
+        "canSend": true
+      }
+    ]
+  },
+  "hierarchy": {
+    "requests": [],
+    "rulers": [
+      {
+        "hasUser": true,
+        "rootRulerId": "Player_-1",
+        "userId": -1,
+        "displayName": "Player1",
+        "rulerId": "Player_-1",
+        "titleRank": 4,
+        "vassalIds": [
+          "Player_-2"
+        ],
+        "descendantIds": [
+          "Player_-2",
+          "Player_-3"
+        ],
+        "liegeId": "",
+        "independent": true,
+        "titleName": "Emperor"
+      },
+      {
+        "hasUser": true,
+        "rootRulerId": "Player_-1",
+        "userId": -2,
+        "displayName": "Player2",
+        "rulerId": "Player_-2",
+        "titleRank": 3,
+        "vassalIds": [
+          "Player_-3"
+        ],
+        "descendantIds": [
+          "Player_-3"
+        ],
+        "liegeId": "Player_-1",
+        "independent": false,
+        "titleName": "King"
+      },
+      {
+        "hasUser": true,
+        "rootRulerId": "Player_-1",
+        "userId": -3,
+        "displayName": "Player3",
+        "rulerId": "Player_-3",
+        "titleRank": 3,
+        "vassalIds": [],
+        "descendantIds": [],
+        "liegeId": "Player_-2",
+        "independent": false,
+        "titleName": "King"
+      },
+      {
+        "hasUser": false,
+        "rootRulerId": "Mock_0261ffb2-d6cd-47d7-b04b-c1be659ae8fa",
+        "userId": 0,
+        "displayName": "RecoveryGraphFourth",
+        "rulerId": "Mock_0261ffb2-d6cd-47d7-b04b-c1be659ae8fa",
+        "titleRank": 1,
+        "vassalIds": [],
+        "descendantIds": [],
+        "liegeId": "",
+        "independent": true,
+        "titleName": "Lord"
+      }
+    ]
+  },
+  "results": [
+    {
+      "id": "COMMS-COUNCIL-OFFER32",
+      "values": [
+        true
+      ]
+    },
+    {
+      "id": "COMMS-COUNCIL-ACCEPT32",
+      "values": [
+        true,
+        "Vassalage accepted."
+      ]
+    },
+    {
+      "id": "COMMS-COUNCIL-OFFER21",
+      "values": [
+        true
+      ]
+    },
+    {
+      "id": "COMMS-COUNCIL-ACCEPT21",
+      "values": [
+        true,
+        "Vassalage accepted."
+      ]
+    },
+    {
+      "id": "COMMS-COUNCIL-SEND1",
+      "values": [
+        true,
+        "sent"
+      ]
+    },
+    {
+      "id": "COMMS-COUNCIL-NONRECURSIVE",
+      "values": [
+        false,
+        "Not in Council."
+      ]
+    },
+    {
+      "id": "COMMS-COUNCIL-SEND2",
+      "values": [
+        true,
+        "sent"
+      ]
+    },
+    {
+      "id": "COMMS-COUNCIL-SEND3",
+      "values": [
+        true,
+        "sent"
+      ]
+    },
+    {
+      "id": "COMMS-DIRECT-SAME-ROOT-DIST",
+      "values": [
+        0
+      ]
+    },
+    {
+      "id": "COMMS-DIRECT-LIEGE-SUBJECT",
+      "values": [
+        false,
+        "Not neighboring."
+      ]
+    },
+    {
+      "id": "COMMS-LIVE-TITLE",
+      "values": [
+        true,
+        "sent"
+      ]
+    }
+  ]
+}

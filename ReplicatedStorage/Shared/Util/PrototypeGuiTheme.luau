@@ -2,26 +2,26 @@
 
 --[[
 	Shared prototype GUI tokens. Visual language only.
-	Does not change gameplay, remotes, or primary panel Size/Position.
+	Does not change gameplay or remotes. Layout is owned by StrategyPresentationController.
 ]]
 
 local PrototypeGuiTheme = {}
 
 PrototypeGuiTheme.Colors = {
-	panel = Color3.fromRGB(18, 20, 26),
-	well = Color3.fromRGB(24, 27, 36),
-	row = Color3.fromRGB(30, 34, 44),
-	stroke = Color3.fromRGB(40, 44, 56),
-	mapStage = Color3.fromRGB(16, 19, 24),
+	panel = Color3.fromRGB(19, 28, 37),
+	well = Color3.fromRGB(25, 36, 47),
+	row = Color3.fromRGB(33, 47, 59),
+	stroke = Color3.fromRGB(66, 77, 86),
+	mapStage = Color3.fromRGB(15, 24, 32),
 	overlay = Color3.fromRGB(26, 22, 14),
 	toast = Color3.fromRGB(30, 24, 12),
-	textPrimary = Color3.fromRGB(232, 234, 240),
-	textSecondary = Color3.fromRGB(176, 182, 194),
+	textPrimary = Color3.fromRGB(235, 231, 219),
+	textSecondary = Color3.fromRGB(181, 194, 201),
 	textMuted = Color3.fromRGB(140, 146, 158),
-	section = Color3.fromRGB(198, 178, 128),
+	section = Color3.fromRGB(199, 177, 125),
 	accentGold = Color3.fromRGB(232, 186, 72),
-	action = Color3.fromRGB(46, 120, 72),
-	actionText = Color3.fromRGB(235, 240, 235),
+	action = Color3.fromRGB(141, 110, 54),
+	actionText = Color3.fromRGB(255, 246, 223),
 	danger = Color3.fromRGB(140, 48, 48),
 	dangerText = Color3.fromRGB(245, 232, 232),
 	disabled = Color3.fromRGB(42, 46, 54),

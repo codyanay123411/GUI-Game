@@ -1,0 +1,43 @@
+-- Temporary diagnostic, executed ONLY in disposable Local Server.
+local S = game.ServerScriptService.Services
+local H = require(S.PoliticalHierarchyService)
+local C = require(S.CommunicationsService)
+local debug = game.ServerScriptService.CommunicationsDebug.Invoke
+local results = {}
+local function record(id, ...)
+	table.insert(results, {id = id, values = {...}})
+	print("RECOVERY_TEST", id, ...)
+end
+H.DebugSetRank("Player_-1", 4)
+H.DebugSetRank("Player_-2", 3)
+H.DebugSetRank("Player_-3", 2)
+local ok32, q32 = H.OfferFealty("Player_-3", "Player_-2")
+record("COMMS-COUNCIL-OFFER32", ok32)
+record("COMMS-COUNCIL-ACCEPT32", H.AcceptFealty(q32, "Player_-2"))
+local ok21, q21 = H.OfferFealty("Player_-2", "Player_-1")
+record("COMMS-COUNCIL-OFFER21", ok21)
+record("COMMS-COUNCIL-ACCEPT21", H.AcceptFealty(q21, "Player_-1"))
+debug:Invoke("Sync")
+local sources = {}
+for _, ch in game.TextChatService.TextChannels:GetChildren() do
+	if string.sub(ch.Name, 1, 8) == "Council_" then
+		local members = {}
+		for _, source in ch:GetChildren() do
+			if source:IsA("TextSource") then table.insert(members, {userId=source.UserId, canSend=source.CanSend}) end
+		end
+		sources[ch.Name] = members
+	end
+end
+record("COMMS-COUNCIL-SEND1", debug:Invoke("SendAs", -1, "council:Player_-1", "AUDIT EMPEROR COUNCIL12"))
+record("COMMS-COUNCIL-NONRECURSIVE", debug:Invoke("SendAs", -3, "council:Player_-1", "AUDIT SHOULD REJECT GRANDSUBJECT"))
+record("COMMS-COUNCIL-SEND2", debug:Invoke("SendAs", -2, "council:Player_-2", "AUDIT KING COUNCIL23"))
+record("COMMS-COUNCIL-SEND3", debug:Invoke("SendAs", -3, "council:Player_-2", "AUDIT DUKE REPLY"))
+record("COMMS-DIRECT-SAME-ROOT-DIST", C.DebugDistance("Player_-2", "Player_-3"))
+record("COMMS-DIRECT-LIEGE-SUBJECT", debug:Invoke("OpenDirectAs", -2, "Player_-3"))
+H.DebugSetRank("Player_-3", 3)
+record("COMMS-LIVE-TITLE", debug:Invoke("SendAs", -3, "council:Player_-2", "AUDIT NOW KING REPLY"))
+local snapshot = Instance.new("StringValue")
+snapshot.Name = "RecoveryAuditPhase2Results"
+snapshot.Value = game.HttpService:JSONEncode({results=results, sources=sources, hierarchy=H.GetSnapshot(), conversations=C.GetInspect()})
+snapshot.Parent = game.ServerScriptService
+print("RECOVERY_PHASE2=" .. snapshot.Value)

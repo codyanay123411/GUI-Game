@@ -1,0 +1,20 @@
+-- Runtime-only; three synthetic Local Server clients, actual Player disconnects.
+assert(game:GetService("RunService"):IsStudio())
+local S=game.ServerScriptService.Services
+local H,T,W,M,N,V=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.WarfareService),require(S.MilitaryService),require(S.NeutralDefenseService),require(S.VictoryService)
+local b,c=H.GetRulerIdForUserId(-2),H.GetRulerIdForUserId(-3)
+assert(b and c and #game.Players:GetPlayers()==3)
+for _,land in T.GetMapDefinition().territories do assert(T.SetOwner(land.id,nil)) end
+assert(T.SetOwner("northvale",b));assert(T.SetOwner("brightfen",c))
+local ok,war=W.DeclareWar(b,"greyfen");assert(ok,war);assert(M.SetCommit(b,war,200))
+game.Players:GetPlayerByUserId(-2):Kick("Agent verification: pending-conquest disconnect")
+task.wait(2)
+assert(not H.GetRulerIdForUserId(-2));assert(T.GetOwnerRulerId("greyfen")==nil);assert(M.GetEngagementInspect(war)==nil);assert(N.Get("greyfen").current==300)
+print("UC_VIC_PENDING_ATTACKER_DISCONNECT_PASS")
+local ok2,war2=W.DeclareWar(c,"lowmarsh");assert(ok2,war2);assert(M.SetCommit(c,war2,600));assert(M.LockCommit(c,war2));assert(M.IsMechanicallyResolved(war2))
+local survivors=M.GetEngagementInspect(war2).battle.defenderSurvivors
+assert(N.Get("lowmarsh").current==survivors)
+game.Players:GetPlayerByUserId(-3):Kick("Agent verification: resolved-conquest disconnect")
+task.wait(7)
+assert(not H.GetRulerIdForUserId(-3));assert(T.GetOwnerRulerId("lowmarsh")==nil);assert(M.GetEngagementInspect(war2)==nil);assert(#W.GetSnapshot().wars==0);assert(N.Get("lowmarsh").current==survivors and survivors>=0);assert(not V.GetSnapshot().ended)
+print("UC_VIC_RESOLVED_ATTACKER_DISCONNECT_PASS")

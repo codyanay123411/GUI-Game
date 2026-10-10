@@ -1,0 +1,55 @@
+-- Temporary diagnostic, executed ONLY in disposable Local Server.
+-- Does not replace or edit any recovered source.
+local S = game.ServerScriptService.Services
+local H = require(S.PoliticalHierarchyService)
+local T = require(S.TerritoryMapService)
+local D = require(S.DiplomacyService)
+local C = require(S.CommunicationsService)
+local debug = game.ServerScriptService.CommunicationsDebug.Invoke
+local results = {}
+local function record(id, ...)
+	local row = {id = id, values = {...}}
+	table.insert(results, row)
+	print("RECOVERY_TEST", id, ...)
+end
+local fourth = H.DebugCreateMockRuler("RecoveryGraphFourth", 1)
+T.DebugSetOwner("highmarch", fourth)
+record("COMMS-GRAPH-01", C.DebugDistance("Player_-1", fourth))
+record("COMMS-GRAPH-02", table.concat(C.DebugDiplomaticRecipients("Player_-1"), ","))
+record("COMMS-GRAPH-03", table.concat(C.DebugDiplomaticRecipients("Player_-3"), ","))
+local ok, request12 = D.Offer("Player_-1", "Player_-2", "Alliance")
+record("COMMS-ALLY-OFFER12", ok)
+record("COMMS-ALLY-ACCEPT12", D.Accept(request12, "Player_-2"))
+debug:Invoke("Sync")
+local id12
+for _, conv in C.GetInspect() do
+	if conv.kind == "alliance" then id12 = conv.id end
+end
+local ok13, request13 = D.Offer("Player_-1", "Player_-3", "Alliance")
+record("COMMS-ALLY-OFFER13", ok13)
+record("COMMS-ALLY-ACCEPT13", D.Accept(request13, "Player_-3"))
+debug:Invoke("Sync")
+local id13
+for _, conv in C.GetInspect() do
+	if conv.kind == "alliance" and conv.id ~= id12 then id13 = conv.id end
+end
+record("COMMS-ALLY-IDS", id12, id13, id12 ~= id13)
+record("COMMS-ALLY-SEND12", debug:Invoke("SendAs", -1, id12, "AUDIT ALLIANCE12 ONLY"))
+record("COMMS-ALLY-OUTSIDER", debug:Invoke("SendAs", -3, id12, "AUDIT SHOULD REJECT"))
+record("COMMS-ALLY-SEND13", debug:Invoke("SendAs", -1, id13, "AUDIT ALLIANCE13 ONLY"))
+record("COMMS-ALLY-BREAK12", D.Break("Player_-1", "Player_-2", "Alliance"))
+record("COMMS-ALLY-BREAK-WINDOW", debug:Invoke("SendAs", -1, id12, "AUDIT AFTER ALLIANCE ENDED"))
+debug:Invoke("Sync")
+record("COMMS-ALLY-END-REJECT", debug:Invoke("SendAs", -1, id12, "AUDIT ENDED REJECT"))
+local napOk, napRequest = D.Offer("Player_-2", "Player_-3", "NAP")
+record("COMMS-NAP-OFFER", napOk)
+record("COMMS-NAP-ACCEPT", D.Accept(napRequest, "Player_-3"))
+debug:Invoke("Sync")
+local allianceCount = 0
+for _, conv in C.GetInspect() do if conv.kind == "alliance" then allianceCount += 1 end end
+record("COMMS-NAP-NO-NEW-ROOM", allianceCount)
+local snapshot = Instance.new("StringValue")
+snapshot.Name = "RecoveryAuditPhase1Results"
+snapshot.Value = game.HttpService:JSONEncode({results = results, conversations = C.GetInspect()})
+snapshot.Parent = game.ServerScriptService
+print("RECOVERY_PHASE1=" .. snapshot.Value)

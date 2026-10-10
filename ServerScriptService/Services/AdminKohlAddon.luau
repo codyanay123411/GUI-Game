@@ -265,6 +265,16 @@ return function(_K)
 	})
 
 	register({
+		name = "inspectcomms",
+		description = "Inspect authoritative Communications membership (no message text).",
+		group = "Creator",
+		args = {},
+		run = function(context)
+			runOp(context, "InspectComms")
+		end,
+	})
+
+	register({
 		name = "inspectcontest",
 		description = "Inspect Warfare contest and post-war cooldown state.",
 		group = "Creator",
@@ -287,4 +297,10 @@ return function(_K)
 			runOp(context, "ResolveWar", warId, outcome)
 		end,
 	})
+	for _, item in { { "inspectvictory", "InspectVictory" }, { "checkvictory", "CheckVictory" } } do
+		local operation = item[2]
+		register({ name = item[1], description = "Inspect/check Domination state.", group = "Creator", args = {}, run = function(context) runOp(context, operation) end })
+	end
+	register({ name = "inspectneutral", description = "Inspect Unclaimed defense.", group = "Creator", args = { { type = "rawString", name = "territoryId" } }, run = function(context, id) runOp(context, "InspectNeutral", id) end })
+	register({ name = "setneutraldefense", description = "Set uncontested neutral defense within maximum.", group = "Creator", args = { { type = "rawString", name = "territoryId" }, { type = "number", name = "defenders" } }, run = function(context, id, amount) runOp(context, "SetNeutralDefense", id, amount) end })
 end

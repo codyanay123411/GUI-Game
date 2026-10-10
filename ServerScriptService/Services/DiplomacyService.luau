@@ -16,12 +16,17 @@ local ServerScriptService = game:GetService("ServerScriptService")
 local Config = require(ReplicatedStorage.Shared.Config.DiplomacyConfig)
 local Hierarchy = require(ServerScriptService.Services.PoliticalHierarchyService)
 
+local MatchState = require(script.Parent.MatchState)
 local DiplomacyService = {}
+
+local stateChangedBindable = Instance.new("BindableEvent")
+DiplomacyService.StateChanged = stateChangedBindable.Event
 
 type Agreement = {
 	leftId: string,
 	rightId: string,
 	alliance: boolean,
+	allianceInstanceId: string?,
 	nap: boolean,
 }
 
@@ -160,6 +165,7 @@ local function buildSnapshot()
 				leftRulerId = agreement.leftId,
 				rightRulerId = agreement.rightId,
 				alliance = agreement.alliance,
+				allianceInstanceId = agreement.allianceInstanceId or "",
 				nap = agreement.nap,
 			})
 		end
@@ -190,6 +196,9 @@ local function buildSnapshot()
 end
 
 local function pushState(toPlayer: Player?)
+	if not toPlayer then
+		stateChangedBindable:Fire()
+	end
 	local payload = buildSnapshot()
 	local encoded = HttpService:JSONEncode(payload)
 	if debugSnapshot then
@@ -278,6 +287,7 @@ local function dissolveInvolving(rulerId: string, reason: string)
 end
 
 function DiplomacyService.Offer(fromRulerId: string, toRulerId: string, agreementType: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if agreementType ~= "Alliance" and agreementType ~= "NAP" then
 		return false, "Unknown agreement type."
 	end
@@ -328,6 +338,7 @@ function DiplomacyService.Offer(fromRulerId: string, toRulerId: string, agreemen
 end
 
 function DiplomacyService.Decline(requestId: string, actorRulerId: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local request = requestsById[requestId]
 	if not request then
 		return false, "Request is no longer valid."
@@ -351,6 +362,7 @@ function DiplomacyService.Decline(requestId: string, actorRulerId: string): (boo
 end
 
 function DiplomacyService.Accept(requestId: string, actorRulerId: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	local request = requestsById[requestId]
 	if not request then
 		return false, "Request is no longer valid."
@@ -378,6 +390,7 @@ function DiplomacyService.Accept(requestId: string, actorRulerId: string): (bool
 			return false, "Alliance already exists."
 		end
 		agreement.alliance = true
+		agreement.allianceInstanceId = HttpService:GenerateGUID(false)
 	else
 		if agreement.nap then
 			removeRequest(requestId)
@@ -395,6 +408,7 @@ function DiplomacyService.Accept(requestId: string, actorRulerId: string): (bool
 end
 
 function DiplomacyService.Break(fromRulerId: string, toRulerId: string, agreementType: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
 	if agreementType ~= "Alliance" and agreementType ~= "NAP" then
 		return false, "Unknown agreement type."
 	end
@@ -411,6 +425,7 @@ function DiplomacyService.Break(fromRulerId: string, toRulerId: string, agreemen
 			return false, "No Alliance with that realm."
 		end
 		agreement.alliance = false
+		agreement.allianceInstanceId = nil
 	else
 		if not agreement.nap then
 			return false, "No Non-Aggression Pact with that realm."

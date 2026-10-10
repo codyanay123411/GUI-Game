@@ -66,6 +66,7 @@ function WarfareController.Start()
 	local cooldowns = {}
 	local hierarchy = { rulers = {} }
 	local ownership: { [string]: string } = {}
+	local neutralDefenses: { [string]: number } = {}
 	local diplomacy = { agreements = {} }
 	local noticeToken = 0
 
@@ -201,7 +202,7 @@ function WarfareController.Start()
 		return string.format(
 			"%s vs %s — %s",
 			rulerName(war.attackerRootId),
-			rulerName(war.defenderRootId),
+			if war.targetKind == "Unclaimed" then "Unclaimed militia" else rulerName(war.defenderRootId),
 			territoryName(war.targetTerritoryId)
 		)
 	end
@@ -279,6 +280,10 @@ function WarfareController.Start()
 		local me = myRuler()
 		local selected = selectedValue.Value
 		local bits = {}
+		if selected ~= "" and (not ownership[selected] or ownership[selected] == "") then
+			table.insert(bits, "UNCLAIMED PROVINCE — local militia")
+			table.insert(bits, "Defenders: " .. tostring(neutralDefenses[selected] or "Awaiting state"))
+		end
 		if not me then
 			table.insert(bits, "Waiting for server state...")
 		else
@@ -302,7 +307,11 @@ function WarfareController.Start()
 		declareBtn.Text = "Declare War"
 		local canDeclare = false
 		local defRoot: string? = nil
-		if selected == "" then
+		if gui:GetAttribute("MatchEnded") == true then
+			declareBtn.Text = "Match ended"
+			declareBtn.Active = false
+			PrototypeGuiTheme.applyPrimaryButton(declareBtn, false)
+		elseif selected == "" then
 			declareBtn.Active = false
 			PrototypeGuiTheme.applyPrimaryButton(declareBtn, false)
 		elseif me and me.independent ~= true then
@@ -311,8 +320,13 @@ function WarfareController.Start()
 		elseif me then
 			local ownerId = ownership[selected]
 			if not ownerId or ownerId == "" then
-				declareBtn.Active = false
-				PrototypeGuiTheme.applyPrimaryButton(declareBtn, false)
+				if isContested(selected) then declareBtn.Text = "Already contested"
+				elseif cooldownEndsAt(selected) then declareBtn.Text = "Post-war cooldown"
+				elseif not isAdjacentForRoot(me, selected) then declareBtn.Text = "Not adjacent"
+				elseif neutralDefenses[selected] == nil then declareBtn.Text = "Awaiting defense state"
+				else canDeclare = true; declareBtn.Text = "CONQUER" end
+				declareBtn.Active = canDeclare
+				if canDeclare then PrototypeGuiTheme.applyDangerButton(declareBtn) else PrototypeGuiTheme.applyPrimaryButton(declareBtn, false); table.insert(bits, declareBtn.Text) end
 			elseif ownerRoot(selected) == me.rulerId then
 				declareBtn.Active = false
 				PrototypeGuiTheme.applyPrimaryButton(declareBtn, false)
@@ -346,7 +360,7 @@ function WarfareController.Start()
 						declareBtn.Text = "Declare War for " .. territoryName(selected)
 					end
 					declareBtn.Active = true
-					PrototypeGuiTheme.applyPrimaryButton(declareBtn, true)
+					PrototypeGuiTheme.applyDangerButton(declareBtn)
 				end
 			end
 		else
@@ -400,6 +414,7 @@ function WarfareController.Start()
 	end)
 
 	selectedValue:GetPropertyChangedSignal("Value"):Connect(refresh)
+	gui:GetAttributeChangedSignal("MatchEnded"):Connect(refresh)
 
 	push.OnClientEvent:Connect(function(kind: any, payload: any)
 		if kind == "Notice" and typeof(payload) == "string" then
@@ -439,9 +454,11 @@ function WarfareController.Start()
 			return
 		end
 		ownership = {}
+		neutralDefenses = {}
 		for _, row in data.territories do
 			if typeof(row.territoryId) == "string" then
 				ownership[row.territoryId] = if row.hasOwner == true then tostring(row.ownerRulerId) else ""
+				if row.neutralDefense then neutralDefenses[row.territoryId] = row.neutralDefense.current end
 			end
 		end
 		refresh()

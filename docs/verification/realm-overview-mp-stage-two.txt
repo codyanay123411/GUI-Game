@@ -1,0 +1,5 @@
+local S=game.ServerScriptService.Services;local H=require(S.PoliticalHierarchyService);local T=require(S.TerritoryMapService);local D=require(S.DiplomacyService);local W=require(S.WarfareService)
+local a,b=H.GetRulerIdForUserId(-1),H.GetRulerIdForUserId(-2)
+for _,war in W.GetSnapshot().wars do W.CancelWar(war.warId,"Overview verification") end
+assert(D.Break(a,b,"Alliance"));assert(D.Break(a,b,"NAP"));assert(T.SetOwner("greyfen",a))
+local ok,id=H.OfferFealty(b,a);assert(ok,id);assert(H.AcceptFealty(id,a));print("OVERVIEW_MP_STAGE_TWO")
