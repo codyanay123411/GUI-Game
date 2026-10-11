@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-11",
+  "baselineCommit": "a9658129ed0881408fa513c04c1b2d435b7f5145",
+  "branch": "main",
+  "productionSourceCount": 77,
+  "compileFailures": 0,
+  "snapshot": "docs/verification/radial-input-final-2026-10-11.rbxl",
+  "snapshotBytes": 756451,
+  "snapshotSha256": "53A7E4DEDDF79F152ABAB70B62EA996F203F349ACDB327EDC6DD36E7096E9DFC",
+  "snapshotInstances": 3397,
+  "sourceMismatches": [],
+  "retiredObjectsInActiveGui": [],
+  "temporaryVerificationPaths": [],
+  "radialRoot": {
+    "className": "CanvasGroup",
+    "active": false,
+    "visible": false
+  },
+  "radialHeadingActive": false,
+  "projectEntryPoints": [
+    {
+      "path": "StarterPlayer/StarterPlayerScripts/Bootstrap",
+      "className": "LocalScript",
+      "disabled": false
+    },
+    {
+      "path": "ServerStorage/CommunicationsRecoveryArchive/StarterPlayer.StarterPlayerScripts.Bootstrap",
+      "className": "LocalScript",
+      "disabled": true
+    },
+    {
+      "path": "ServerScriptService/Bootstrap",
+      "className": "Script",
+      "disabled": false
+    },
+    {
+      "path": "ServerStorage/CommunicationsRecoveryArchive/ServerScriptService.Bootstrap",
+      "className": "Script",
+      "disabled": true
+    }
+  ],
+  "radialRuntimeEvidence": "docs/verification/radial-input-output-2026-10-11.txt",
+  "verificationScope": "Offline integrity of last saved final place; Studio closed during finalization. Prior native Play verification retained, not rerun."
+}

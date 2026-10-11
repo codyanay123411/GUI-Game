@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-10-11 — Final preservation on main
+
+Finalization only: current implementation was already committed and main matched origin/main. All 77 production sources compile and exactly match the final saved Studio place; retired GUI/test assets are inactive or absent from active roots, and recovered bootstraps remain disabled. Documentation/evidence records the final state; no new gameplay, UI development or Director acceptance. Studio is closed; prior native radial input verification remains the runtime evidence. See FINALIZATION.md for intentionally local-only snapshots and existing limitations.
+
 ## 2026-10-11 — Radial input layering
 
 **IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Decorative radial background/heading passes map input; only action buttons block it. Native empty-area selection, center drag/zoom and Info/Conquer/Military/Realm hover/click passed in Studio. Existing appearance, animation and gameplay remain unchanged. See GUI_REDUNDANCY_CLEANUP.md for evidence; commit/normal push to main authorized.

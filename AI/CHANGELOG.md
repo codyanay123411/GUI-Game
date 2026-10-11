@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-11 — Finalize contextual map UI and input polish
+
+Preserved the already committed implementation on main and recorded final integrity evidence: 77 sources compile and match the saved place, obsolete GUI/test fixtures are outside active GUI, and one project server/client bootstrap remains active. Place snapshots remain local-only. Updated finalization records without implementation changes, new test acceptance or Roblox publication.
+
 ## 2026-10-11 — Allow map input through contextual radial background
 
 Made the decorative radial root and heading inactive; transitions preserve background pass-through while action buttons retain per-button map blocking and native interaction. Verified native selection/pan/zoom through the circle and hover/activation on Province info, Conquer, Military and Realm info. Temporary fixtures removed; source parity and compilation passed. No gameplay or visual redesign.

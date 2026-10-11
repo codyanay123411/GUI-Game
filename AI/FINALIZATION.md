@@ -1,4 +1,18 @@
-# Baseline finalization — 2026-10-10
+# Project finalization
+
+## 2026-10-11 — Final contextual UI state on main
+
+Director requested preservation only. At entry, main and origin/main both pointed to a9658129ed0881408fa513c04c1b2d435b7f5145, with a clean working tree and no conflicts or untracked intended work. Context interaction/attention, GUI retirement, transitions/opacity and radial background input are already committed, together with prior Communications, GUI/audio/settings/admin/conquest/Victory work. This finalization changes documentation/evidence only; no implementation is reverted or altered. Normal main push is authorized; no force push, history rewrite or Roblox publication.
+
+All 77 production Luau files compile with zero failures. Studio is closed, so final integrity used the latest preserved binary place, docs/verification/radial-input-final-2026-10-11.rbxl (756451 bytes; SHA-256 53A7E4DEDDF79F152ABAB70B62EA996F203F349ACDB327EDC6DD36E7096E9DFC). Decoding its instance/property/parent chunks confirms every production source matches disk exactly. Retired Territory/Military/Diplomacy panels/nav/templates/lists are absent from active StarterGui; no temporary cleanup/radial test fixtures or ContextVerification remain. The radial CanvasGroup and heading are inactive. One project server Script bootstrap and one client LocalScript bootstrap are enabled; both archived recovered bootstraps are disabled. Current sources retain per-button Active/BlocksMapInput, passive radial root, and the prior verified animations/settings. No new local copy is needed: the saved final place already contains the exact intended source and GUI state. Evidence: docs/verification/contextual-finalization-2026-10-11.json.
+
+The entry diff is empty. Finalization review found no new debug junk, accidental deletion, duplicate UI implementation, generated vendor changes or unintended gameplay change to commit. Targeted production-source scans found no local absolute paths or obvious private-key/token patterns. Only the tracked Kohl Loader/READ_ME are included; generated MainModule dumps remain excluded by policy. Reports retain implementation/agent verification/Director acceptance distinctions and the contextual report links to the superseding GUI cleanup. Historical reports remain dated evidence.
+
+Intentionally local-only: all nine existing docs/verification/*.rbxl snapshots, including the final radial-input copy and earlier recovery/finalization snapshots; docs/verification/conquest-victory-stage-one-pass-output.txt (ignored throwaway filter capture). Existing ignored vendor/cache/lock/log policy remains intact. No current work was discarded.
+
+Remaining documented limits: Director readability/feel/acceptance; real-account Communications filtering/privacy and observer checks; human multiplayer usability/balance; touch/gamepad and production/performance testing. Game presentation settings persistence remains future work. Existing Kohl disabled API/HTTP/DataStore warnings and the installed Model To Pixel stop-time plugin error remain outside this finalization. Agent passes do not imply Director acceptance.
+
+## 2026-10-10 — Historical baseline finalization
 
 The Director explicitly authorized preserving and pushing the current session without new development. Existing branch: codex/player-communications-v05; normal remote: https://github.com/codyanay123411/GUI-Game.git. Main was not the checked-out branch, so finalization retains the existing branch. One implementation commit is intended; no force push/history rewrite or Roblox publication.
 
