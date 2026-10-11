@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-10 — Contextual map interaction workflows
+
+Added a centralized client action resolver, circular map actions with compact fallback, focused public-information/diplomacy/communication/war review, and presentation-only province attention. Preserved full panels, existing remotes, accepted gameplay, personal-border Direct and separate Council/Allies rules. Fixed deferred selection handoff, initial commitment field, scrolling review layout and request-deadline clock assumptions during verification. Added reproducible policy/multiplayer/layout fixtures and recorded targeted Solo, three-client and responsive evidence. Studio GUI assets are preserved in an offline snapshot. Agent verification does not imply Director acceptance; no Roblox publication.
+
 ## 2026-10-10 — GameTester SuperAdmin access
 
 Retained owner authorization and added the four requested UserIds in AdminConfig. GameTester commands now accept the allowlist OR trusted server Kohl SuperAdmin+; unrelated Kohl command permissions are preserved. Updated command admission, replicated UI permission refresh and help wording. Targeted Studio authorization, spoofed real remote denial and authorized command/UI verification passed; no gameplay mechanics, permanent rank changes or Roblox publication. See [ADMIN_PERMISSIONS.md](ADMIN_PERMISSIONS.md).

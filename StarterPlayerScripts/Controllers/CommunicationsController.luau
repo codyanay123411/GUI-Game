@@ -6,6 +6,8 @@ local TextService = game:GetService("TextService")
 local Config = require(ReplicatedStorage.Shared.Config.CommunicationsConfig)
 local Theme = require(ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
 local Controller = {}
+Controller.Received = Instance.new("BindableEvent")
+Controller.Acknowledged = Instance.new("BindableEvent")
 local started = false
 
 function Controller.Start()
@@ -96,9 +98,17 @@ function Controller.Start()
 		contacts.Visible = false
 		transcript.Visible = true
 		unread[id] = 0
+		if panel.Visible then Controller.Acknowledged:Fire(id) end
 		if not shown[id] then explain() else refresh() end
 		renderList()
 	end
+	Controller.OpenContext = selectContext
+	function Controller.OpenDirect(userId: number)
+		intent:FireServer("OpenDirect", userId)
+	end
+	panel:GetPropertyChangedSignal("Visible"):Connect(function()
+		if panel.Visible and not observing then unread[selected] = 0; Controller.Acknowledged:Fire(selected); renderList() end
+	end)
 	local function button(parent: Instance, text: string, y: number, callback: () -> ())
 		local item = Instance.new("TextButton")
 		item.Size = UDim2.new(1, -8, 0, 24)
@@ -139,7 +149,12 @@ function Controller.Start()
 		pending[id], identity[id] = nil, nil
 		if meta.ordinary then
 			append(meta.contextId, meta.prefix .. message.Text)
-			if selected ~= meta.contextId or observing then unread[meta.contextId] = (unread[meta.contextId] or 0) + 1 end
+			if selected ~= meta.contextId or observing or not panel.Visible then
+				unread[meta.contextId] = (unread[meta.contextId] or 0) + 1
+				if message.TextSource and message.TextSource.UserId ~= player.UserId then
+					Controller.Received:Fire({ id = id, contextId = meta.contextId, userId = message.TextSource.UserId, kind = meta.kind })
+				end
+			end
 		end
 		if meta.observing and not muted then
 			table.insert(observerLog, meta.observerPrefix .. message.Text)

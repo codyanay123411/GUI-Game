@@ -261,6 +261,7 @@ function PoliticalHierarchyController.Start()
 				local fromName = if from then (from.titleName .. " " .. from.displayName) else request.fromRulerId
 				local card = offerCardTemplate:Clone()
 				card.Name = "OfferCard_" .. tostring(layoutOrder)
+				card:SetAttribute("RequestId", request.requestId)
 				card.Visible = true
 				card.LayoutOrder = layoutOrder
 				card.Parent = overlayExtra

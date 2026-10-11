@@ -35,4 +35,6 @@ AdminFeedbackController.Start()
 require(script.Parent.Controllers.StrategyPresentationController).Start()
 
 require(script.Parent.Controllers.VictoryController).Start()
+require(script.Parent.Controllers.MapContextController).Start()
+require(script.Parent.Controllers.MapAttentionController).Start()
 require(script.Parent.Controllers.GameSettingsController).Start()

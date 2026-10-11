@@ -1,5 +1,17 @@
 # V0.5 Playtest Verification Backlog
 
+## Contextual map milestone — 2026-10-10
+
+Agent evidence is recorded in `AI/CONTEXTUAL_MAP_INTERACTION.md`; none of these entries grants Director acceptance.
+
+| Scenario | Agent evidence | Remaining playtest status |
+| --- | --- | --- |
+| CTX-POL-01 | 31 pure resolver/anchor/aggregation assertions passed, including same-root personal-border Direct cases | DEFERRED — human acceptance |
+| CTX-MP-01 | Three actual Local Server clients: offers, hierarchy, Alliance/NAP, local war relevance, resolution and disconnect cleanup passed | DEFERRED — real-account match usability |
+| CTX-MP-02 | Synthetic successful communication receipts: aggregation, Council/Allies marker routing and acknowledgement passed | DEFERRED — native real-account delivery/filtering/privacy; synthetic receipts are not native transport verification |
+| CTX-UI-01 | Solo review/cancel/confirm/500-troop handoff/result routing and empty-map dismissal passed | DEFERRED — Director discoverability and game-feel acceptance |
+| CTX-UI-02 | VGA, HD720 and wide profiles at min/default/max scale; review scrolling and marker pan/zoom passed | DEFERRED — human readability/attention-density assessment |
+
 Canonical list of tests classified **DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG**.
 
 **Deferred does not mean PASS. Deferred means non-blocking until the appropriate testing stage.**

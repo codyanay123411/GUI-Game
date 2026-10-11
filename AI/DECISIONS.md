@@ -1,5 +1,13 @@
 # Decisions
 
+## 2026-10-10 — Director-authorized contextual map interaction and attention markers
+
+The explicit request authorizes map selection → a centralized client resolver → a radial first layer → existing workflows. Full navigation and existing incoming-offer/toast notifications remain available. Buildings, additional maps, battle fronts and gameplay redesign are excluded. A small viewport uses a compact action list. Context and attention queues are presentation mirrors, never political or military authority.
+
+War review must precede the existing DeclareWar intent. Initial troop entry then goes through MilitaryController's existing SetCommit path; Ready/Lock and the accepted commitment clocks remain intact. Cancel before declaration returns to map actions. There is no new player cancellation API for an already declared war. Alliance alone still permits war; NAP blocks it. Direct still uses authoritative personal-border contacts; Council/Allies use their separate existing contexts, and targeted Diplomatic routing respects sender reach.
+
+Ruler attention anchors use personal holdings: authored adjacency to the local greater realm first, then centroid distance and stable territory ID. War/results use the actual target. Native successful ordinary Communications receipts trigger message attention; observer receipts do not. Acknowledgement, request/war snapshots, expiry and ruler removal drive cleanup. This authorization does not imply Director acceptance or Roblox publication. Verification is recorded in `AI/CONTEXTUAL_MAP_INTERACTION.md`.
+
 Substantial architectural decisions belong in this file. Do not silently reverse them later. If a decision changes, record the new decision and why the previous one was replaced.
 
 ## Development workflow

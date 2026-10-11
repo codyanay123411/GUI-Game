@@ -1,5 +1,7 @@
 # Roadmap
 
+**Contextual map UX and attention milestone (2026-10-10): IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Explicitly authorized presentation milestone; existing gameplay remains authoritative. Targeted evidence and remaining human/real-account checks: `AI/CONTEXTUAL_MAP_INTERACTION.md`. Next: Director usability playtesting and actual-account Communications checks before serious multiplayer playtesting.
+
 Phases describe **dependency and preferred order**, not a hard ban on touching another area when it is technically necessary (for example a small shared type or UI hook required by the current phase).
 
 AI agents must **not** prematurely implement major later-phase gameplay systems merely because they appear on this list. If work would skip ahead, stop and ask, or stay within the current phase.

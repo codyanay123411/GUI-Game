@@ -18,6 +18,8 @@ local MapTriangles = require(ReplicatedStorage.Shared.Util.MapTriangles)
 
 local player = Players.LocalPlayer
 local TerritoryMapController = {}
+TerritoryMapController.SelectionChanged = Instance.new("BindableEvent")
+TerritoryMapController.CameraChanged = Instance.new("BindableEvent")
 
 local MIN_ZOOM = 0.7
 local MAX_ZOOM = 2.8
@@ -248,6 +250,12 @@ function TerritoryMapController.Start()
 			label.TextSize = if width < 90 then 10 else 12
 			label.Visible = Theme.Presentation.ProvinceLabelsEnabled and width >= 54 and px > 0 and py > 0 and px < size.X and py < size.Y
 		end
+		TerritoryMapController.CameraChanged:Fire()
+	end
+	function TerritoryMapController.Project(territoryId: string): Vector2?
+		local label = provinceLabels[territoryId]
+		if not label then return nil end
+		return mapStage.AbsolutePosition + Vector2.new(label.Position.X.Offset, label.Position.Y.Offset)
 	end
 
 	local function screenToMap(screen: Vector2): (number?, number?)
@@ -449,9 +457,10 @@ function TerritoryMapController.Start()
 	local function blockingPanelOf(obj: Instance): GuiObject?
 		local current: Instance? = obj
 		while current and current ~= gui do
+			if current:IsA("GuiObject") and current:GetAttribute("BlocksMapInput") then return current end
 			if current:IsA("GuiObject") and current.Parent == gui then
 				local name = current.Name
-				if name == "VictoryOverlay" or name == "RealmOverviewOverlay" or name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" or name == "EconomyPanel" or name == "MilitaryPanel" or name == "CommunicationsPanel" or name == "StrategyNavigation" or name == "StrategyTopbar" then
+				if current:GetAttribute("BlocksMapInput") or name == "VictoryOverlay" or name == "RealmOverviewOverlay" or name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" or name == "EconomyPanel" or name == "MilitaryPanel" or name == "CommunicationsPanel" or name == "StrategyNavigation" or name == "StrategyTopbar" then
 					return current
 				end
 			end
@@ -560,7 +569,13 @@ function TerritoryMapController.Start()
 		end
 		selectedId = hitTerritory(mx, my)
 		colorize()
+		TerritoryMapController.SelectionChanged:Fire(selectedId, pos)
 	end)
+	function TerritoryMapController.Select(territoryId: string?, contextWorkflow: string?)
+		selectedId = territoryId
+		colorize()
+		TerritoryMapController.SelectionChanged:Fire(selectedId, if territoryId then TerritoryMapController.Project(territoryId) else nil, contextWorkflow)
+	end
 
 	mapStage:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
 		applyCamera()

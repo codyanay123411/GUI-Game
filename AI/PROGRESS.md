@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-10-10 — Contextual map interaction and attention markers
+
+**IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Province selection now opens semantic map actions and one focused review drawer; full navigation remains available. Initial War/Conquer commitment uses the existing Military path. Map attention aggregates unread communications, incoming offers, local wars and battle results with deterministic province anchors. No authoritative gameplay or rule changes. Verification includes 31 pure policy assertions, three actual Local Server clients, mouse routing/cleanup/pan/zoom, Solo conquest and VGA/HD720/wide scale checks. Native real-account chat filtering/privacy and Director usability acceptance remain outstanding. See [CONTEXTUAL_MAP_INTERACTION.md](CONTEXTUAL_MAP_INTERACTION.md). Commit and normal push to main authorized; no Roblox publication.
+
 ## 2026-10-10 — Creator game presentation settings and GUI audio
 
 **IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Native GAME UI/GAME AUDIO categories extend installed Kohl v0.17.0 through an isolated project addon; vendor source and personal saved appearance remain unchanged. Owner/creator edits server-wide validated runtime settings; GameTesters/SuperAdmins view only; real spoofed requests are rejected. GothamSSm default matches the inspected active FontFace. Dynamic theme application, semantic audio, safe density and text reflow are integrated without gameplay changes. Verification: 161 server assertions, 99 final owner-client assertions, three-client replication/remote denial and 252 min/default/max layout assertions across VGA/HD720/wide profiles. Persistence remains future work because no game persistence infrastructure exists. See [GAME_PRESENTATION_SETTINGS.md](GAME_PRESENTATION_SETTINGS.md). Commit/push to main authorized; no Roblox publication.

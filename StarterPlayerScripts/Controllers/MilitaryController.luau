@@ -358,6 +358,15 @@ function MilitaryController.Start()
 			end
 		end)
 	end
+	-- Contextual declaration handoff uses the same field and submission path as this HUD.
+	function MilitaryController.PrepareCommit(warId: string, amount: number): boolean
+		local war = activeCommitWar()
+		if not war or war.warId ~= warId or war.phase ~= "commit" or war.locked then return false end
+		if amount ~= amount or amount < 0 or amount % 1 ~= 0 or amount > maxCommitFor(war) then return false end
+		commitBox.Text = tostring(amount)
+		debounceToken += 1
+		return trySendCommit(true)
+	end
 
 	local function render()
 		if not hasState then

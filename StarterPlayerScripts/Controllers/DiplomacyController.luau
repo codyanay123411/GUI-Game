@@ -245,6 +245,7 @@ function DiplomacyController.Start()
 					incoming += 1
 					local card = cardTemplate:Clone()
 					card.Name = "DipOffer_" .. tostring(incoming)
+					card:SetAttribute("RequestId", request.requestId)
 					card.Visible = true
 					card.LayoutOrder = incoming
 					card.Parent = overlayExtra

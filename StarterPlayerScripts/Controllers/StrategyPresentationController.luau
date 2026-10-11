@@ -69,6 +69,7 @@ function Controller.Start()
 		end
 		layout()
 	end
+	Controller.OpenSystem = gotoPanel
 	local function layer(item: Instance, z: number)
 		if item:IsA("GuiObject") then item.ZIndex = z end
 		for _, child in item:GetDescendants() do
@@ -225,12 +226,12 @@ function Controller.Start()
 		local key = if active then string.match(text, "^[^\n]+") else nil
 		if key and key ~= previousCommitment then
 			gui.MilitaryPanel.CanvasPosition = Vector2.zero
-			gotoPanel("Military")
+			if not gui:GetAttribute("MapContextEnabled") then gotoPanel("Military") end
 		end
 		previousCommitment = key
 	end)
 	territoryValue:GetPropertyChangedSignal("Value"):Connect(function()
-		if territoryValue.Value ~= "" and selected ~= "Military" then gotoPanel("Territory") end
+		if not gui:GetAttribute("MapContextEnabled") and territoryValue.Value ~= "" and selected ~= "Military" then gotoPanel("Territory") end
 	end)
 	for _, name in {"VassalageOfferOverlay","DiplomacyOfferOverlay"} do
 		local overlay=gui[name]

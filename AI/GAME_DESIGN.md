@@ -1,5 +1,9 @@
 # Game Design
 
+## Director-authorized contextual map presentation — 2026-10-10
+
+Province selection surfaces relationship-aware map actions, then a focused drawer or an existing full workflow. War/Conquer requires a review and explicit confirmation; declaration, commitment, Ready/Lock and battle rules remain unchanged. Full navigation remains accessible. Small screens may use a compact action list. Province attention shows unread communication, incoming offers, relevant wars and temporary results; aggregate the highest priority with a count. Ruler events anchor to their personally owned territory nearest the local greater realm; war/results anchor to the actual target. Existing notification, audio/settings and communication permissions remain in force. This is presentation authorization, not new gameplay scope or Director implementation acceptance. See `AI/CONTEXTUAL_MAP_INTERACTION.md`.
+
 **Authoritative product vision (design bible v0.1).** This file is the game’s product and design direction. Project directors (the user and their design collaborator) determine mechanics. Implementation agents implement approved designs accurately.
 
 AI agents must **not** silently alter this design, redefine an unspecified mechanic, or modify this document to justify an implementation. Do not materially change, expand, reinterpret, or invent mechanics beyond what is written here. When an important mechanic is unspecified, ask for design direction.
