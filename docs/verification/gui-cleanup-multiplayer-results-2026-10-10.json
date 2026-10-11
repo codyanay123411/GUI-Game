@@ -1,0 +1,40 @@
+[
+  {
+    "windowId": 4002034,
+    "passes": [
+      "GUI_CLEANUP_MP_CLIENT_PASS Player3 Baseline 12",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player3 Offers 12",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player3 Relationships 14",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player3 NAP 14",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player3 War 14",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player3 WarResolved 14",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player3 Disconnected 14"
+    ]
+  },
+  {
+    "windowId": 8458432,
+    "passes": [
+      "GUI_CLEANUP_MP_CLIENT_PASS Player2 Baseline 12",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player2 Offers 12",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player2 Relationships 13",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player2 NAP 13",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player2 War 17",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player2 WarResolved 18",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player2 Disconnected 18",
+      "GUI_CLEANUP_VICTORY_PASS Player2"
+    ]
+  },
+  {
+    "windowId": 1053064,
+    "passes": [
+      "GUI_CLEANUP_MP_CLIENT_PASS Player1 Baseline 14",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player1 Offers 18",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player1 Relationships 24",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player1 NAP 26",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player1 War 30",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player1 WarResolved 31",
+      "GUI_CLEANUP_MP_CLIENT_PASS Player1 Disconnected 33",
+      "GUI_CLEANUP_VICTORY_PASS Player1"
+    ]
+  }
+]

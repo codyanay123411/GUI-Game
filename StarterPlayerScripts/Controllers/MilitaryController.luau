@@ -66,10 +66,13 @@ function MilitaryController.Start()
 		return
 	end
 
-	local info = gui:WaitForChild("TerritoryInfo") :: Frame
-	local selectedValue = info:WaitForChild("SelectedTerritoryId") :: StringValue
-	local panel = gui:WaitForChild("MilitaryPanel") :: Frame
+	local selectedValue = gui:WaitForChild("PresentationState"):WaitForChild("SelectedTerritoryId") :: StringValue
+	local shell = gui:WaitForChild("MilitaryWorkflowPanel") :: CanvasGroup
+	local panel = shell:WaitForChild("Content") :: ScrollingFrame
+	local territoryNames = {}
+	for _, definition in require(ReplicatedStorage.Shared.Config.MapCatalog).GetDefault().territories do territoryNames[definition.id] = definition.displayName end
 	local stats = panel:WaitForChild("Stats") :: TextLabel
+	PrototypeGuiTheme.applyPrimaryButton(panel:WaitForChild("BackButton") :: TextButton, true)
 	local recruitBox = panel:WaitForChild("RecruitBox") :: TextBox
 	local costLabel = panel:WaitForChild("CostLabel") :: TextLabel
 	local recruitButton = panel:WaitForChild("RecruitButton") :: TextButton
@@ -99,8 +102,6 @@ function MilitaryController.Start()
 	local boundSessionWarId: string? = nil
 	local lastBattleByTerritory: { [string]: any } = {}
 	local lastBattleTokenByTerritory: { [string]: number } = {}
-	local COMMIT_BODY_IDLE = UDim2.new(1, -16, 0, 148)
-	local COMMIT_BODY_SUMMARY = UDim2.new(1, -16, 0, 148)
 
 	commitBox.PlaceholderText = "Troops to commit"
 	lockButton.Text = "Ready"
@@ -369,10 +370,14 @@ function MilitaryController.Start()
 	end
 
 	local function render()
+		gui:SetAttribute("MilitaryAvailable", if hasState then available else nil)
+		gui:SetAttribute("MilitaryCommitted", if hasState then committed else nil)
+		local recruiting = gui:GetAttribute("MilitaryContextMode") == "Recruit"
+		(panel.Header :: TextLabel).Text = (if recruiting then "Recruit" else "Military") .. " - " .. (territoryNames[selectedValue.Value] or selectedValue.Value)
+		for _, item in { recruitBox, recruitButton, maxRecruitButton, costLabel } do item.Visible = recruiting end
 		if not hasState then
 			stats.Text = "Total: —\nAvailable: —\nCommitted: —"
 			commitBody.Text = "No active war commitment."
-			commitBody.Size = COMMIT_BODY_IDLE
 			commitBox.Visible = true
 			lockButton.Visible = true
 			battleBanner.Visible = false
@@ -396,18 +401,16 @@ function MilitaryController.Start()
 			lockButton.Active = false
 			PrototypeGuiTheme.applyPrimaryButton(lockButton, false)
 			battleBanner.Visible = false
-			commitBody.Size = COMMIT_BODY_SUMMARY
 			commitBody.Text = formatLastBattle(result)
 		end
 
 		local function showIdleCommitment(message: string)
 			syncCommitInputToSession()
-			commitBox.Visible = true
-			lockButton.Visible = true
+			commitBox.Visible = false
+			lockButton.Visible = false
 			lockButton.Active = false
 			PrototypeGuiTheme.applyPrimaryButton(lockButton, false)
 			battleBanner.Visible = false
-			commitBody.Size = COMMIT_BODY_IDLE
 			commitBody.Text = message
 		end
 
@@ -422,7 +425,6 @@ function MilitaryController.Start()
 			end
 			commitBox.Visible = true
 			lockButton.Visible = true
-			commitBody.Size = COMMIT_BODY_IDLE
 		else
 			local selected = selectedValue.Value
 			local selectedSummary = lastBattleForTerritory(selected)
@@ -447,7 +449,6 @@ function MilitaryController.Start()
 
 		local lines = {
 			string.format("%s — %s", war.role or "?", war.targetDisplayName or war.targetTerritoryId),
-			string.format("Available: %d", available),
 		}
 		if war.targetKind == "Unclaimed" then table.insert(lines, "Unclaimed militia: " .. tostring(war.neutralDefenders) .. " defenders") end
 		if typeof(war.intended) == "number" then
@@ -497,12 +498,14 @@ function MilitaryController.Start()
 		PrototypeGuiTheme.applyPrimaryButton(lockButton, canLock)
 
 		local showBattle = war.phase == "present"
-		battleBanner.Visible = showBattle
+		battleBanner.Visible = showBattle and not shell.Visible
 		if showBattle then
 			battleBanner.Text = "Battle in progress — " .. (war.targetDisplayName or "contested territory")
 		end
 	end
 
+	gui:GetAttributeChangedSignal("MilitaryContextMode"):Connect(render)
+	shell:GetPropertyChangedSignal("Visible"):Connect(render)
 	recruitBox:GetPropertyChangedSignal("Text"):Connect(updateCost)
 
 	recruitButton.MouseButton1Click:Connect(function()

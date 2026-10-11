@@ -123,7 +123,10 @@ function Controller.Start()
 			acknowledged[event.id] = true; events[event.id] = nil
 			local canCommit = false
 			for _, war in State.military.wars or {} do if war.warId == event.warId then canCommit = true end end
-			Strategy.OpenSystem(if canCommit then "Military" else "Territory")
+			if canCommit then
+				gui:SetAttribute("MilitaryContextMode", "Battle")
+				Strategy.OpenSystem("Military")
+			else Map.Select(id, "Info") end
 		else
 			events[event.id] = nil
 		end

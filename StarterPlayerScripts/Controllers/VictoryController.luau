@@ -19,8 +19,9 @@ function Controller.Start()
 		panel.Size = UDim2.fromOffset(math.min(600, gui.AbsoluteSize.X - 32), math.min(370, gui.AbsoluteSize.Y - 32))
 	end
 	local function isCompetitive(button: TextButton): boolean
+		if button.Name == "BackButton" then return false end
 		if button.Name == "DeclareWar" then return true end
-		for _, name in { "Main", "TitlePanel", "DiplomacyPanel", "MilitaryPanel", "VassalageOfferOverlay", "DiplomacyOfferOverlay" } do
+		for _, name in { "Main", "TitlePanel", "MilitaryWorkflowPanel", "VassalageOfferOverlay", "DiplomacyOfferOverlay" } do
 			local container = gui:FindFirstChild(name)
 			if container and button:IsDescendantOf(container) then return true end
 		end

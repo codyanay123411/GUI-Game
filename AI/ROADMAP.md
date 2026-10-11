@@ -1,5 +1,7 @@
 # Roadmap
 
+**GUI redundancy migration (2026-10-10): IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Context is now the primary territory interface; old Territory/Diplomacy/Military destinations and duplicate assets are retired. Source parity, responsive/input, three-client and Victory checks passed. Next: Director usability/readability acceptance and the previously outstanding actual-account Communications verification. See AI/GUI_REDUNDANCY_CLEANUP.md. No new gameplay phase started.
+
 **Contextual map UX and attention milestone (2026-10-10): IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Explicitly authorized presentation milestone; existing gameplay remains authoritative. Targeted evidence and remaining human/real-account checks: `AI/CONTEXTUAL_MAP_INTERACTION.md`. Next: Director usability playtesting and actual-account Communications checks before serious multiplayer playtesting.
 
 Phases describe **dependency and preferred order**, not a hard ban on touching another area when it is technically necessary (for example a small shared type or UI hook required by the current phase).

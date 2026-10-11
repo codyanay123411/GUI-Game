@@ -4,6 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local TextService = game:GetService("TextService")
 local Theme = require(ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
+local Transitions = require(ReplicatedStorage.Shared.Util.ContextTransitions)
 local Resolver = require(ReplicatedStorage.Shared.Util.ContextActionResolver)
 local Catalog = require(ReplicatedStorage.Shared.Config.MapCatalog)
 local State = require(script.Parent.MapContextState)
@@ -20,7 +21,8 @@ function Controller.Start()
 	started = true
 	local player = Players.LocalPlayer
 	local gui = player.PlayerGui:WaitForChild("HierarchyPrototypeGui") :: ScreenGui
-	local panel = gui:WaitForChild("ContextWorkflowPanel") :: ScrollingFrame
+	local shell = gui:WaitForChild("ContextWorkflowPanel") :: CanvasGroup
+	local panel = shell:WaitForChild("Content") :: ScrollingFrame
 	local header = panel:WaitForChild("Heading") :: TextLabel
 	local body = panel:WaitForChild("Body") :: TextLabel
 	local amount = panel:WaitForChild("CommitAmount") :: TextBox
@@ -44,13 +46,13 @@ function Controller.Start()
 			gui:GetAttribute("MatchEnded") == true, workspace:GetServerTimeNow()) else nil
 	end
 	local function hide()
-		Radial.Hide(); panel.Visible = false; mode = nil
+		Radial.Hide(); Transitions.Hide(shell); mode = nil
 	end
 	local function layout()
 		local size = gui.AbsoluteSize
 		local width = math.min(370 * Theme.Presentation.UIScale, size.X - 24)
-		panel.Position = UDim2.fromOffset(math.max(12, size.X - width - 12), 76)
-		panel.Size = UDim2.fromOffset(width, math.max(120, size.Y - 108))
+		shell.Position = UDim2.fromOffset(math.max(12, size.X - width - 12), 76)
+		shell.Size = UDim2.fromOffset(width, math.max(120, size.Y - 108))
 		local textHeight = TextService:GetTextSize(body.Text, body.TextSize, body.Font, Vector2.new(math.max(1, width - 24), 100000)).Y
 		body.Size = UDim2.new(1, -24, 0, textHeight + 12)
 		local y = 56 + body.Size.Y.Offset
@@ -81,10 +83,10 @@ function Controller.Start()
 		hide(); Strategy.OpenSystem(name)
 	end
 	local function showRadial()
-		mode = nil; panel.Visible = false
+		mode = nil; Transitions.Hide(shell)
 		context = resolve()
+		if not priority() and (context or gui:GetAttribute("SelectedSystem") == "Military") then Strategy.OpenSystem("Map") end
 		if context and not priority() then
-			Strategy.OpenSystem("Map")
 			Radial.Show(context, point)
 		else Radial.Hide() end
 	end
@@ -94,9 +96,16 @@ function Controller.Start()
 		if kind == "Battle" then
 			local canCommit = false
 			for _, war in State.military.wars or {} do if war.targetTerritoryId == selected then canCommit = true end end
-			fullSystem(if canCommit then "Military" else "Territory"); return
+			if canCommit then
+				gui:SetAttribute("MilitaryContextMode", "Battle")
+				fullSystem("Military"); return
+			end
+			kind = "Info"
 		end
-		if kind == "Military" then fullSystem("Military"); return end
+		if kind == "Military" then
+			gui:SetAttribute("MilitaryContextMode", if context.holder and tonumber(context.holder.userId) == player.UserId then "Recruit" else "Battle")
+			fullSystem("Military"); return
+		end
 		Strategy.OpenSystem("Map")
 		mode = kind
 		redraw()
@@ -107,7 +116,7 @@ function Controller.Start()
 		if not mode then showRadial(); return end
 		Radial.Hide()
 		for _, child in list:GetChildren() do if child:IsA("TextButton") then child:Destroy() end end
-		panel.Visible = true; amount.Visible = mode == "War"
+		amount.Visible = mode == "War"
 		header.Text = context.definition.displayName .. " · " .. mode
 		close.Text = "Cancel · Back to map actions"
 		local holder = context.holder
@@ -154,7 +163,6 @@ function Controller.Start()
 					redraw()
 				end)
 			end
-			action("Full diplomacy view", function() fullSystem("Diplomacy") end)
 		elseif mode == "Message" then
 			for _, channel in context.communication do
 				action(channel.label, function()
@@ -175,11 +183,15 @@ function Controller.Start()
 				table.insert(lines, "Direct liege: " .. (if liege then liege.displayName else "None"))
 				table.insert(lines, "Personal holdings: " .. personal .. " · Greater realm: " .. realm)
 			else table.insert(lines, "Public militia: " .. militiaText) end
-			table.insert(lines, if context.war then "Active conflict here. Military has your realm's details." else context.warReason or "No active conflict here.")
-			action(if mode == "Realm" then "Full realm view" else "Full territory view", function() fullSystem(if mode == "Realm" then "Realm" else "Territory") end)
+			table.insert(lines, if context.war then "Active conflict here." else context.warReason or "No active conflict here.")
+			if mode == "Realm" then action("Your realm overview", function() fullSystem("Realm") end) end
+			if context.war then
+				table.insert(lines, "Conflict phase: " .. tostring(context.war.phase or "Active"))
+			end
 		end
 		body.Text = table.concat(lines, "\n\n")
 		layout()
+		Transitions.Show(shell, true)
 	end
 	Radial.Start(gui, Controller.OpenWorkflow)
 	Map.SelectionChanged.Event:Connect(function(id, position, workflow)
@@ -194,10 +206,20 @@ function Controller.Start()
 		if gui:GetAttribute("SelectedSystem") ~= "Map" then hide() end
 	end)
 	for _, name in { "VassalageOfferOverlay", "DiplomacyOfferOverlay" } do
-		gui[name]:GetPropertyChangedSignal("Visible"):Connect(function() if priority() then hide() end end)
+		gui[name]:GetPropertyChangedSignal("Visible"):Connect(function()
+			if priority() then
+				hide()
+				if gui:GetAttribute("SelectedSystem") == "Military" then Strategy.OpenSystem("Map") end
+			end
+		end)
 	end
 	for _, name in { "RealmOverviewOpen", "VictoryOverlayOpen", "MatchEnded" } do
-		gui:GetAttributeChangedSignal(name):Connect(function() if priority() then hide() elseif panel.Visible or gui.ContextRadialPanel.Visible then redraw() end end)
+		gui:GetAttributeChangedSignal(name):Connect(function()
+			if priority() then
+				hide()
+				if gui:GetAttribute("SelectedSystem") == "Military" then Strategy.OpenSystem("Map") end
+			elseif Transitions.IsOpen(shell) or Transitions.IsOpen(gui.ContextRadialPanel) then redraw() end
+		end)
 	end
 	UserInputService.InputBegan:Connect(function(input, processed)
 		if input.KeyCode == Enum.KeyCode.Escape and not processed then hide() end
@@ -216,12 +238,13 @@ function Controller.Start()
 					-- Restore the reviewed target if the player selected elsewhere while awaiting a reply.
 					Map.Select(targetId, "silent")
 					Military.PrepareCommit(war.warId, initial)
+					gui:SetAttribute("MilitaryContextMode", "Battle")
 					fullSystem("Military")
 					break
 				end
 			end
 		elseif pending and system == "warfare" and kind == "Notice" then pending = nil end
-		if panel.Visible or gui.ContextRadialPanel.Visible then redraw() end
+		if Transitions.IsOpen(shell) or Transitions.IsOpen(gui.ContextRadialPanel) then redraw() end
 	end)
 	gui:SetAttribute("MapContextEnabled", true)
 	State.Start()

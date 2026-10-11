@@ -1,5 +1,7 @@
 # Contextual map interaction and attention markers
 
+**Subsequent migration:** The temporary retention of full legacy navigation described here was superseded by the Director-authorized [GUI redundancy cleanup](GUI_REDUNDANCY_CLEANUP.md). Historical verification below remains intact.
+
 Status: IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED. No Roblox publication.
 
 ## Architecture

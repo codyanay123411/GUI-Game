@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-10-10 — GUI redundancy migration
+
+**IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Primary navigation is Map, Realm, Titles, Economy, Messages and Players. Territory, Diplomacy and Military are contextual; twenty obsolete Studio objects are archived outside active GUI. Existing controller/service flows are preserved. CanvasGroup transitions respect existing animation/opacity settings and dismiss input immediately. Final source parity: 77/77; three actual clients: 65 cumulative assertions plus both remaining clients' Victory checks; VGA/HD720/wide at 0.9/1/1.1 passed. Native Back, click-through prevention, pan/zoom, conquest, offers and post-match inspection checked. See [GUI_REDUNDANCY_CLEANUP.md](GUI_REDUNDANCY_CLEANUP.md). Director feel/readability and existing real-account chat checks remain pending. Commit/normal push to main authorized; no Roblox publication.
+
 ## 2026-10-10 — Contextual map interaction and attention markers
 
 **IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Province selection now opens semantic map actions and one focused review drawer; full navigation remains available. Initial War/Conquer commitment uses the existing Military path. Map attention aggregates unread communications, incoming offers, local wars and battle results with deterministic province anchors. No authoritative gameplay or rule changes. Verification includes 31 pure policy assertions, three actual Local Server clients, mouse routing/cleanup/pan/zoom, Solo conquest and VGA/HD720/wide scale checks. Native real-account chat filtering/privacy and Director usability acceptance remain outstanding. See [CONTEXTUAL_MAP_INTERACTION.md](CONTEXTUAL_MAP_INTERACTION.md). Commit and normal push to main authorized; no Roblox publication.

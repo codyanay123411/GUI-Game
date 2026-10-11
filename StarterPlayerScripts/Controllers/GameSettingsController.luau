@@ -159,7 +159,7 @@ function Controller.Start()
 	gui.ResultToast:GetPropertyChangedSignal("Visible"):Connect(function()
 		if gui.ResultToast.Visible then Sounds.Play("Notification") end
 	end)
-	gui.TerritoryInfo.SelectedTerritoryId:GetPropertyChangedSignal("Value"):Connect(function() Sounds.Play("Select") end)
+	gui.PresentationState.SelectedTerritoryId:GetPropertyChangedSignal("Value"):Connect(function() Sounds.Play("Select") end)
 	for _, name in { "VassalageOfferOverlay", "DiplomacyOfferOverlay", "VictoryOverlay" } do
 		local overlay = gui:FindFirstChild(name)
 		if overlay and overlay:IsA("GuiObject") then overlay:GetPropertyChangedSignal("Visible"):Connect(function() if overlay.Visible then Sounds.Play("Notification") end end) end

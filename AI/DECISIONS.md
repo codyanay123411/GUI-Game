@@ -1,5 +1,11 @@
 # Decisions
 
+## 2026-10-10 — Director-authorized retirement of redundant primary GUI
+
+The explicit GUI redundancy request supersedes the previous milestone's temporary retention of full Territory/Diplomacy/Military navigation. Map is primary; Realm, Titles, Economy, Messages and Players remain global destinations. Recruitment, commitment and battle reuse MilitaryController inside a contextual shell. Incoming cards and notices remain available; duplicate ruler/outbound-action lists and templates leave active GUI. Twenty retired assets are retained under ServerStorage recovery. This changes presentation only.
+
+Selection lives in PresentationState.SelectedTerritoryId independently of any panel. ContextTransitions uses CanvasGroup and a dedicated UIScale; logical dismissal clears interaction/map blocking immediately while cosmetic close finishes. Generation tokens prevent stale tween completion. Empty selection dismisses territory context without closing intentionally opened global views. Existing GAME UI PanelOpacity, AnimationsEnabled and AnimationSpeed apply; no redundant settings or authoritative delay. Verification and Studio asset contract: [GUI_REDUNDANCY_CLEANUP.md](GUI_REDUNDANCY_CLEANUP.md). Agent verification remains separate from Director acceptance.
+
 ## 2026-10-10 — Director-authorized contextual map interaction and attention markers
 
 The explicit request authorizes map selection → a centralized client resolver → a radial first layer → existing workflows. Full navigation and existing incoming-offer/toast notifications remain available. Buildings, additional maps, battle fronts and gameplay redesign are excluded. A small viewport uses a compact action list. Context and attention queues are presentation mirrors, never political or military authority.

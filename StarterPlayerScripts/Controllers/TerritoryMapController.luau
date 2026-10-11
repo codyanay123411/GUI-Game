@@ -90,9 +90,7 @@ function TerritoryMapController.Start()
 		viewport.Parent = mapStage
 	end
 	viewport.Active = false
-	local info = gui:WaitForChild("TerritoryInfo") :: Frame
-	local infoBody = info:WaitForChild("Body") :: TextLabel
-	local selectedValue = info:FindFirstChild("SelectedTerritoryId")
+	local selectedValue = gui:WaitForChild("PresentationState"):WaitForChild("SelectedTerritoryId") :: StringValue
 
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	local territoryIntent = remotes:WaitForChild("TerritoryClientEvent") :: RemoteEvent
@@ -287,38 +285,6 @@ function TerritoryMapController.Start()
 		return nil
 	end
 
-	local function updateInfo()
-		if not selectedId then
-			infoBody.Text = "No territory selected.\nClick the map to inspect a province."
-			return
-		end
-		local def = byId[selectedId]
-		if not def then
-			infoBody.Text = "Unknown territory."
-			return
-		end
-		local ownerId = ownership[selectedId]
-		if not ownerId or ownerId == "" then
-			infoBody.Text = string.format(
-				"%s\nID: %s\nOwner: Unclaimed\nRank: —\nStatus: —\nGreater realm: —",
-				def.displayName,
-				def.id
-			)
-			return
-		end
-		local owner = rulerOf(ownerId)
-		local root = if owner then rulerOf(owner.rootRulerId) else nil
-		infoBody.Text = string.format(
-			"%s\nID: %s\nOwner: %s\nRank: %s\nStatus: %s\nGreater realm: %s",
-			def.displayName,
-			def.id,
-			if owner then owner.displayName else ownerId,
-			if owner then owner.titleName else "—",
-			if owner then (if owner.independent then "Independent" else "Subject") else "—",
-			if root then root.displayName else (if owner then owner.displayName else "—")
-		)
-	end
-
 	local function colorize()
 		for _, t in mapDef.territories do
 			local ownerId = ownership[t.id]
@@ -344,7 +310,6 @@ function TerritoryMapController.Start()
 				p.Transparency = if selected then 0 else 1
 			end
 		end
-		updateInfo()
 		applyCamera()
 		if selectedValue and selectedValue:IsA("StringValue") then
 			selectedValue.Value = selectedId or ""
@@ -460,7 +425,7 @@ function TerritoryMapController.Start()
 			if current:IsA("GuiObject") and current:GetAttribute("BlocksMapInput") then return current end
 			if current:IsA("GuiObject") and current.Parent == gui then
 				local name = current.Name
-				if current:GetAttribute("BlocksMapInput") or name == "VictoryOverlay" or name == "RealmOverviewOverlay" or name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "TerritoryInfo" or name == "DiplomacyPanel" or name == "AdminInspectPanel" or name == "EconomyPanel" or name == "MilitaryPanel" or name == "CommunicationsPanel" or name == "StrategyNavigation" or name == "StrategyTopbar" then
+				if current:GetAttribute("BlocksMapInput") or name == "VictoryOverlay" or name == "RealmOverviewOverlay" or name == "VassalageOfferOverlay" or name == "DiplomacyOfferOverlay" or name == "TitlePanel" or name == "Main" or name == "AdminInspectPanel" or name == "EconomyPanel" or name == "MilitaryWorkflowPanel" or name == "CommunicationsPanel" or name == "StrategyNavigation" or name == "StrategyTopbar" then
 					return current
 				end
 			end

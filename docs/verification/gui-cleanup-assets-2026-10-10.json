@@ -1,0 +1,205 @@
+{
+  "retired": [
+    {
+      "name": "PlayerRow",
+      "class": "Frame"
+    },
+    {
+      "name": "RequestRow",
+      "class": "Frame"
+    },
+    {
+      "name": "DiplomacyRow",
+      "class": "Frame"
+    },
+    {
+      "name": "VassalageOfferOverlay",
+      "class": "Frame"
+    },
+    {
+      "name": "DiplomacyOfferOverlay",
+      "class": "Frame"
+    },
+    {
+      "name": "PlayersHeader",
+      "class": "TextLabel"
+    },
+    {
+      "name": "PlayerList",
+      "class": "ScrollingFrame"
+    },
+    {
+      "name": "IncomingHeader",
+      "class": "TextLabel"
+    },
+    {
+      "name": "IncomingList",
+      "class": "ScrollingFrame"
+    },
+    {
+      "name": "Notice",
+      "class": "TextLabel"
+    },
+    {
+      "name": "TerritoryInfo",
+      "class": "ScrollingFrame"
+    },
+    {
+      "name": "DiplomacyPanel",
+      "class": "ScrollingFrame"
+    },
+    {
+      "name": "Territory",
+      "class": "TextButton"
+    },
+    {
+      "name": "Diplomacy",
+      "class": "TextButton"
+    },
+    {
+      "name": "Military",
+      "class": "TextButton"
+    },
+    {
+      "name": "ContextRadialPanel",
+      "class": "Frame"
+    },
+    {
+      "name": "Body",
+      "class": "TextLabel"
+    },
+    {
+      "name": "Buttons",
+      "class": "Frame"
+    },
+    {
+      "name": "Body",
+      "class": "TextLabel"
+    },
+    {
+      "name": "Buttons",
+      "class": "Frame"
+    }
+  ],
+  "active": [
+    {
+      "visible": false,
+      "name": "ResultToast",
+      "active": false,
+      "interactable": true,
+      "class": "Frame"
+    },
+    {
+      "visible": true,
+      "name": "MapStage",
+      "active": true,
+      "interactable": true,
+      "class": "Frame"
+    },
+    {
+      "visible": false,
+      "name": "TitlePanel",
+      "active": true,
+      "interactable": true,
+      "class": "Frame"
+    },
+    {
+      "visible": false,
+      "name": "EconomyPanel",
+      "active": true,
+      "interactable": true,
+      "class": "Frame"
+    },
+    {
+      "visible": false,
+      "name": "Main",
+      "active": true,
+      "interactable": true,
+      "class": "ScrollingFrame"
+    },
+    {
+      "visible": true,
+      "name": "StrategyTopbar",
+      "active": true,
+      "interactable": true,
+      "class": "Frame"
+    },
+    {
+      "visible": true,
+      "name": "StrategyNavigation",
+      "active": false,
+      "interactable": true,
+      "class": "ScrollingFrame"
+    },
+    {
+      "visible": true,
+      "name": "MapHint",
+      "active": false,
+      "interactable": true,
+      "class": "TextLabel"
+    },
+    {
+      "visible": false,
+      "name": "CommunicationsPanel",
+      "active": true,
+      "interactable": true,
+      "class": "ScrollingFrame"
+    },
+    {
+      "visible": false,
+      "name": "RealmOverviewOverlay",
+      "active": true,
+      "interactable": true,
+      "class": "Frame"
+    },
+    {
+      "visible": false,
+      "name": "VictoryOverlay",
+      "active": true,
+      "interactable": true,
+      "class": "Frame"
+    },
+    {
+      "visible": true,
+      "name": "MapAttentionLayer",
+      "active": false,
+      "interactable": true,
+      "class": "Frame"
+    },
+    {
+      "visible": false,
+      "name": "ContextRadialPanel",
+      "active": false,
+      "interactable": false,
+      "class": "CanvasGroup"
+    },
+    {
+      "visible": false,
+      "name": "ContextWorkflowPanel",
+      "active": false,
+      "interactable": false,
+      "class": "CanvasGroup"
+    },
+    {
+      "visible": false,
+      "name": "MilitaryWorkflowPanel",
+      "active": false,
+      "interactable": false,
+      "class": "CanvasGroup"
+    },
+    {
+      "visible": false,
+      "name": "VassalageOfferOverlay",
+      "active": false,
+      "interactable": false,
+      "class": "CanvasGroup"
+    },
+    {
+      "visible": false,
+      "name": "DiplomacyOfferOverlay",
+      "active": false,
+      "interactable": false,
+      "class": "CanvasGroup"
+    }
+  ]
+}

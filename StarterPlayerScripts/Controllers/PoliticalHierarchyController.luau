@@ -10,6 +10,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 
+local Transitions = require(ReplicatedStorage.Shared.Util.ContextTransitions)
 local PrototypeGuiTheme = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Util"):WaitForChild("PrototypeGuiTheme"))
 
 local player = Players.LocalPlayer
@@ -80,32 +81,12 @@ function PoliticalHierarchyController.Start()
 	local main = gui:WaitForChild("Main")
 	local selfInfo = main:WaitForChild("SelfInfo") :: TextLabel
 	local treeView = main:WaitForChild("TreeScroll"):WaitForChild("TreeView") :: TextLabel
-	local noticeLabel = main:WaitForChild("Notice") :: TextLabel
-	noticeLabel.Visible = false
 	local resultToast = gui:WaitForChild("ResultToast") :: Frame
 	local resultToastLabel = resultToast:WaitForChild("Label") :: TextLabel
-	local playerList = main:WaitForChild("PlayerList") :: ScrollingFrame
-	local incomingList = main:FindFirstChild("IncomingList")
-	local incomingHeader = main:FindFirstChild("IncomingHeader")
-	if incomingHeader and incomingHeader:IsA("GuiObject") then
-		incomingHeader.Visible = false
-	end
-	if incomingList and incomingList:IsA("GuiObject") then
-		incomingList.Visible = false
-	end
-	local playerTemplate = gui:WaitForChild("Templates"):WaitForChild("PlayerRow")
 	local offerCardTemplate = gui:WaitForChild("Templates"):WaitForChild("OfferCard")
 	local offerOverlay = gui:WaitForChild("VassalageOfferOverlay") :: Frame
 	offerOverlay.Visible = false
 	local overlayExtra = offerOverlay:WaitForChild("ExtraList") :: Frame
-	local overlayBody = offerOverlay:FindFirstChild("Body")
-	local overlayButtons = offerOverlay:FindFirstChild("Buttons")
-	if overlayBody and overlayBody:IsA("GuiObject") then
-		overlayBody.Visible = false
-	end
-	if overlayButtons and overlayButtons:IsA("GuiObject") then
-		overlayButtons.Visible = false
-	end
 
 	local myRulerId: string? = nil
 	local receivedState = false
@@ -117,7 +98,6 @@ function PoliticalHierarchyController.Start()
 		local token = noticeToken
 		resultToastLabel.Text = message
 		resultToast.Visible = true
-		noticeLabel.Text = message
 		task.delay(6, function()
 			if token == noticeToken then
 				resultToast.Visible = false
@@ -177,11 +157,8 @@ function PoliticalHierarchyController.Start()
 				walk(vassalId, childPrefix .. branch, nextChild)
 			end
 		end
-		for _, ruler in snapshot.rulers do
-			if ruler.independent then
-				walk(ruler.rulerId, "", "")
-			end
-		end
+		local me = myRuler()
+		if me then walk(me.rootRulerId or me.rulerId, "", "") end
 		if not receivedState then
 			return "Waiting for server state..."
 		end
@@ -217,40 +194,8 @@ function PoliticalHierarchyController.Start()
 		end
 		treeView.Text = formatTree()
 
-		clearFrameChildren(playerList)
 		local layoutOrder = 0
-		local otherRows = 0
-		for _, ruler in snapshot.rulers do
-			local uid = tonumber(ruler.userId)
-			local hasUser = ruler.hasUser == true or (uid ~= nil and uid ~= 0)
-			if hasUser and uid ~= player.UserId then
-				layoutOrder += 1
-				otherRows += 1
-				local row = playerTemplate:Clone()
-				row.Name = "PlayerRow_" .. tostring(layoutOrder)
-				row.Visible = true
-				row.LayoutOrder = layoutOrder
-				row.Size = UDim2.new(1, -8, 0, 34)
-				row.Parent = playerList
-				local nameLabel = row:WaitForChild("NameLabel") :: TextLabel
-				nameLabel.Text = string.format("%s %s", ruler.titleName, ruler.displayName)
-				nameLabel.Visible = true
-				nameLabel.LayoutOrder = 1
-				local offer = row:WaitForChild("OfferButton") :: TextButton
-				offer.Visible = true
-				offer.Active = true
-				offer.LayoutOrder = 2
-				offer.Text = "Offer Vassalage"
-				PrototypeGuiTheme.applyPrimaryButton(offer, true)
-				offer.TextSize = 13
-				offer.MouseButton1Click:Connect(function()
-					clientIntent:FireServer("Offer", uid)
-				end)
-			end
-		end
-
 		clearFrameChildren(overlayExtra)
-		layoutOrder = 0
 		local incomingCount = 0
 		local meId = if me then me.rulerId else nil
 		for _, request in snapshot.requests do
@@ -285,14 +230,12 @@ function PoliticalHierarchyController.Start()
 				end)
 			end
 		end
-		offerOverlay.Visible = incomingCount > 0
+		if incomingCount > 0 then Transitions.Show(offerOverlay :: any) else Transitions.Hide(offerOverlay :: any, true) end
 		print(
 			"[Hierarchy] render",
 			player.Name,
 			"rulers=",
 			#(snapshot.rulers or {}),
-			"otherRows=",
-			otherRows,
 			"incoming=",
 			incomingCount
 		)

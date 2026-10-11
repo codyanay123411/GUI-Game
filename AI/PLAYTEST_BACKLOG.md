@@ -1,5 +1,19 @@
 # V0.5 Playtest Verification Backlog
 
+## GUI redundancy cleanup — 2026-10-10
+
+Evidence: AI/GUI_REDUNDANCY_CLEANUP.md. Agent passes do not grant Director acceptance.
+
+| Scenario | Agent evidence | Remaining playtest status |
+| --- | --- | --- |
+| GUI-CLN-01 | Retired surfaces/nav/templates absent; final Studio audit archives 20 objects; 77 disk sources match | DEFERRED — Director acceptance |
+| GUI-CLN-02 | Back/click-away, no click-through, pan/zoom, global-detail persistence and rapid transitions passed | DEFERRED — human interaction feel |
+| GUI-CLN-03 | VGA/HD720/wide at 0.9/1/1.1: bounds, heading/action separation, review/Military scroll and opacity settings passed | DEFERRED — Director readability at preferred settings |
+| GUI-CLN-MP-01 | Three actual clients: 65 cumulative assertions; accepted offers, Alliance/NAP, war participation, resolution and disconnect cleanup passed | DEFERRED — real-account match usability |
+| GUI-CLN-MP-02 | Authoritative Domination: both remaining clients clear context, show result, allow final-map/Players inspection | DEFERRED — Director result usability |
+| GUI-CLN-04 | Native conquest rejects fractional input, accepts 500 troops, locks and resolves into result | DEFERRED — human usability/balance; gameplay unchanged |
+| GUI-CLN-COM-01 | Global Messages navigation remains; native account privacy/filtering was not rerun in this cleanup | DEFERRED — existing real-account verification |
+
 ## Contextual map milestone — 2026-10-10
 
 Agent evidence is recorded in `AI/CONTEXTUAL_MAP_INTERACTION.md`; none of these entries grants Director acceptance.

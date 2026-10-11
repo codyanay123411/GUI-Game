@@ -74,15 +74,13 @@ local C = PrototypeGuiTheme.Colors
 local PRIMARY_PANELS = {
 	Main = true,
 	TitlePanel = true,
-	TerritoryInfo = true,
 	MapStage = true,
 	ResultToast = true,
 	VassalageOfferOverlay = true,
-	DiplomacyPanel = true,
 	DiplomacyOfferOverlay = true,
 	AdminInspectPanel = true,
 	EconomyPanel = true,
-	MilitaryPanel = true,
+	MilitaryWorkflowPanel = true,
 }
 
 local function ensureCorner(inst: GuiObject, radius: number)
@@ -213,24 +211,6 @@ local function styleBody(label: TextLabel)
 	label.TextWrapped = true
 end
 
-local function stylePlayerRow(row: Frame)
-	row.BackgroundColor3 = C.row
-	row.BackgroundTransparency = 0
-	row.BorderSizePixel = 0
-	ensureCorner(row, 6)
-	local nameLabel = row:FindFirstChild("NameLabel")
-	if nameLabel and nameLabel:IsA("TextLabel") then
-		styleLabel(nameLabel, 13, C.textPrimary, false)
-		nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-		nameLabel.TextTruncate = Enum.TextTruncate.AtEnd
-	end
-	local offer = row:FindFirstChild("OfferButton")
-	if offer and offer:IsA("TextButton") then
-		PrototypeGuiTheme.applyPrimaryButton(offer, true)
-		offer.TextSize = 13
-	end
-end
-
 local function styleOfferCard(card: Frame)
 	card.BackgroundColor3 = C.well
 	card.BackgroundTransparency = 0
@@ -269,7 +249,7 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 			stylePanelTitle(title)
 			title.Size = UDim2.new(1, 0, 0, 20)
 		end
-		for _, name in { "SelfHeader", "TreeHeader", "PlayersHeader", "IncomingHeader" } do
+		for _, name in { "SelfHeader", "TreeHeader" } do
 			local header = main:FindFirstChild(name)
 			if header and header:IsA("TextLabel") then
 				styleSectionHeader(header)
@@ -327,40 +307,6 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 		end
 	end
 
-	local territory = gui:FindFirstChild("TerritoryInfo")
-	if territory and territory:IsA("GuiObject") then
-		territory.BackgroundColor3 = C.panel
-		territory.BorderSizePixel = 0
-		ensureCorner(territory, 8)
-		ensureStroke(territory, 1, C.stroke)
-		ensurePad(territory, 10)
-		local header = territory:FindFirstChild("Header")
-		if header and header:IsA("TextLabel") then
-			stylePanelTitle(header)
-			header.Size = UDim2.new(1, 0, 0, 20)
-		end
-		local body = territory:FindFirstChild("Body")
-		if body and body:IsA("TextLabel") then
-			styleBody(body)
-			body.Size = UDim2.new(1, 0, 0, 40)
-		end
-		local warStatus = territory:FindFirstChild("WarStatus")
-		if warStatus and warStatus:IsA("TextLabel") then
-			styleBody(warStatus)
-			warStatus.TextSize = 12
-			warStatus.Size = UDim2.new(1, 0, 0, 44)
-			warStatus.ClipsDescendants = true
-			warStatus.TextTruncate = Enum.TextTruncate.AtEnd
-			warStatus.TextYAlignment = Enum.TextYAlignment.Top
-		end
-		local declareWar = territory:FindFirstChild("DeclareWar")
-		if declareWar and declareWar:IsA("TextButton") then
-			PrototypeGuiTheme.applyPrimaryButton(declareWar, true)
-			declareWar.TextSize = 12
-			declareWar.TextWrapped = true
-		end
-	end
-
 	local economy = gui:FindFirstChild("EconomyPanel")
 	if economy and economy:IsA("GuiObject") then
 		economy.BackgroundColor3 = C.panel
@@ -381,7 +327,8 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 		end
 	end
 
-	local military = gui:FindFirstChild("MilitaryPanel")
+	local shell = gui:FindFirstChild("MilitaryWorkflowPanel")
+	local military = if shell then shell:FindFirstChild("Content") else nil
 	if military and military:IsA("GuiObject") then
 		military.BackgroundColor3 = C.panel
 		military.BorderSizePixel = 0
@@ -425,29 +372,6 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 		mapStage.BorderSizePixel = 0
 		ensureCorner(mapStage, 8)
 		ensureStroke(mapStage, 1, C.stroke)
-	end
-
-	local diplomacy = gui:FindFirstChild("DiplomacyPanel")
-	if diplomacy and diplomacy:IsA("GuiObject") then
-		diplomacy.BackgroundColor3 = C.panel
-		diplomacy.BorderSizePixel = 0
-		ensureCorner(diplomacy, 8)
-		ensureStroke(diplomacy, 1, C.stroke)
-		ensurePad(diplomacy, 10)
-		local header = diplomacy:FindFirstChild("Header")
-		if header and header:IsA("TextLabel") then
-			stylePanelTitle(header)
-			header.Size = UDim2.new(1, 0, 0, 20)
-		end
-		local status = diplomacy:FindFirstChild("Status")
-		if status and status:IsA("TextLabel") then
-			styleBody(status)
-			status.TextSize = 13
-		end
-		local dipList = diplomacy:FindFirstChild("List")
-		if dipList and dipList:IsA("ScrollingFrame") then
-			styleScroll(dipList)
-		end
 	end
 
 	local overlay = gui:FindFirstChild("VassalageOfferOverlay")
@@ -554,45 +478,15 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 
 	local templates = gui:FindFirstChild("Templates")
 	if templates then
-		local playerRow = templates:FindFirstChild("PlayerRow")
-		if playerRow and playerRow:IsA("Frame") then
-			stylePlayerRow(playerRow)
-		end
 		local offerCard = templates:FindFirstChild("OfferCard")
 		if offerCard and offerCard:IsA("Frame") then
 			styleOfferCard(offerCard)
-		end
-		local dipRow = templates:FindFirstChild("DiplomacyRow")
-		if dipRow and dipRow:IsA("Frame") then
-			dipRow.BackgroundColor3 = C.row
-			dipRow.BorderSizePixel = 0
-			ensureCorner(dipRow, 6)
-			local nameLabel = dipRow:FindFirstChild("NameLabel")
-			if nameLabel and nameLabel:IsA("TextLabel") then
-				styleLabel(nameLabel, 13, C.textPrimary, true)
-			end
-			local relLabel = dipRow:FindFirstChild("RelationLabel")
-			if relLabel and relLabel:IsA("TextLabel") then
-				styleLabel(relLabel, 12, C.textSecondary, false)
-			end
-			local buttonRow = dipRow:FindFirstChild("ButtonRow")
-			if buttonRow then
-				for _, child in buttonRow:GetChildren() do
-					if child:IsA("TextButton") then
-						PrototypeGuiTheme.applyPrimaryButton(child, true)
-						child.TextSize = 11
-					end
-				end
-			end
 		end
 		local dipCard = templates:FindFirstChild("DiplomacyOfferCard")
 		if dipCard and dipCard:IsA("Frame") then
 			styleOfferCard(dipCard)
 		end
-		local requestRow = templates:FindFirstChild("RequestRow")
-		if requestRow and requestRow:IsA("Frame") then
-			styleOfferCard(requestRow)
-		end
+
 	end
 
 	for _, inst in gui:GetDescendants() do

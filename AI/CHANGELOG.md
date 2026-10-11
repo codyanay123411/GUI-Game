@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-10 — Retire redundant GUI and polish map context
+
+Removed obsolete Territory/Diplomacy/Military navigation, duplicate territory/diplomacy panels, player/request lists, templates and unused bindings from active Studio GUI; preserved twenty assets in ServerStorage recovery. Reused recruitment/commitment/lock and offer handlers inside contextual CanvasGroups. Added setting-aware fade/scale/slide with immediate input dismissal, independent selection and compact navigation/result reflow. Corrected compact radial heading overlap and empty-selection global-view dismissal during verification. Three-client relationship/offers/war/disconnect/Victory, nine viewport/scale combinations, native input/conquest and final 77-source parity passed. Reports, fixtures, screenshots and local offline snapshot retained. No gameplay mechanics or Roblox publication.
+
 ## 2026-10-10 — Contextual map interaction workflows
 
 Added a centralized client action resolver, circular map actions with compact fallback, focused public-information/diplomacy/communication/war review, and presentation-only province attention. Preserved full panels, existing remotes, accepted gameplay, personal-border Direct and separate Council/Allies rules. Fixed deferred selection handoff, initial commitment field, scrolling review layout and request-deadline clock assumptions during verification. Added reproducible policy/multiplayer/layout fixtures and recorded targeted Solo, three-client and responsive evidence. Studio GUI assets are preserved in an offline snapshot. Agent verification does not imply Director acceptance; no Roblox publication.

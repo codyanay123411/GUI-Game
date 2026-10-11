@@ -3,12 +3,15 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
+local TextService = game:GetService("TextService")
 local Bindings = require(ReplicatedStorage.Shared.Config.PresentationBindings)
 local Overview = require(script.Parent.RealmOverviewController)
 local Theme = require(ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
+local Transitions = require(ReplicatedStorage.Shared.Util.ContextTransitions)
+local Map = require(script.Parent.TerritoryMapController)
 local Controller = {}
 local started = false
-local panels = { Realm = "Main", Titles = "TitlePanel", Territory = "TerritoryInfo", Diplomacy = "DiplomacyPanel", Military = "MilitaryPanel", Economy = "EconomyPanel", Communications = "CommunicationsPanel" }
+local panels = { Realm = "Main", Titles = "TitlePanel", Military = "MilitaryWorkflowPanel", Economy = "EconomyPanel", Communications = "CommunicationsPanel" }
 function Controller.Start()
 	if started then return end
 	started = true
@@ -34,22 +37,6 @@ function Controller.Start()
 	end
 	commsPanel.Header.Font = Enum.Font.GothamBold
 	commsPanel.Header.TextSize = 16
-	local emptyRulers = Instance.new("TextLabel")
-	emptyRulers.Name = "EmptyRulers"
-	emptyRulers.BackgroundTransparency = 1
-	emptyRulers.Size = UDim2.new(1, -12, 0, 48)
-	emptyRulers.Text = "No other rulers in this match yet."
-	emptyRulers.TextWrapped = true
-	emptyRulers.Font = Enum.Font.Gotham
-	emptyRulers.TextSize = 14
-	emptyRulers.TextColor3 = C.textSecondary
-	emptyRulers.Parent = gui.Main.PlayerList
-	local function updateRulersEmpty()
-		emptyRulers.Visible = gui.Main.PlayerList:FindFirstChildWhichIsA("Frame") == nil
-	end
-	gui.Main.PlayerList.ChildAdded:Connect(updateRulersEmpty)
-	gui.Main.PlayerList.ChildRemoved:Connect(updateRulersEmpty)
-	updateRulersEmpty()
 	local buttons = {}
 	local layout: () -> ()
 	local function position(item: GuiObject, x: number, y: number, w: number, h: number)
@@ -58,16 +45,21 @@ function Controller.Start()
 		item.Size = UDim2.fromOffset(w,h)
 	end
 	local function gotoPanel(name: string)
+		if name ~= "Map" and not panels[name] then return end
 		selected = name
 		gui:SetAttribute("SelectedSystem",name)
 		for key, panelName in panels do
-			(gui:FindFirstChild(panelName) :: GuiObject).Visible = key == name
+			local view = gui:FindFirstChild(panelName) :: GuiObject
+			if view:IsA("CanvasGroup") then
+				if key ~= name then Transitions.Hide(view, true) end
+			else view.Visible = key == name end
 		end
 		for key, button in buttons do
 			button.BackgroundColor3 = if key == name then C.action else C.well
 			button.TextColor3 = if key == name then C.actionText else C.textSecondary
 		end
 		layout()
+		if name == "Military" then Transitions.Show(gui.MilitaryWorkflowPanel, true) end
 	end
 	Controller.OpenSystem = gotoPanel
 	local function layer(item: Instance, z: number)
@@ -89,8 +81,17 @@ function Controller.Start()
 		local mapWidth = math.max(180,w-left-12-(if open then drawer+12 else 0))
 		position(top,8,4,w-16,64)
 		position(nav,8,76,rail,math.max(120,h-108))
-		for _, button in buttons do button.Size = UDim2.new(1, -8, 0, 42 * density) end
-		nav.CanvasSize = UDim2.fromOffset(0,540)
+		local navY = 4
+		for _, name in { "Map", "Realm", "Titles", "Economy", "Communications", "Players", "MatchResult" } do
+			local button = buttons[name]
+			if button then
+				button.Size = UDim2.new(1, -8, 0, 42 * density)
+				button.Position = UDim2.fromOffset(4, navY)
+				if button.Visible then navY += 42 * density + 8 end
+			end
+		end
+		nav.RequestNotice.Position = UDim2.fromOffset(4, navY)
+		nav.CanvasSize = UDim2.fromOffset(0, navY + (if nav.RequestNotice.Visible then 52 else 0))
 		position(top.Gold,math.floor(w*0.42),8,math.floor(w*0.28)-20,48)
 		position(top.Troops,math.floor(w*0.72),8,math.floor(w*0.28)-24,48)
 		top.Gold.TextSize = if w < 760 then 12 else 14
@@ -105,12 +106,8 @@ function Controller.Start()
 			layer(panel,20)
 		end
 		local realm = gui.Main
-		realm.TreeScroll.Size = UDim2.new(1,0,0,110)
-		realm.PlayerList.Size = UDim2.new(1,0,0,140)
+		realm.TreeScroll.Size = UDim2.new(1,0,0,math.max(110,h-280))
 		realm.SelfInfo.Size = UDim2.new(1,0,0,90)
-		local dip = gui.DiplomacyPanel
-		dip.Status.Size = UDim2.new(1,0,0,64)
-		dip.List.Size = UDim2.new(1,0,0,math.max(130,h-238))
 		local comms = gui.CommunicationsPanel
 		local cw,ch = drawer,math.max(400,h-108)
 		comms.CanvasSize = UDim2.fromOffset(0,ch)
@@ -125,32 +122,29 @@ function Controller.Start()
 		position(comms.HelpButton,cw-64,ch-86,52,32)
 		position(comms.DirectButton,12,ch-46,cw-134,32)
 		position(comms.ObserverButton,cw-114,ch-46,102,32)
-		local territory = gui.TerritoryInfo
-		territory.Body.Size = UDim2.new(1,0,0,140)
-		territory.WarStatus.Size = UDim2.new(1,0,0,110)
-		territory.WarStatus.TextTruncate = Enum.TextTruncate.None
 		local title = gui.TitlePanel
 		title.Body.Size = UDim2.new(1,0,1,-116)
-		local military = gui.MilitaryPanel
-		military.CanvasSize = UDim2.fromOffset(0,470)
-		military.Stats.Position = UDim2.fromOffset(12,44)
-		military.Stats.Size = UDim2.new(1,-24,0,72)
-		military.Stats.TextSize = 18
-		military.RecruitBox.Position = UDim2.fromOffset(12,126)
-		military.RecruitBox.Size = UDim2.new(0.5,-18,0,32)
-		military.RecruitButton.Position = UDim2.new(0.5,0,0,126)
-		military.RecruitButton.Size = UDim2.new(0.5,-66,0,32)
-		military.MaxRecruitButton.AnchorPoint = Vector2.zero
-		military.MaxRecruitButton.Position = UDim2.new(1,-60,0,126)
-		military.MaxRecruitButton.Size = UDim2.fromOffset(48,32)
+		local military = gui.MilitaryWorkflowPanel.Content
+		local function textHeight(label: TextLabel, minimum: number): number
+			return math.max(minimum, TextService:GetTextSize(label.Text, label.TextSize, label.Font, Vector2.new(math.max(1, drawer - 44), 100000)).Y + 12)
+		end
+		position(military.Header,12,10,drawer-24,28)
+		position(military.Stats,12,44,drawer-24,textHeight(military.Stats,64))
+		local y = 44 + military.Stats.Size.Y.Offset + 12
+		position(military.RecruitBox,12,y,drawer*.5-18,36)
+		position(military.RecruitButton,drawer*.5,y,drawer*.5-66,36)
+		position(military.MaxRecruitButton,drawer-60,y,48,36)
 		military.MaxRecruitButton.Text = "Max"
-		military.CostLabel.Position = UDim2.fromOffset(12,166)
-		military.CostLabel.Size = UDim2.new(1,-24,0,24)
-		military.CommitBody.Position = UDim2.fromOffset(12,200)
-		military.CommitBox.Position = UDim2.fromOffset(12,360)
-		military.CommitBox.Size = UDim2.new(1,-24,0,32)
-		military.LockButton.Position = UDim2.fromOffset(12,402)
-		military.LockButton.Size = UDim2.new(1,-24,0,34)
+		position(military.CostLabel,12,y+40,drawer-24,textHeight(military.CostLabel,24))
+		if gui:GetAttribute("MilitaryContextMode") == "Recruit" then y += 80 end
+		position(military.CommitBody,12,y,drawer-24,textHeight(military.CommitBody,36))
+		y += military.CommitBody.Size.Y.Offset + 12
+		position(military.CommitBox,12,y,drawer-24,36)
+		if military.CommitBox.Visible then y += 44 end
+		position(military.LockButton,12,y,drawer-24,36)
+		if military.LockButton.Visible then y += 44 end
+		position(military.BackButton,12,y+4,drawer-24,36)
+		military.CanvasSize = UDim2.fromOffset(0,y+52)
 		for i,name in {"VassalageOfferOverlay","DiplomacyOfferOverlay"} do
 			local overlay = gui:FindFirstChild(name) :: GuiObject
 			overlay.AnchorPoint = Vector2.new(0.5,0.5)
@@ -194,15 +188,13 @@ function Controller.Start()
 		local gold = string.match(economy,"Gold: ([^\n]+)") or "—"
 		local income = if gui:GetAttribute("MatchEnded") then "Income frozen · Match ended" else (string.match(economy,"Income: ([^\n]+)") or "Loading treasury")
 		top.Gold.Text = "GOLD  "..gold.."\n"..income
-		local stats = gui.MilitaryPanel.Stats.Text
-		top.Troops.Text = "TROOPS  "..(string.match(stats,"Available: ([^\n]+)") or "—").." available\n"..(string.match(stats,"Committed: ([^\n]+)") or "0").." committed"
+		top.Troops.Text = "TROOPS  " .. tostring(gui:GetAttribute("MilitaryAvailable") or "—") .. " available\n" .. tostring(gui:GetAttribute("MilitaryCommitted") or "0") .. " committed"
 		local self = gui.Main.SelfInfo.Text
 		top.Ruler.Text = if gui:GetAttribute("MatchEnded") and not string.match(self,"Name: ([^\n]+)") then "Spectator  ·  Match ended" else (string.match(self,"Rank: ([^\n]+)") or "Ruler").."  ·  "..(string.match(self,"Name: ([^\n]+)") or "Connecting")
-		local war = gui.TerritoryInfo.WarStatus.Text
-		buttons.Military.Text = if string.find(war,"No active wars",1,true) then "Military" else "Military  •"
+
 	end
 	gui:GetAttributeChangedSignal("MatchEnded"):Connect(summaries)
-	for _, label in {gui.EconomyPanel.Body,gui.MilitaryPanel.Stats,gui.Main.SelfInfo,gui.TerritoryInfo.WarStatus} do
+	for _, label in {gui.EconomyPanel.Body,gui.Main.SelfInfo} do
 		label:GetPropertyChangedSignal("Text"):Connect(summaries)
 	end
 	local function style(inst: Instance)
@@ -217,28 +209,30 @@ function Controller.Start()
 	gui.DescendantAdded:Connect(style)
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
 	Theme.PresentationChanged.Event:Connect(layout)
+	gui:GetAttributeChangedSignal("MilitaryContextMode"):Connect(layout)
+	for _, label in { gui.MilitaryWorkflowPanel.Content.Stats, gui.MilitaryWorkflowPanel.Content.CommitBody, gui.MilitaryWorkflowPanel.Content.CostLabel } do
+		for _, property in { "Text", "TextSize", "FontFace" } do label:GetPropertyChangedSignal(property):Connect(layout) end
+	end
+	for _, control in { gui.MilitaryWorkflowPanel.Content.CommitBox, gui.MilitaryWorkflowPanel.Content.LockButton } do control:GetPropertyChangedSignal("Visible"):Connect(layout) end
+
 	gui.ChildAdded:Connect(function() task.defer(layout) end)
-	local territoryValue = gui.TerritoryInfo.SelectedTerritoryId
-	local previousCommitment: string? = nil
-	gui.MilitaryPanel.CommitBody:GetPropertyChangedSignal("Text"):Connect(function()
-		local text = gui.MilitaryPanel.CommitBody.Text
-		local active = string.find(text, "Decision:", 1, true) or string.find(text, "Hard timeout:", 1, true)
-		local key = if active then string.match(text, "^[^\n]+") else nil
-		if key and key ~= previousCommitment then
-			gui.MilitaryPanel.CanvasPosition = Vector2.zero
-			if not gui:GetAttribute("MapContextEnabled") then gotoPanel("Military") end
-		end
-		previousCommitment = key
+	gui:GetAttributeChangedSignal("MilitaryAvailable"):Connect(summaries)
+	gui:GetAttributeChangedSignal("MilitaryCommitted"):Connect(summaries)
+	gui.MilitaryWorkflowPanel.Content.BackButton.Activated:Connect(function()
+		gotoPanel("Map")
+		Map.Select(gui.PresentationState.SelectedTerritoryId.Value)
 	end)
-	territoryValue:GetPropertyChangedSignal("Value"):Connect(function()
-		if not gui:GetAttribute("MapContextEnabled") and territoryValue.Value ~= "" and selected ~= "Military" then gotoPanel("Territory") end
+	UserInputService.InputBegan:Connect(function(input, processed)
+		if input.KeyCode == Enum.KeyCode.Escape and not processed and selected == "Military" then gotoPanel("Map") end
 	end)
 	for _, name in {"VassalageOfferOverlay","DiplomacyOfferOverlay"} do
 		local overlay=gui[name]
 		overlay:GetPropertyChangedSignal("Visible"):Connect(function()
 			nav.RequestNotice.Visible=gui.VassalageOfferOverlay.Visible or gui.DiplomacyOfferOverlay.Visible
+			layout()
 		end)
 	end
+	nav.MatchResult:GetPropertyChangedSignal("Visible"):Connect(layout)
 	local tabHeld = false
 	UserInputService.InputBegan:Connect(function(input, processed)
 		if input.KeyCode ~= Bindings.HoldRealmOverview or processed or UserInputService:GetFocusedTextBox() then return end

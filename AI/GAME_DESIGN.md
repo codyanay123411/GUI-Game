@@ -1,5 +1,9 @@
 # Game Design
 
+## Director-authorized GUI redundancy migration — 2026-10-10
+
+This explicit cleanup supersedes temporary full-navigation retention in the earlier contextual milestone below. Territory actions, Military and Diplomacy use map context; their primary navigation and duplicate panels are retired. Global access remains Map, Realm, Titles, Economy, Messages and Players, plus conditional Match Result. Context closes on click-away/Back and yields to incoming offers, Players and Victory. Intentionally opened global detail persists. Subtle opacity/animation uses existing GAME UI settings; gameplay, server authority and communication permissions are unchanged. See AI/GUI_REDUNDANCY_CLEANUP.md.
+
 ## Director-authorized contextual map presentation — 2026-10-10
 
 Province selection surfaces relationship-aware map actions, then a focused drawer or an existing full workflow. War/Conquer requires a review and explicit confirmation; declaration, commitment, Ready/Lock and battle rules remain unchanged. Full navigation remains accessible. Small screens may use a compact action list. Province attention shows unread communication, incoming offers, relevant wars and temporary results; aggregate the highest priority with a count. Ruler events anchor to their personally owned territory nearest the local greater realm; war/results anchor to the actual target. Existing notification, audio/settings and communication permissions remain in force. This is presentation authorization, not new gameplay scope or Director implementation acceptance. See `AI/CONTEXTUAL_MAP_INTERACTION.md`.

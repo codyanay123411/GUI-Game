@@ -1,0 +1,25 @@
+min command: resolvewar  -  Client - Registry:163
+  23:45:18.740  Overriding Kohl's Admin command: inspectvictory  -  Client - Registry:163
+  23:45:18.740  Overriding Kohl's Admin command: checkvictory  -  Client - Registry:163
+  23:45:18.740  Overriding Kohl's Admin command: inspectneutral  -  Client - Registry:163
+  23:45:18.740  Overriding Kohl's Admin command: setneutraldefense  -  Client - Registry:163
+  23:45:18.764  [GamePresentation] Mounted native GAME UI / GAME AUDIO settings.  -  Client - GamePresentationKohlClient:133
+  23:45:22.269  GUI_CLEANUP_SOLO_PASS 1280, 662  -  Client - GuiCleanupTemporaryFinalRegression:49
+  23:46:07.364  cloud_9458961875.Model To Pixel.MainScript:331: attempt to index nil with 'MainTextShadow'  -  Client
+  23:46:07.364  Stack Begin  -  Studio
+  23:46:07.364  Script 'cloud_9458961875.Model To Pixel.MainScript', Line 331  -  Studio
+  23:46:07.364  Stack End  -  Studio
+  23:46:07.404   ▶ Disconnect from 127.0.0.1|60907 (x2)  -  Studio
+
+  23:46:07.713  [Hierarchy] push State all clients rulers= 0 requests= 0  -  Server - PoliticalHierarchyService:181
+  23:46:07.714  [Title] push State all clients  -  Server - TitleProgressionService:147
+  23:46:07.714  [Territory] unclaimed northvale from Player_106676397  -  Server - TerritoryMapService:122
+  23:46:07.714  [Territory] push State all clients  -  Server - TerritoryMapService:105
+  23:46:07.714   ▶ [Title] push State all clients (x2)  -  Server - TitleProgressionService:147
+
+  23:46:07.867  cloud_9458961875.Model To Pixel.MainScript:331: attempt to index nil with 'MainTextShadow'  -  Server
+  23:46:07.867  Stack Begin  -  Studio
+  23:46:07.867  Script 'cloud_9458961875.Model To Pixel.MainScript', Line 331  -  Studio
+  23:46:07.867  Stack End  -  Studio
+  23:46:20.537  > assert(not game:GetService("RunService"):IsRunning());for _,parent in {game.ServerScriptService,game.StarterPlayer.StarterPlayerScripts} do for _,s in parent:GetChildren() do if string.match(s.Name,"^GuiCleanupTemporary") then s.Parent=nil end end end;for _,f in game.ReplicatedStorage:GetChildren() do if f.Name=="ContextVerification" then f.Parent=nil end end;local g=game.StarterGui.HierarchyPrototypeGui;for _,name in {"ContextRadialPanel","ContextWorkflowPanel","MilitaryWorkflowPanel","VassalageOfferOverlay","DiplomacyOfferOverlay"} do local p=g[name];p.Visible=false;p.Active=false;p.Interactable=false;p.
+```
