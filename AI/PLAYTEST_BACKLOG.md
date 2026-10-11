@@ -30,7 +30,7 @@ Canonical list of tests classified **DEFERRED — NON-BLOCKING — V0.5 PLAYTEST
 
 **Deferred does not mean PASS. Deferred means non-blocking until the appropriate testing stage.**
 
-Standing rule: `.cursor/rules/project.mdc` rule 29. Do not mark Director-verified or Director-accepted from Agent-only tests. Do not rewrite “not tested” into “verified.”
+Standing verification/defer policy: [AGENTS.md](../AGENTS.md#verification-and-acceptance). This document owns scenario status/evidence, not a duplicate operating policy.
 
 **Communications V0.x** is **PRE-V0.5 REQUIRED — IMPLEMENTED — PARTIALLY AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED**. Native real-account peer filtering/privacy and observer verification remain outstanding; see the Communications rows below and `AI/COMMUNICATIONS_IMPLEMENTATION.md`.
 

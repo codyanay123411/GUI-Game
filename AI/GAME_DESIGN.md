@@ -1138,7 +1138,7 @@ This is a design/architecture philosophy, not authorization to prematurely optim
 - Implementation agents implement those mechanics.
 - Agents must not invent major game systems merely because a concept appears in this document.
 - Unspecified mechanics remain unspecified until designed.
-- **Agent-first verification** (canonical: `.cursor/rules/project.mdc`): agents verify as much as the environment allows before asking the Director to test; agent PASS is not Director acceptance.
+- **Agent-first verification** (canonical: [AGENTS.md](../AGENTS.md#verification-and-acceptance)): agents verify as much as the environment allows before asking the Director to test; agent PASS is not Director acceptance.
 
 ## Authority
 

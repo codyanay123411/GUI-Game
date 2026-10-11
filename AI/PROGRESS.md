@@ -1,5 +1,11 @@
 # Progress
 
+## 2026-10-11 — Workflow and coverage audit
+
+Documentation-only: consolidated operating rules/context routing in AGENTS.md, reduced Cursor rules to that entry point, recorded Git/Studio/snapshot/external coverage in Architecture and updated active policy links. Historical decisions/acceptance remain intact; older layout/tool claims are explicitly historical.
+
+Checks: clean starting main matched GitHub advertised main; read-only Studio Explorer/properties inspected; latest saved-place hash rechecked; Git/search commands and documentation diff/link checks run. No gameplay source changes, sync/export, runtime suite or new Director acceptance. External Luau compiler unavailable; live source/property parity and published/cloud freshness remain unconfirmed. Coverage/evidence: [Architecture](../docs/ARCHITECTURE.md#repository--studio-coverage). No remaining workflow blocker; next development task starts with AGENTS task routing and establishes coverage for its affected system. The audit initially left changes uncommitted/unpushed; the subsequent finalization request authorizes committing and pushing this documentation cleanup.
+
 ## 2026-10-11 — Final preservation on main
 
 Finalization only: current implementation was already committed and main matched origin/main. All 77 production sources compile and exactly match the final saved Studio place; retired GUI/test assets are inactive or absent from active roots, and recovered bootstraps remain disabled. Documentation/evidence records the final state; no new gameplay, UI development or Director acceptance. Studio is closed; prior native radial input verification remains the runtime evidence. See FINALIZATION.md for intentionally local-only snapshots and existing limitations.
@@ -40,11 +46,11 @@ Communications recovery audit completed: see [COMMUNICATIONS_RECOVERY_AUDIT.md](
 
 Agent ran Studio Play Solo and a two-client Local Server; observed map navigation, Gold/recruitment, Alliance accept/break, NAP decline, vassalage acceptance, title establishment, and combat arithmetic self-test. **Live Studio materially differs from this checkout:** existing Communications service/controller/config, dependencies, GUI, and admin commands are present despite disk design-only status. Provenance is unresolved. A partial five-script preservation snapshot and detailed evidence/limitations are linked in `AI/TAKEOVER_REPORT.md`. No gameplay source edits or new Director acceptance; deferred MIL-MP statuses unchanged. Reconcile versions before synchronizing or implementing.
 
-Before substantial work, review `AI/GAME_DESIGN.md`, `AI/ROADMAP.md`, `AI/PROGRESS.md`, and `AI/DECISIONS.md`. After substantial work, update this file and append meaningful changes to `AI/CHANGELOG.md`. Record significant architectural decisions in `AI/DECISIONS.md`. Do not edit `AI/GAME_DESIGN.md` unless the user explicitly requests a design change.
-
-A task must not be marked complete until it has been verified. Agent-first verification is required. **Deferred** multiplayer/emergent cases (`AI/PLAYTEST_BACKLOG.md`) do **not** count as PASS and do **not** equal Director acceptance; they may be non-blocking for further V0.x work per `.cursor/rules/project.mdc` rule 29.
+Use [AGENTS.md](../AGENTS.md) for task-dependent reading, development loop, concise work records and verification policy. This tracker owns state and dated evidence; linked reports hold details. Historical/deferred checks are not new passes.
 
 ## Environment setup
+
+Historical foundation evidence does not guarantee current connectivity. See the [coverage audit](../docs/ARCHITECTURE.md#repository--studio-coverage).
 
 - [x] Cursor local agent configured
 - [x] Roblox Studio MCP connected and tested
@@ -80,6 +86,8 @@ A task must not be marked complete until it has been verified. Agent-first verif
 - [x] Admin / Testing Infrastructure V0.1 **Kohl live for current AdminBridge ops — not a complete admin product.** Official @Scripth Kohl's Admin is in the place. GameTester chat/command-bar commands: adminhelp, inspectwars, inspectterritory, inspectruler, setowner, setprestige, inspectgold, setgold, addgold, spendgold, inspecttroops, settroops, addtroops, inspectmilitary, inspectcontest, resolvewar. Kohl owner/ruler tokens use `adminOwnerToken` / `adminRulerToken` (raw parse + player suggestions; SetOwner also suggests `unclaimed`) so `;setowner <id> unclaimed` reaches AdminBridge. **Director-verified PASS (2026-08-24 Local Server):** autocomplete showed Player1, Player2, Player3, and `unclaimed`; `setowner` and `setgold` worked. Not a new unclaim gameplay system. **Studio-only:** Local Server synthetic UserIds `< 0` pass `AdminConfig.IsGameTester`; published servers now require the allowlist OR trusted Kohl SuperAdmin+. Project-owned themed feedback (ResultToast + AdminInspectPanel). Kohl addon `run` returns nothing (no gsub boolean error); prototype theme Fonts are `Font` datatypes (no FontFace EnumItem spam). `AdminDebug.Invoke` and `*Debug` folders remain. Kohl SuperAdmin+ qualifies under the 2026-10-10 Director ruling; lower ranks require the allowlist. Warfare V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**. Economy V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (Gold foundation only). Military / Armies V0.1 is **IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED** (ordinary V0.1 scope).
 
 ## Project knowledge
+
+Document-creation checkpoints below are historical; dated implementation entries and linked reports govern current state.
 
 - [x] `AI/GAME_DESIGN.md` created (structured placeholders; verified on disk)
 - [x] `AI/ROADMAP.md` created (16 phases; Phase 1 complete; current authorized design milestone: Communications V0.x freeze)

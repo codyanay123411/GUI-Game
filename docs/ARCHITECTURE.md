@@ -1,5 +1,31 @@
 # Architecture
 
+## Repository / Studio coverage
+
+Audit: 2026-10-11, before workflow edits. Local main, origin/main and GitHub's advertised main matched ea3b0bc9497c4a90376aad0025920ce608695eca; working tree was clean. There were 317 tracked files and 77 production Luau sources, excluding generated Kohl modules. Workflow edits were local at audit completion and subsequently authorized for Git finalization; recheck status and remote refs on subsequent tasks.
+
+| Coverage | Authority / evidence | Limits and freshness |
+| --- | --- | --- |
+| Git and disk source | Tracked services/controllers/shared config, bootstraps, Kohl loader, AI/docs and partial verification/recovery artifacts; disk Luau is intended script source | Git is not the whole place. Code describes runtime-generated objects, not all authored instances. Recovery evidence is not automatically active implementation. |
+| Live Studio, read-only | Open Potential GUI game: PlaceId 77421850892463, GameId 10756019040, reported PlaceVersion 145. Observed two StarterGui ScreenGuis, 17 controller modules, nine gameplay remote pairs, Workspace objects and TextChatService configuration | Desktop inspection available; no dedicated Studio MCP exposed. Live source equality, complete property parity, cloud draft freshness and published state not established. No sync/export/Play performed for this audit. |
+| Authored place content | HierarchyPrototypeGui, StrategyBackground, contextual CanvasGroups/workflows, offers, attention layer, navigation and retained content panels; actual remotes and place objects | Source dependencies describe only part of the assets. UI binding claims need current instance/property inspection. Empty Edit-mode SoundService does not disprove runtime audio. |
+| Recovery | ServerStorage Communications, GUI sprint, conquest/victory and redundancy archives; 20 retired GUI objects; recovered Communications bootstraps observed Disabled | Outside active StarterGui; preserve them. Presence does not prove provenance, completeness or canonical status. |
+| Local snapshots | Nine ignored rbxl files under docs/verification; no saved model files found. Latest radial-input-final-2026-10-11.rbxl: 756451 bytes, local mtime Oct 11 00:14:27; SHA256 53A7E4DEDDF79F152ABAB70B62EA996F203F349ACDB327EDC6DD36E7096E9DFC rechecked | contextual-finalization-2026-10-11.json records 3397 decoded instances and 77-source parity at prior finalization. Hash confirms that file, not freshness of the entire open place. Older snapshots are historical candidates. |
+| External Roblox | Kohl loader can auto-update/require asset 1868400649 (fallback InsertService asset 172732271); audio/font assets, native chat filtering/privacy, account/platform services | Vendor dumps ignored. Current external versions/permissions, real-account delivery and persistence/service state are not established by Git or saved-place source parity. |
+
+Ignore rules exclude places/locks, generated Kohl MainModule/MainModuleLegacy, caches, local editor state and throwaway logs; loader/READ_ME and project Luau stay tracked. No checked-in Rojo/project sync manifest, package manager, formatter/linter config or automated test runner was found. Script Sync is historically configured/tested, but current plugin settings were not independently confirmed. Script parity is not full DataModel coverage. “Not represented in Git” does not mean “not implemented.”
+
+### Available checks and commands
+
+From repository root: `git status --short`, `git diff --check`, `git diff` (and `git diff --cached` when staging); `rg --files AI` and `rg -n '^##' AI/PROGRESS.md` locate context. These commands are available. Read-only `git ls-remote origin refs/heads/main` succeeded after network escalation; remote access requires network/authentication.
+
+No repository CLI build/test/lint command exists. Historical finalization used temporary external Luau binaries; their availability was not confirmed here and is not a repository dependency. If installed, verify executable `--help` before using `luau-compile --null <file>` for syntax compilation. Compilation is not Roblox type analysis or runtime verification.
+
+Fixtures under docs/verification are not an automatic suite. Read each fixture's environment and side effects: pure CLI fixtures differ from ones needing Roblox game/instances, server seeding or client LocalScripts. Do not insert fixtures into normal bootstraps. Follow the relevant system report for reproduction.
+
+Inspect coverage/parity before syncing authorized changes. Studio **Play** verifies local behavior; **Local Server** with multiple clients verifies multiplayer behavior; inspect server/client Output. Real-account platform checks require actual accounts. Runtime checks were not exercised for this documentation audit. A current export may be needed when live inspection is unavailable, within task authorization; do not export/overwrite merely to investigate.
+
+
 ## Contextual map presentation
 
 `MapContextState` mirrors existing Hierarchy/Territory/Diplomacy/Warfare/Military/Communications snapshots. `ContextActionResolver` returns semantic, player-relevant UX predictions using shared adjacency/rank/realm helpers and current Communications contacts/contexts. `MapContextController` owns selection/workflow lifecycle; `ContextRadialController` renders the first layer and compact fallback. `StrategyPresentationController.OpenSystem` exposes global Map/Realm/Titles/Economy/Messages/Players navigation and the internal contextual Military workflow; retired destinations are rejected. `MilitaryController.PrepareCommit` uses the existing commitment field/submission path after a server-created war appears.
@@ -22,11 +48,11 @@ This project is a GUI-first Roblox game. Source-controlled Luau lives on disk an
 | `ReplicatedStorage/Shared/Util/` | Genuinely reusable utilities. Currently `PoliticalRankRules.luau` (`NextRank` / `Name`), `TitleRequirements.luau`, `MapAdjacency.luau`, `MapGeometry.luau`, `MapTriangles.luau`, `PrototypeGuiTheme.luau`, `KohlPrototypeTheme.luau`, `WarfareAdjacency.luau`, `PlayerRelevantView.luau`, `EconomyPayout.luau`, `MilitaryCombat.luau`, `RealmGraph.luau`, `RealmOverviewView.luau`, `Domination.luau`, `GuiSounds.luau`. |
 | `ReplicatedStorage/Remotes/` | RemoteEvents/RemoteFunctions created in Studio. Hierarchy: `HierarchyClientEvent`, `HierarchyServerEvent`. Territory: `TerritoryClientEvent`, `TerritoryServerEvent`. Title: `TitleClientEvent`, `TitleServerEvent`. Diplomacy: `DiplomacyClientEvent`, `DiplomacyServerEvent`. Warfare: `WarfareClientEvent`, `WarfareServerEvent`. Economy: `EconomyClientEvent`, `EconomyServerEvent`. Military: `MilitaryClientEvent`, `MilitaryServerEvent`. Communications: `CommunicationsClientEvent`, `CommunicationsServerEvent` (state/control/identity metadata only; native TextChannel transports player messages). Victory: `VictoryClientEvent`, `VictoryServerEvent`. Presentation: `GameSettingsRequestEvent`, `GameSettingsStateEvent` (created by GameSettingsService). Disk `_Placeholder.luau` remains so Script Sync keeps this folder (remotes are not Luau files). |
 | `StarterPlayerScripts/` | Client scripts that run for each player. On disk this is a root folder; in Studio it maps to `StarterPlayer.StarterPlayerScripts`. Contains the client entry point and controllers. |
-| `StarterPlayerScripts/Controllers/` | Client-side behavior and GUI control. Currently `PoliticalHierarchyController.luau`, `TerritoryMapController.luau`, `TitleProgressionController.luau`, `DiplomacyController.luau`, `WarfareController.luau`, `EconomyController.luau`, `MilitaryController.luau`, `CommunicationsController.luau`, `AdminFeedbackController.luau`, `StrategyPresentationController.luau`, `RealmOverviewController.luau`, `VictoryController.luau`, `GameSettingsController.luau`. |
+| `StarterPlayerScripts/Controllers/` | Client-side presentation/input controllers, including contextual state, radial/workflow and attention controllers. Inspect the directory for the current module inventory. |
 | `docs/` | Project documentation, including this architecture note. |
 | `AI/` | Agent tracker: progress, decisions, and changelog. |
 
-GUI instances are **not** stored in this filesystem. They are created and edited in Roblox Studio.
+Authored GUI instances are not canonical Git source files. They are edited in Studio and may be captured in ignored local saved places; see the coverage map.
 
 Reserved Script Sync folders that still have no Luau modules keep `_Placeholder.luau` so Studio materializes the folder. Delete or replace the placeholder when real modules occupy that folder. `ReplicatedStorage/Remotes/_Placeholder.luau` is kept because remotes are Studio instances, not synced Luau.
 
@@ -42,7 +68,7 @@ Prototype GUI: `StarterGui.HierarchyPrototypeGui` (Studio-managed, not a filesys
 
 ## Tooling roles
 
-- **Roblox Studio MCP** handles live DataModel manipulation, GUI instances, inspection, and Studio Play / Local Server **development verification**. Those sessions are not the project’s first real playtest (published server; see `AI/GAME_DESIGN.md`).
+- **Available Studio connection or desktop tools** handle live inspection and authorized place work. Establish availability each session; historical MCP evidence does not guarantee current access. Runtime sessions are development verification, not the first real published playtest.
 - **Script Sync** handles source-controlled Luau files and folders between disk and Studio.
 - **Git / GitHub** provides version history and rollback for the files in this repository.
 
@@ -82,9 +108,9 @@ The game is GUI-first. Future GUI work must extend **one** evolving strategy-gam
 
 This is a standing layout/integration principle, not a mandate to redesign existing GUI until a feature needs the space.
 
-### Prototype panel geometry (standing)
+### Historical V0.1 panel geometry (superseded)
 
-Current prototype screen regions are **deterministic**. Gameplay-state changes update **content and visual state** inside those regions (text, button enablement, tree/player rows). They must not arbitrarily reflow primary panel Size/Position.
+The following records former V0.1 geometry, superseded by the authorized GUI sprint and contextual cleanup. It is not a current fixed-layout instruction. Former screen regions were **deterministic**. Gameplay-state changes update **content and visual state** inside those regions (text, button enablement, tree/player rows). They must not arbitrarily reflow primary panel Size/Position.
 
 Dynamic lists (hierarchy tree, other players) **scroll inside** their assigned regions. They do not grow the parent `Main` or `TitlePanel`.
 
@@ -94,16 +120,16 @@ Explicit future player actions (open/collapse/keybind panels) may change geometr
 
 ### Prototype visual theme (standing)
 
-Current prototype surfaces share one dark grand-strategy **theme system** (`PrototypeGuiTheme`): panel tone, stroke, corners, type hierarchy, and button states. Gameplay-state updates still change content and enablement, not primary geometry. The Vassalage overlay keeps stronger gold emphasis as a priority action. Result toasts stay related but visually distinct as transient feedback. Token values are prototype styling, not permanent art direction.
+Prototype surfaces share one dark grand-strategy **theme system** (`PrototypeGuiTheme`): panel tone, stroke, corners, type hierarchy, and button states. Gameplay-state updates change content/enablement; authorized presentation controllers own responsive geometry and transitions. The Vassalage overlay keeps stronger gold emphasis as a priority action. Result toasts stay related but visually distinct as transient feedback. Token values are prototype styling, not permanent art direction.
 
-## UI shell direction (implemented in the authorized GUI sprint below; Settings/remapping remain future)
+## UI shell direction (authorized shell implemented; configurable remapping remains future)
 
-Long-term GUI architecture. **Do not implement from this section.** The current prototype layout remains in use (right-side hierarchy + title, map-centered vassalage overlay, result toast). Do not assign keyboard keys yet.
+The authorized GUI sprint and contextual cleanup implement the map-first shell above. The former right-column layout is historical. Future concepts below do not authorize implementation; later dated decisions govern authorized settings/audio work.
 
 - The interactive political map is the persistent primary workspace and should eventually occupy essentially the full usable main game canvas.
 - Major systems (hierarchy, titles, diplomacy, economy, religion, and later equivalents) must **not** accumulate as permanently visible stacked panels. They open as contextual panels/overlays over the map.
 - Major panels should be opened by explicit activation: on-screen navigation controls and/or keyboard keybinds. **No keybinds are assigned.** Future work must **centralize** UI navigation/bindings; controllers must not each invent a private key.
-- **Configurable remapping (future public product, not current work).** Player actions should eventually be **logical actions** mapped to player-selected inputs (Physical Input → configurable action → controller/UI). Example names such as `OpenMilitary` / `OpenDiplomacy` / `OpenRealm` / `OpenEconomy` / `OpenSettings` are illustrative, not a locked catalog. A future Settings / Controls UI would display gameplay and GUI binds and allow rebinding. Do **not** implement Settings/Controls, remapping, persistence, or new keybinds from this section. The **first published playtest** may use temporary/default binds; configurable controls are **not** automatically a first-playtest requirement. Do not over-engineer the current prototype; avoid new hardcoded physical-key GUI contracts where a logical action would remain easy later.
+- **Configurable remapping (future public product, not current work).** Player actions should eventually be **logical actions** mapped to player-selected inputs (Physical Input → configurable action → controller/UI). Example names such as `OpenMilitary` / `OpenDiplomacy` / `OpenRealm` / `OpenEconomy` / `OpenSettings` are illustrative, not a locked catalog. A future Settings / Controls UI would display gameplay and GUI binds and allow rebinding. Do **not** implement configurable Controls/remapping, persistence or new keybinds from this section. Game-specific presentation settings were separately authorized later; see the dated decision/report. The **first published playtest** may use temporary/default binds; configurable controls are **not** automatically a first-playtest requirement. Do not over-engineer the current prototype; avoid new hardcoded physical-key GUI contracts where a logical action would remain easy later.
 - Opening a major panel uses a coherent UI state model: close or replace another major panel where appropriate; coexist only when useful; avoid permanent clutter.
 - **Player/map orientation** (restrained own-land identification, center-on / show-my-realm or equivalent) is **required before the first published playtest**. Exact keybind/art not locked. Do not implement from this section unless the Director authorizes pre-playtest usability work.
 - **Priority overlays** (incoming Vassalage Accept/Decline and similar must-act requests) stay visible and actionable no matter which major panel is open. They are not major panels.
@@ -112,7 +138,7 @@ Long-term GUI architecture. **Do not implement from this section.** The current 
 
 ### Input layering / click-through (standing)
 
-Current and future GUI must prevent click-through between overlapping interactive layers.
+Interactive surfaces prevent unintended click-through; decorative contextual radial space intentionally passes input to the map. Its root/heading are inactive, with MapInputThroughBackground=true and BlocksMapInput=false. Actual action buttons retain interaction and per-button blocking.
 
 When a pointer/input event is handled by a visible higher-priority GUI element, lower layers must not react to the same input. The interactive map is the lowest primary gameplay input layer. Admin inspect overlay and visible Kohl command-bar/dashboard chrome are higher layers while shown.
 
@@ -120,13 +146,15 @@ Examples: Accept/Decline on a Vassalage overlay must not also select a territory
 
 Use Roblox GUI/input mechanisms that **consume/block** input for the visible/interactable bounds of the higher-priority GUI. Do not rely on ZIndex alone. Do not make the entire screen globally modal if that unnecessarily blocks unrelated map area.
 
-**Implemented (map input):** `TerritoryMapController` ignores pan/select/zoom when `PlayerGui:GetGuiObjectsAtPosition` finds `VassalageOfferOverlay`, `DiplomacyOfferOverlay`, `TitlePanel`, `Main`, `TerritoryInfo`, `DiplomacyPanel`, `AdminInspectPanel`, `EconomyPanel`, or `MilitaryPanel` at the pointer. Map press must start on the map itself. Result toasts are not blocking layers. Check runs only on pointer events, not per frame. Mouse wheel over the map still zooms when Roblox marks it `gameProcessed` because `MapStage` is an Active GUI surface; `gameProcessed` is not treated as higher-GUI blocking.
+**Implemented (map input):** TerritoryMapController checks GUI objects at the pointer, including explicit BlocksMapInput bounds, contextual actions and higher-priority overlays/admin chrome. Radial decoration is exempt; retired Territory/Diplomacy/Military surfaces are archived. Result toasts remain non-blocking. Checks run on pointer events, not per frame. Mouse wheel over Active MapStage may be gameProcessed; that flag alone is not higher-GUI blocking. Current verification is in AI/GUI_REDUNDANCY_CLEANUP.md and AI/FINALIZATION.md.
 
 ## Configuration and simulation
 
 - **Map-driven political scaling.** Title-qualification thresholds come from the selected map’s configuration, not from hardcoded universal territory counts and not from human player count. Shared config belongs in `ReplicatedStorage/Shared/Config/` conceptually; the server still applies and validates it. Vale Title Progression V0.1 **test** numbers (Duke 2/100, King 5/250, Emperor 10/500) live on `ValePrototypeMap.titleRequirements` only; they must not become a universal engine constant.
 - **Match vs account state.** Gold, Prestige, and Influence are match resources and reset between matches. Crowns and Lifetime Support are account-level and persist. Do not mix competitive match power into premium currency. **Economy / Resources V0.1** (**IMPLEMENTED — DIRECTOR-VERIFIED — DIRECTOR-ACCEPTED**) is the Gold foundation only.
 - **Performance.** Prefer storing authoritative state and recalculating on meaningful changes. Avoid continuous polling and per-frame re-evaluation of unchanged political information or of every NPC action. This is a constraint on future systems, not a mandate to optimize empty modules.
+
+V0.1 system descriptions below retain historical acceptance and service contracts. Retired panel references describe original presentation; the contextual section governs current placement.
 
 ## Territory / map foundation (V0.1 — accepted / complete)
 
@@ -204,7 +232,7 @@ Specified in `AI/GAME_DESIGN.md` / `AI/DECISIONS.md`. Rank defaults + individual
 
 ## Authorized GUI presentation layer — 2026-10-09
 
-`StrategyPresentationController` owns responsive geometry, centralized Map/system navigation and major drawer visibility. VictoryController starts afterward, followed by GameSettingsController for live theme/audio application. Existing gameplay controllers continue to own content/actions and incoming request visibility. Priority overlays remain independent above the open drawer; toasts remain transient. Background ScreenGui is noninteractive and covers the viewport including its inset. Province labels follow the existing map camera without changing territory hit geometry or ownership. Main, TerritoryInfo, DiplomacyPanel, MilitaryPanel and CommunicationsPanel are scrolling roots. Admin inspection uses measured text height/canvas; InspectComms shares existing AdminBridge feedback routing. This explicitly authorized sprint supersedes older prototype fixed-region and future-only shell notes above for these implemented controls. Configurable keybinds/remapping remain future work. See `AI/GUI_UX_SPRINT.md`.
+`StrategyPresentationController` owns responsive geometry, centralized Map/system navigation and major drawer visibility. VictoryController starts afterward, followed by GameSettingsController for live theme/audio application. Existing gameplay controllers continue to own content/actions and incoming request visibility. Priority overlays remain independent above the open drawer; toasts remain transient. Background ScreenGui is noninteractive and covers the viewport including its inset. Province labels follow the existing map camera without changing territory hit geometry or ownership. That sprint originally used Main, TerritoryInfo, DiplomacyPanel, MilitaryPanel and CommunicationsPanel as scrolling roots; the later contextual cleanup retired duplicate Territory/Diplomacy/Military surfaces. Admin inspection uses measured text height/canvas; InspectComms shares existing AdminBridge feedback routing. This explicitly authorized sprint supersedes older prototype fixed-region and future-only shell notes above for these implemented controls. Configurable keybinds/remapping remain future work. See `AI/GUI_UX_SPRINT.md`.
 
 ## Realm Overview presentation — 2026-10-10
 

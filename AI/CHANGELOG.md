@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-11 — Consolidate workflow and document game coverage
+
+Made AGENTS.md the workflow authority and Cursor rules its entry point. Added task-specific context routing, bounded development/review loop and concise evidence records; retained approval and verification/acceptance boundaries. Architecture now distinguishes tracked source, live Studio, ignored snapshots and external dependencies, with command availability/limitations. Active references updated; historical acceptance and obsolete layout evidence retained with clear scope. Documentation-only audit; subsequent Git finalization is separately authorized. No sync/export or Roblox publication.
+
 ## 2026-10-11 — Finalize contextual map UI and input polish
 
 Preserved the already committed implementation on main and recorded final integrity evidence: 77 sources compile and match the saved place, obsolete GUI/test fixtures are outside active GUI, and one project server/client bootstrap remains active. Place snapshots remain local-only. Updated finalization records without implementation changes, new test acceptance or Roblox publication.
