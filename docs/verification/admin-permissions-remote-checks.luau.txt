@@ -1,0 +1,47 @@
+-- Temporary Studio server Script. Runtime-only mocks are restored before return.
+local S = game.ServerScriptService.Services
+local C = require(S.AdminConfig)
+local B = require(S.AdminBridge)
+local E = require(S.EconomyService)
+local H = require(S.PoliticalHierarchyService)
+local K = shared._K_INTERFACE
+local player = game.Players:GetPlayers()[1]
+assert(player and player.UserId == 106676397, "fixture expects current owner Solo client")
+local ruler = H.GetRulerIdForUserId(player.UserId)
+assert(ruler)
+local originalRank, originalExecute = K.Auth.getRank, B.Execute
+local originalList = table.clone(C.GameTesterUserIds)
+local requests, executions = 0, 0
+local connection = K.Remote.Command._remote.OnServerEvent:Connect(function(from, channel, text)
+	if from == player and channel == K.Remote.Command._id and typeof(text) == "string" and text:find("987654321", 1, true) then requests += 1 end
+end)
+local ok, err = pcall(function()
+	for i = #C.GameTesterUserIds, 1, -1 do
+		if C.GameTesterUserIds[i] == player.UserId then table.remove(C.GameTesterUserIds, i) end
+	end
+	local _, originalRole = originalRank(player.UserId)
+	K.Auth.getRank = function(id)
+		if id == player.UserId then return 0, originalRole end
+		return originalRank(id)
+	end
+	B.Execute = function(...)
+		executions += 1
+		return originalExecute(...)
+	end
+	assert(not C.IsGameTester(player.UserId))
+	print("ADMIN_PERMISSIONS_REMOTE_READY")
+	local deadline = os.clock() + 30
+	repeat task.wait(0.1) until requests == 2 or os.clock() >= deadline
+	assert(requests == 2, "both real Kohl remote requests received")
+	assert(executions == 0, "unauthorized request never reached mutation bridge")
+	assert(E.GetBalance(ruler) ~= 987654321, "gold unchanged by forbidden mutation")
+end)
+connection:Disconnect()
+K.Auth.getRank = originalRank
+B.Execute = originalExecute
+C.GameTesterUserIds = originalList
+player:SetAttribute("_GameTesterAuthorized", C.IsGameTester(player.UserId))
+assert(ok, err)
+assert(K.Process.runCommands(K, player.UserId, ";adminhelp"), "authorized command pipeline works")
+print("ADMIN_PERMISSIONS_REMOTE_PASS", requests, executions)
+script:Destroy()

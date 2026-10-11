@@ -1,0 +1,76 @@
+-- Temporary Studio server Script, run after bootstrap. Never ship in the DataModel.
+local services = game.ServerScriptService.Services
+local config = require(services.AdminConfig)
+local bridge = require(services.AdminBridge)
+local K = shared._K_INTERFACE
+assert(K and K.IsServer and typeof(K.Auth.getRank) == "function")
+assert(K.Hook.roleAdded and K.Hook.roleRemoved)
+local originalRank = K.Auth.getRank
+local ranks = { [900000001] = math.huge, [900000002] = K.Data.roles.superadmin._rank, [900000003] = K.Data.roles.superadmin._rank - 1, [900000004] = 0 }
+local checks = 0
+local function check(value, label)
+	assert(value, label)
+	checks += 1
+end
+local ok, err = pcall(function()
+	K.Auth.getRank = function(id)
+		if ranks[id] ~= nil then return ranks[id], "test" end
+		return originalRank(id)
+	end
+	for _, id in { 106676397, 2646795710, 701857, 470733, 555636491 } do
+		check(config.IsGameTester(id), "explicit allowlist " .. id)
+	end
+	check(#config.GameTesterUserIds == 5, "exact allowlist")
+	check(config.IsGameTester(900000001), "Creator")
+	check(config.IsGameTester(900000002), "SuperAdmin")
+	check(not config.IsGameTester(900000003), "lower rank")
+	check(not config.IsGameTester(900000004), "ordinary")
+	local savedInterface = shared._K_INTERFACE
+	shared._K_INTERFACE = nil
+	local unavailableDenied = not config.IsGameTester(900000002)
+	local allowlistWithoutKohl = config.IsGameTester(701857)
+	shared._K_INTERFACE = savedInterface
+	check(unavailableDenied, "unavailable Kohl fails closed")
+	check(allowlistWithoutKohl, "allowlist independent of Kohl availability")
+	local mockedRank = K.Auth.getRank
+	K.Auth.getRank = function() error("mock rank lookup failure") end
+	local failedLookupDenied = not config.IsGameTester(900000002)
+	K.Auth.getRank = mockedRank
+	check(failedLookupDenied, "failed rank lookup fails closed")
+	check(config.IsGameTester(-1), "Studio synthetic convenience")
+	for _, id in { "SuperAdmin", {}, 0/0, math.huge, -math.huge, 1.5 } do
+		check(not config.IsGameTester(id), "malformed actor")
+	end
+	local count = 0
+	for command in K._gameTesterCommandGate.commands do
+		if K.Registry.commands[command.name] == command then
+			count += 1
+			check(typeof(K.Auth.hasCommand(900000002, command)) == "number", "SuperAdmin command " .. command.name)
+			check(typeof(K.Auth.hasCommand(701857, command)) == "number", "allowlisted command " .. command.name)
+			check(K.Auth.hasCommand(900000004, command) == false, "ordinary command " .. command.name)
+			check(K.Auth.hasCommand(900000003, command) == false, "lower command " .. command.name)
+		end
+	end
+	check(count >= 21, "all existing commands registered")
+	check(typeof(K.Auth.hasCommand(900000002, "gameadminhelp")) == "number", "alias")
+	local unrelated
+	for _, command in K.Registry.commands do
+		if not K._gameTesterCommandGate.commands[command] then unrelated = command; break end
+	end
+	check(unrelated ~= nil, "unrelated command exists")
+	check(K.Auth.hasCommand(900000004, unrelated) == K._gameTesterCommandGate.original(900000004, unrelated), "unrelated gate unchanged")
+	check(bridge.Execute(900000002, "InspectVictory"), "authorized inspection executes")
+	check(bridge.Execute(701857, "Help"), "allowlisted help executes")
+	check(not bridge.Execute(900000004, "SetGold", "me", 999999), "unauthorized direct bridge mutation")
+	check(not bridge.Execute(900000004, "Help", { rank = "SuperAdmin" }), "spoofed rank argument")
+	check(not bridge.Execute(900000002, {}), "malformed operation")
+	check(not bridge.Execute(900000002, "SetGold", "no-such-ruler", "not-a-number"), "malformed mutation")
+	check(bridge.HelpText():find("GameTester commands (authorized UserIds or Kohl SuperAdmin+).", 1, true) ~= nil, "help text")
+	ranks[900000002] = 0
+	check(not config.IsGameTester(900000002), "rank revocation immediate")
+	check(K.Auth.hasCommand(900000002, "adminhelp") == false, "command revocation immediate")
+end)
+K.Auth.getRank = originalRank
+assert(ok, err)
+print("ADMIN_PERMISSIONS_SERVER_PASS", checks)
+script:Destroy()

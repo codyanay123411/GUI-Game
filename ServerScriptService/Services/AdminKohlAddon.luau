@@ -89,7 +89,34 @@ return function(_K)
 		-- string (Process.escapeRichText). Do not return true/false/Execute results.
 	end
 
+	-- Adapt only this addon's command gate; leave unrelated Kohl commands intact.
+	local gate = _K._gameTesterCommandGate
+	if not gate then
+		gate = { commands = {}, original = _K.Auth.hasCommand }
+		_K._gameTesterCommandGate = gate
+		_K.Auth.hasCommand = function(userId, command)
+			local definition = if typeof(command) == "string" then _K.Registry.commands[string.lower(command)] else command
+			if not gate.commands[definition] then
+				return gate.original(userId, command)
+			end
+			local allowed = false
+			if RunService:IsServer() then
+				allowed = require(ServerScriptService.Services.AdminConfig).IsGameTester(userId)
+			else
+				-- Replicated server decision is UI admission only. Server rechecks every execution.
+				local player = Players:GetPlayerByUserId(userId)
+				allowed = player ~= nil and player:GetAttribute("_GameTesterAuthorized") == true
+			end
+			if not allowed then
+				return false
+			end
+			local rank = _K.Auth.getRank(userId)
+			return math.max(rank, 1)
+		end
+	end
 	local function register(def)
+		def.group = "SuperAdmin"
+		gate.commands[def] = true
 		_K.Registry.registerCommand(_K, def)
 	end
 
@@ -97,7 +124,6 @@ return function(_K)
 		name = "adminhelp",
 		aliases = { "gameadminhelp" },
 		description = "List GameTester project commands (not Kohl rank help).",
-		group = "Creator",
 		run = function(context)
 			runOp(context, "Help")
 		end,
@@ -107,7 +133,6 @@ return function(_K)
 		name = "inspectwars",
 		aliases = { "warsnapshot" },
 		description = "List active territory-specific wars.",
-		group = "Creator",
 		run = function(context)
 			runOp(context, "InspectWars")
 		end,
@@ -116,7 +141,6 @@ return function(_K)
 	register({
 		name = "inspectterritory",
 		description = "Inspect territory ownership.",
-		group = "Creator",
 		args = {
 			{ type = "rawString", name = "territoryId", description = "Territory id (e.g. greyfen)" },
 		},
@@ -128,7 +152,6 @@ return function(_K)
 	register({
 		name = "inspectruler",
 		description = "Inspect a hierarchy ruler.",
-		group = "Creator",
 		args = {
 			{ type = "adminRulerToken", name = "who", description = "Player, rulerId, or userId" },
 		},
@@ -140,7 +163,6 @@ return function(_K)
 	register({
 		name = "setowner",
 		description = "Set territory owner via TerritoryMapService.",
-		group = "Creator",
 		args = {
 			{ type = "rawString", name = "territoryId", description = "Territory id" },
 			{ type = "adminOwnerToken", name = "owner", description = "Player, rulerId, or unclaimed" },
@@ -153,7 +175,6 @@ return function(_K)
 	register({
 		name = "setprestige",
 		description = "Set Title V0.1 test Prestige (not spent).",
-		group = "Creator",
 		args = {
 			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
 			{ type = "number", name = "value", description = "Prestige" },
@@ -166,7 +187,6 @@ return function(_K)
 	register({
 		name = "inspectgold",
 		description = "Inspect Economy V0.1 Gold for a ruler.",
-		group = "Creator",
 		args = {
 			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
 		},
@@ -178,7 +198,6 @@ return function(_K)
 	register({
 		name = "setgold",
 		description = "Set Economy V0.1 Gold (whole number >= 0).",
-		group = "Creator",
 		args = {
 			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
 			{ type = "number", name = "value", description = "Gold" },
@@ -191,7 +210,6 @@ return function(_K)
 	register({
 		name = "addgold",
 		description = "Add Economy V0.1 Gold.",
-		group = "Creator",
 		args = {
 			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
 			{ type = "number", name = "value", description = "Gold to add" },
@@ -204,7 +222,6 @@ return function(_K)
 	register({
 		name = "spendgold",
 		description = "Spend Economy V0.1 Gold (rejects if unaffordable).",
-		group = "Creator",
 		args = {
 			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
 			{ type = "number", name = "value", description = "Gold to spend" },
@@ -217,7 +234,6 @@ return function(_K)
 	register({
 		name = "inspecttroops",
 		description = "Inspect Military V0.1 Troop state for a ruler.",
-		group = "Creator",
 		args = {
 			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
 		},
@@ -229,7 +245,6 @@ return function(_K)
 	register({
 		name = "settroops",
 		description = "Set Military V0.1 Total Troops (whole number >= committed).",
-		group = "Creator",
 		args = {
 			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
 			{ type = "number", name = "value", description = "Troops" },
@@ -242,7 +257,6 @@ return function(_K)
 	register({
 		name = "addtroops",
 		description = "Add Military V0.1 Troops.",
-		group = "Creator",
 		args = {
 			{ type = "adminRulerToken", name = "who", description = "Player or rulerId" },
 			{ type = "number", name = "value", description = "Troops to add" },
@@ -255,7 +269,6 @@ return function(_K)
 	register({
 		name = "inspectmilitary",
 		description = "Inspect hidden Military commitment/battle state for a warId.",
-		group = "Creator",
 		args = {
 			{ type = "rawString", name = "warId", description = "warId from inspectwars" },
 		},
@@ -267,7 +280,6 @@ return function(_K)
 	register({
 		name = "inspectcomms",
 		description = "Inspect authoritative Communications membership (no message text).",
-		group = "Creator",
 		args = {},
 		run = function(context)
 			runOp(context, "InspectComms")
@@ -277,7 +289,6 @@ return function(_K)
 	register({
 		name = "inspectcontest",
 		description = "Inspect Warfare contest and post-war cooldown state.",
-		group = "Creator",
 		args = {},
 		run = function(context)
 			runOp(context, "InspectContest")
@@ -288,7 +299,6 @@ return function(_K)
 		name = "resolvewar",
 		aliases = { "warresolve" },
 		description = "Resolve a war via WarfareService.DebugResolveWar.",
-		group = "Creator",
 		args = {
 			{ type = "rawString", name = "warId", description = "warId from inspectwars" },
 			{ type = "rawString", name = "outcome", description = "attacker or defender" },
@@ -299,8 +309,8 @@ return function(_K)
 	})
 	for _, item in { { "inspectvictory", "InspectVictory" }, { "checkvictory", "CheckVictory" } } do
 		local operation = item[2]
-		register({ name = item[1], description = "Inspect/check Domination state.", group = "Creator", args = {}, run = function(context) runOp(context, operation) end })
+		register({ name = item[1], description = "Inspect/check Domination state.", args = {}, run = function(context) runOp(context, operation) end })
 	end
-	register({ name = "inspectneutral", description = "Inspect Unclaimed defense.", group = "Creator", args = { { type = "rawString", name = "territoryId" } }, run = function(context, id) runOp(context, "InspectNeutral", id) end })
-	register({ name = "setneutraldefense", description = "Set uncontested neutral defense within maximum.", group = "Creator", args = { { type = "rawString", name = "territoryId" }, { type = "number", name = "defenders" } }, run = function(context, id, amount) runOp(context, "SetNeutralDefense", id, amount) end })
+	register({ name = "inspectneutral", description = "Inspect Unclaimed defense.", args = { { type = "rawString", name = "territoryId" } }, run = function(context, id) runOp(context, "InspectNeutral", id) end })
+	register({ name = "setneutraldefense", description = "Set uncontested neutral defense within maximum.", args = { { type = "rawString", name = "territoryId" }, { type = "number", name = "defenders" } }, run = function(context, id, amount) runOp(context, "SetNeutralDefense", id, amount) end })
 end

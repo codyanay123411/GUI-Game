@@ -8,10 +8,20 @@
 	Does not install Kohl's Admin itself.
 ]]
 
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local AdminBridge = require(script.Parent.AdminBridge)
+local AdminConfig = require(script.Parent.AdminConfig)
+
+local function refreshGameTesterAccess()
+	for _, player in Players:GetPlayers() do
+		player:SetAttribute("_GameTesterAuthorized", AdminConfig.IsGameTester(player.UserId))
+	end
+end
+
+local accessHooksInstalled = false
 
 local AdminService = {}
 
@@ -101,6 +111,7 @@ local function shouldReplaceAddon(existing: ModuleScript, sourceName: string): b
 			or not moduleSourceContains(existing, "inspectgold")
 			or moduleSourceContains(existing, "player # rawString")
 			or not moduleSourceContains(existing, "adminOwnerToken")
+			or not moduleSourceContains(existing, "_gameTesterCommandGate")
 	end
 	if sourceName == "AdminKohlThemeClient" then
 		return moduleSourceContains(existing, "changeTheme") and not moduleSourceContains(existing, "Font.fromEnum")
@@ -194,6 +205,12 @@ local function tryLateRegister()
 	if typeof(interface) ~= "table" then
 		return
 	end
+	if not accessHooksInstalled then
+		accessHooksInstalled = true
+		interface.Hook.roleAdded:Connect(refreshGameTesterAccess)
+		interface.Hook.roleRemoved:Connect(refreshGameTesterAccess)
+	end
+	refreshGameTesterAccess()
 	local canonical = ServerScriptService.Services:FindFirstChild("AdminKohlAddon")
 	if not (canonical and canonical:IsA("ModuleScript")) then
 		return
@@ -287,6 +304,8 @@ function AdminService.Start()
 		return
 	end
 	started = true
+	Players.PlayerAdded:Connect(refreshGameTesterAccess)
+	refreshGameTesterAccess()
 
 	local remotesFolder = ReplicatedStorage:FindFirstChild("Remotes")
 	if remotesFolder then
@@ -339,7 +358,7 @@ function AdminService.Start()
 		end
 	end)
 
-	print("[Admin] AdminBridge started. GameTester UserIds only for live commands.")
+	print("[Admin] AdminBridge started. GameTester authorized UserIds or Kohl SuperAdmin+ for live commands.")
 end
 
 return AdminService

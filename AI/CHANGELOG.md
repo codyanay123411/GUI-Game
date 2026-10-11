@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-10 — GameTester SuperAdmin access
+
+Retained owner authorization and added the four requested UserIds in AdminConfig. GameTester commands now accept the allowlist OR trusted server Kohl SuperAdmin+; unrelated Kohl command permissions are preserved. Updated command admission, replicated UI permission refresh and help wording. Targeted Studio authorization, spoofed real remote denial and authorized command/UI verification passed; no gameplay mechanics, permanent rank changes or Roblox publication. See [ADMIN_PERMISSIONS.md](ADMIN_PERMISSIONS.md).
+
 ## 2026-10-10 — Finalize current development baseline
 
 Director authorized saving, committing and pushing the entire current implementation. Corrected stale Communications milestone wording, added current architecture inventory and historical report context, resolved the Overview snapshot warning, and corrected a bootstrap order comment. All 65 sources compile and match Studio; current-client map/navigation, Tab, Unclaimed UI and Victory initialization smoke passed. Saved an offline final place; retained useful evidence/recovery copies and existing verification limitations. No new gameplay/UI behavior or Roblox publication.

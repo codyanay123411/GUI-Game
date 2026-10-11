@@ -38,7 +38,7 @@ end
 
 function AdminBridge.HelpText(): string
 	return table.concat({
-		"GameTester commands (UserId allowlist; Kohl rank is not enough).",
+		"GameTester commands (authorized UserIds or Kohl SuperAdmin+).",
 		"Studio Local Server only: synthetic UserIds < 0 are allowed for testing.",
 		";adminhelp",
 		";inspectvictory / ;checkvictory",

@@ -1,0 +1,11 @@
+local K = require(game.ReplicatedStorage:WaitForChild("Kohl's Admin Source"))
+assert(K and K.IsClient)
+local player = game.Players.LocalPlayer
+player:SetAttribute("_GameTesterAuthorized", true)
+player:SetAttribute("KohlRank", "SuperAdmin")
+assert(typeof(K.Auth.hasCommand(player.UserId, "setgold")) == "number", "spoof can affect UI only")
+K.Remote.Command:Fire(";setgold me 987654321", { rank = "SuperAdmin", userId = 701857 })
+K.Remote.Command:Fire(";setgold me 987654321")
+game.ReplicatedStorage.Remotes.AdminFeedbackEvent:FireServer({ operation = "SetGold", amount = 987654321, rank = "SuperAdmin" })
+print("ADMIN_PERMISSIONS_CLIENT_REMOTE_SENT")
+script:Destroy()
