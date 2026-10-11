@@ -10,6 +10,7 @@ local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local GuiService = game:GetService("GuiService")
 
+local Theme = require(ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
 local MapCatalog = require(ReplicatedStorage.Shared.Config.MapCatalog)
 local RealmColors = require(ReplicatedStorage.Shared.Config.RealmColors)
 local MapGeometry = require(ReplicatedStorage.Shared.Util.MapGeometry)
@@ -245,7 +246,7 @@ function TerritoryMapController.Start()
 			label.Position = UDim2.fromOffset(px, py)
 			label.Size = UDim2.fromOffset(width, 24)
 			label.TextSize = if width < 90 then 10 else 12
-			label.Visible = width >= 54 and px > 0 and py > 0 and px < size.X and py < size.Y
+			label.Visible = Theme.Presentation.ProvinceLabelsEnabled and width >= 54 and px > 0 and py > 0 and px < size.X and py < size.Y
 		end
 	end
 
@@ -565,6 +566,7 @@ function TerritoryMapController.Start()
 		applyCamera()
 	end)
 
+	Theme.PresentationChanged.Event:Connect(applyCamera)
 	applyCamera()
 	territoryIntent:FireServer("Ready")
 	print("[Territory] controller started; Ready sent")

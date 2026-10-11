@@ -1,0 +1,73 @@
+-- Temporary owner Solo LocalScript. Uses real client requests/server acknowledgements.
+local P = game.Players.LocalPlayer
+local R = game.ReplicatedStorage
+local C = require(P.PlayerScripts.Controllers.GameSettingsController)
+local Config = require(R.Shared.Config.GameSettingsConfig)
+local Theme = require(R.Shared.Util.PrototypeGuiTheme)
+local Sounds = require(R.Shared.Util.GuiSounds)
+local K = require(R["Kohl's Admin Source"])
+local gui = P.PlayerGui.HierarchyPrototypeGui
+local count = 0
+local function check(value, label) assert(value, label); count += 1 end
+local function set(key, value)
+	C.Request(key, value)
+	local deadline = os.clock() + 5
+	repeat task.wait(0.05) until C.GetSnapshot().values[key] == value or os.clock() > deadline
+	check(C.GetSnapshot().values[key] == value, "replicated owner edit " .. key)
+	task.wait(0.05)
+end
+check(C.GetSnapshot().canConfigure, "owner editor admitted")
+local categoryCounts = {}
+for _, item in K.client.dashboard.Settings._scroller:GetChildren() do categoryCounts[item.Name] = (categoryCounts[item.Name] or 0) + 1 end
+check(categoryCounts["Game UI"] == 1 and categoryCounts["Game Audio"] == 1, "one native category each")
+for _, name in { "Commands", "Bans", "Members", "Servers", "Logs", "Settings", "About" } do check(K.client.dashboard[name] ~= nil, "native dashboard " .. name) end
+local oldFont = K.UI.Theme.Font()
+K.UI.Theme.Font(Font.fromEnum(Enum.Font.Arial))
+task.wait(0.1)
+check(Theme.Presentation.Font == "GothamSSm", "Kohl appearance separate from game")
+K.UI.Theme.Font(oldFont)
+for _, font in Config.FontOptions do
+	set("Font", font)
+	local expected = Font.fromEnum(({ GothamSSm = Enum.Font.Gotham, SourceSansPro = Enum.Font.SourceSans, Roboto = Enum.Font.Roboto, Arial = Enum.Font.Arial })[font]).Family
+	check(gui.StrategyNavigation.Map.FontFace.Family == expected, "live font family " .. font)
+end
+set("Font", "GothamSSm")
+for _, definition in Config.Definitions do
+	if definition.min then set(definition.key, definition.min); set(definition.key, definition.max) end
+end
+set("UIScale", 1.1); set("FontScale", 1.1); set("Padding", 12); set("CornerRadius", 16)
+local clone = gui.Templates.RealmOverviewRow:Clone()
+clone.Name = "PresentationDynamicProbe"
+clone.Parent = gui.RealmOverviewOverlay.Panel.List
+task.wait(0.2)
+check(clone.Identity.FontFace.Family == Font.fromEnum(Enum.Font.Gotham).Family, "dynamic row family")
+check(clone.Identity.TextSize == math.round(gui.Templates.RealmOverviewRow.Identity.TextSize * 1.21), "dynamic row typography without template double scaling")
+check(clone:FindFirstChildOfClass("UICorner").CornerRadius.Offset == math.round(16 * 1.1), "dynamic row radius")
+clone:Destroy()
+set("ProvinceLabelsEnabled", false)
+local visibleLabels = 0
+for _, item in gui:GetDescendants() do if item:IsA("TextLabel") and item.Name:find("ProvinceName_", 1, true) and item.Visible then visibleLabels += 1 end end
+check(visibleLabels == 0, "province labels hidden")
+set("ProvinceLabelsEnabled", true)
+set("BackgroundStrength", 0.85)
+check(math.abs(gui.StrategyBackground.BackgroundTransparency - 0.15) < 0.001, "background strength")
+set("PanelOpacity", 0.8)
+check(gui.CommunicationsPanel.BackgroundTransparency >= 0.19, "panel opacity live")
+local group = game.SoundService.GameGuiSounds
+for _, sound in group:GetChildren() do check(sound.IsLoaded and sound.TimeLength > 0, "stock asset loaded " .. sound.Name) end
+set("InterfaceSoundsEnabled", true); set("MasterUIVolume", 0.25)
+check(math.abs(group.Volume - 0.25) < 0.001, "master volume")
+set("InteractionVolume", 0.3); set("NotificationVolume", 0.4); set("ErrorVolume", 0.2)
+check(math.abs(group.Click.Volume - 0.3) < 0.001 and math.abs(group.Notification.Volume - 0.4) < 0.001 and math.abs(group.Error.Volume - 0.2) < 0.001, "semantic volumes")
+group.Click:Stop(); Sounds.Play("Click"); task.wait(0.01); check(group.Click.IsPlaying, "click plays")
+set("HoverSoundsEnabled", false); group.Hover:Stop(); Sounds.Play("Hover"); check(not group.Hover.IsPlaying, "hover disabled")
+set("HoverSoundsEnabled", true); Sounds.Play("Hover"); task.wait(0.01); check(group.Hover.IsPlaying, "hover enabled")
+set("NotificationSoundsEnabled", false); group.Notification:Stop(); group.Error:Stop(); Sounds.Play("Notification"); Sounds.Play("Error"); check(not group.Notification.IsPlaying and not group.Error.IsPlaying, "notification mute")
+set("InterfaceSoundsEnabled", false); group.Click:Stop(); Sounds.Play("Click"); check(not group.Click.IsPlaying and group.Volume == 0, "interface mute")
+set("MasterUIVolume", 0); set("InterfaceSoundsEnabled", true); Sounds.Play("Click"); check(not group.Click.IsPlaying and group.Volume == 0, "master mute")
+-- A reset cancels unsent values from that category and shares the request rate limiter.
+C.Request("CornerRadius", 12); C.Reset("Game UI"); C.Reset("Game Audio")
+task.wait(1)
+for key, value in Config.Defaults do check(C.GetSnapshot().values[key] == value, "reset " .. key) end
+print("GAME_PRESENTATION_CLIENT_PASS", count)
+script:Destroy()

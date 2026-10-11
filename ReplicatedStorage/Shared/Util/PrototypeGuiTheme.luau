@@ -6,6 +6,45 @@
 ]]
 
 local PrototypeGuiTheme = {}
+local PresentationConfig = require(script.Parent.Parent.Config.GameSettingsConfig)
+PrototypeGuiTheme.Presentation = table.clone(PresentationConfig.Defaults)
+PrototypeGuiTheme.PresentationChanged = Instance.new("BindableEvent")
+
+function PrototypeGuiTheme.SetPresentation(values: any)
+	PrototypeGuiTheme.Presentation = table.clone(values)
+	PrototypeGuiTheme.PresentationChanged:Fire()
+end
+
+function PrototypeGuiTheme.PanelTransparency(base: number): number
+	return 1 - (1 - base) * PrototypeGuiTheme.Presentation.PanelOpacity
+end
+
+-- Apply current semantic tokens while preserving authored typography and spacing hierarchy.
+function PrototypeGuiTheme.ApplyPresentation(item: Instance, base: any)
+	local settings = PrototypeGuiTheme.Presentation
+	local scale = settings.UIScale
+	if item:IsA("TextLabel") or item:IsA("TextButton") or item:IsA("TextBox") then
+		local fonts = { GothamSSm = Enum.Font.Gotham, SourceSansPro = Enum.Font.SourceSans, Roboto = Enum.Font.Roboto, Arial = Enum.Font.Arial }
+		local family = Font.fromEnum(fonts[settings.Font]).Family
+		local face = base.FontFace
+		item.FontFace = Font.new(family, face.Weight, face.Style)
+		item.TextSize = math.round(math.clamp(base.TextSize * settings.FontScale * scale, 10, 42))
+	elseif item:IsA("UICorner") and base.CornerRadius.Scale == 0 then
+		item.CornerRadius = UDim.new(0, math.round(settings.CornerRadius * scale))
+	elseif item:IsA("UIPadding") then
+		for _, key in { "PaddingLeft", "PaddingRight", "PaddingTop", "PaddingBottom" } do
+			local value = base[key]
+			item[key] = UDim.new(value.Scale, value.Offset * settings.Padding / 10 * scale)
+		end
+	elseif item:IsA("UIListLayout") or item:IsA("UIGridLayout") then
+		if item:IsA("UIListLayout") then
+			item.Padding = UDim.new(base.Padding.Scale, base.Padding.Offset * settings.Padding / 10 * scale)
+		end
+	end
+	if item:IsA("GuiObject") and base.BackgroundTransparency < 0.95 then
+		item.BackgroundTransparency = PrototypeGuiTheme.PanelTransparency(base.BackgroundTransparency)
+	end
+end
 
 PrototypeGuiTheme.Colors = {
 	panel = Color3.fromRGB(19, 28, 37),

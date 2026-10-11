@@ -1,0 +1,46 @@
+-- Temporary Local Server Script; requires three actual clients. Never sync as production source.
+local R = game.ReplicatedStorage
+local G = require(game.ServerScriptService.Services.GameSettingsService)
+local A = require(game.ServerScriptService.Services.AdminConfig)
+local Config = require(R.Shared.Config.GameSettingsConfig)
+local event = Instance.new("RemoteEvent")
+event.Name = "PresentationVerificationEvent"
+event.Parent = R
+local ready, acknowledgements, spoofs = {}, {}, {}
+local phase = "Ready"
+local connection = event.OnServerEvent:Connect(function(player, kind, data)
+	if kind == "Ready" then ready[player] = true
+	elseif kind == "Snapshot" then acknowledgements[player] = data
+	elseif kind == "Spoof" then spoofs[player] = true end
+end)
+local function waitFor(predicate, label)
+	local deadline = os.clock() + 90
+	repeat task.wait(0.1) until predicate() or os.clock() > deadline
+	assert(predicate(), label)
+end
+waitFor(function() local n = 0; for _ in ready do n += 1 end; return n >= 3 end, "three actual clients ready")
+local clients = game.Players:GetPlayers()
+assert(#clients == 3)
+for _, player in clients do assert(not A.CanConfigureGame(player.UserId) and A.IsGameTester(player.UserId), "synthetic clients view only") end
+for _, mode in { "minimum", "maximum", "default" } do
+	for _, definition in Config.Definitions do
+		local value = definition.default
+		if definition.min and mode ~= "default" then value = definition[if mode == "minimum" then "min" else "max"] end
+		assert(G.Apply(106676397, "Set", definition.key, value))
+	end
+	phase = mode
+	table.clear(acknowledgements)
+	event:FireAllClients("Snapshot", mode, G.GetSnapshot())
+	waitFor(function() for _, player in clients do if not acknowledgements[player] then return false end end; return true end, mode .. " replicated to every client")
+	for _, player in clients do assert(acknowledgements[player].pass == true, "client assertion " .. player.Name) end
+	print("GAME_PRESENTATION_MULTIPLAYER_PHASE_PASS", mode, #clients)
+end
+-- These are real requests against the production request event, not Service.Apply mocks.
+local before = G.GetSnapshot()
+event:FireAllClients("Spoof")
+waitFor(function() for _, player in clients do if not spoofs[player] then return false end end; return true end, "spoof clients acknowledged")
+task.wait(0.5)
+assert(G.GetSnapshot().revision == before.revision and G.GetSnapshot().values.CornerRadius == before.values.CornerRadius, "spoofed ownership/rank/attributes rejected")
+print("GAME_PRESENTATION_MULTIPLAYER_REMOTE_PASS", #clients, before.revision)
+connection:Disconnect()
+script:Destroy()

@@ -68,7 +68,7 @@ function Controller.Start()
 		detail.Position = UDim2.new(0, 16, 1, -footer - 12)
 		detail.TextSize = if compact then 12 else 13
 		for _, row in rows do
-			row.Size = UDim2.new(1, -8, 0, if compact then 94 else 74)
+			row.Size = UDim2.new(1, -8, 0, (if compact then 94 else 74) * Theme.Presentation.UIScale)
 			row.Identity.Position = UDim2.fromOffset(14, 10)
 			row.Identity.Size = if compact then UDim2.new(0.60, -18, 0, 24) else UDim2.new(0.25, -18, 0, 24)
 			row.Username.Position = UDim2.fromOffset(14, 36)
@@ -139,6 +139,7 @@ function Controller.Start()
 	end
 	panel.Close.Activated:Connect(function() Controller.SetOpen(false) end)
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(schedule)
+	Theme.PresentationChanged.Event:Connect(layout)
 	Players.PlayerAdded:Connect(function(current) excluded[current.UserId] = nil; schedule() end)
 	Players.PlayerRemoving:Connect(function(current) excluded[current.UserId] = true; schedule() end)
 	player.CharacterAdded:Connect(function() disableDefault(); Controller.SetOpen(false) end)

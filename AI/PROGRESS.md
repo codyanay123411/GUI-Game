@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-10-10 — Creator game presentation settings and GUI audio
+
+**IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Native GAME UI/GAME AUDIO categories extend installed Kohl v0.17.0 through an isolated project addon; vendor source and personal saved appearance remain unchanged. Owner/creator edits server-wide validated runtime settings; GameTesters/SuperAdmins view only; real spoofed requests are rejected. GothamSSm default matches the inspected active FontFace. Dynamic theme application, semantic audio, safe density and text reflow are integrated without gameplay changes. Verification: 161 server assertions, 99 final owner-client assertions, three-client replication/remote denial and 252 min/default/max layout assertions across VGA/HD720/wide profiles. Persistence remains future work because no game persistence infrastructure exists. See [GAME_PRESENTATION_SETTINGS.md](GAME_PRESENTATION_SETTINGS.md). Commit/push to main authorized; no Roblox publication.
+
 ## 2026-10-10 — GameTester SuperAdmin permission update
 
 Implemented the explicitly requested allowlist additions and trusted server Kohl SuperAdmin+ alternative in the central admin gate. All 21 existing GameTester commands share that gate; unrelated Kohl permissions remain unchanged. Targeted Studio verification covers effective rank, allowlist, revocation, malformed requests, real remote denial despite spoofed client attributes/arguments, and authorized command/help execution. See [ADMIN_PERMISSIONS.md](ADMIN_PERMISSIONS.md) for evidence and limitations. No gameplay mechanics or permanent ranks changed; no additional Director acceptance or Roblox publication.

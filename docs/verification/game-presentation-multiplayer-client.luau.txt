@@ -1,0 +1,33 @@
+-- Temporary Local Server LocalScript; observes the normal game controller and real remotes.
+local p = game.Players.LocalPlayer
+local R = game.ReplicatedStorage
+local event = R:WaitForChild("PresentationVerificationEvent")
+local C = require(p:WaitForChild("PlayerScripts"):WaitForChild("Controllers"):WaitForChild("GameSettingsController"))
+local K = require(R:WaitForChild("Kohl's Admin Source"))
+repeat task.wait(0.1) until C.GetSnapshot().revision >= 0 and K.client and K.client.dashboard and K.client.dashboard.Settings and K.client.dashboard.Settings._scroller:GetAttribute("GamePresentationMounted")
+local gui = p.PlayerGui.HierarchyPrototypeGui
+event.OnClientEvent:Connect(function(kind, mode, expected)
+	if kind == "Snapshot" then
+		local deadline = os.clock() + 10
+		repeat task.wait(0.05) until C.GetSnapshot().revision >= expected.revision or os.clock() > deadline
+		local snapshot = C.GetSnapshot()
+		local pass = snapshot.revision == expected.revision and not snapshot.canConfigure and snapshot.canView
+		for key, value in expected.values do pass = pass and snapshot.values[key] == value end
+		local count = 0
+		for _, item in K.client.dashboard.Settings._scroller:GetChildren() do if item.Name == "Game UI" or item.Name == "Game Audio" then count += 1 end end
+		pass = pass and count == 2 and math.abs(game.SoundService.GameGuiSounds.Volume - expected.values.MasterUIVolume) < 0.001
+		local row = gui.RealmOverviewOverlay.Panel.List:FindFirstChild("Player_" .. p.UserId)
+		pass = pass and row ~= nil and row.Identity.FontFace.Family == Font.fromEnum(Enum.Font.Gotham).Family
+		event:FireServer("Snapshot", { pass = pass, revision = snapshot.revision })
+		print("GAME_PRESENTATION_CLIENT_REPLICATION", p.Name, mode, pass, snapshot.revision)
+	elseif kind == "Spoof" then
+		p:SetAttribute("CanConfigureGame", true)
+		R.Remotes.GameSettingsRequestEvent:FireServer({ action = "Set", key = "CornerRadius", value = 12, userId = 106676397, owner = true, rank = "Creator", canConfigure = true })
+		task.wait(0.2)
+		R.Remotes.GameSettingsRequestEvent:FireServer({ action = "Reset", key = "Game UI", userId = 106676397, owner = true })
+		task.wait(0.3)
+		assert(not C.GetSnapshot().canConfigure)
+		event:FireServer("Spoof")
+	end
+end)
+event:FireServer("Ready")

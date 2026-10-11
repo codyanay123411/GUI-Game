@@ -171,6 +171,8 @@ function AdminFeedbackController.Start()
 		inspectScroll.CanvasSize = UDim2.fromOffset(0, height + 8)
 	end
 	inspectBody:GetPropertyChangedSignal("Text"):Connect(fitInspect)
+	inspectBody:GetPropertyChangedSignal("TextSize"):Connect(fitInspect)
+	inspectBody:GetPropertyChangedSignal("FontFace"):Connect(fitInspect)
 	inspectScroll:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitInspect)
 	fitInspect()
 

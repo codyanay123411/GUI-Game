@@ -346,3 +346,7 @@ Reorganized seven panels into centralized Map/system navigation with one context
 ## 2026-10-10 — Implement custom Realm Overview player list
 
 Added hold-Tab overlay, Players navigation, live public political rows, local relations, holdings, deterministic sorts and informational details. Supported PlayerList-only disable moved into the new controller with respawn handling; added input isolation and compact rows. Verified Solo, three clients, political transitions, Direct revocation, disconnect cleanup, focus/restoration, repeated lifecycle and 50 diagnostic rows. See AI/REALM_OVERVIEW.md. No gameplay changes, Director acceptance, commit, push or publication.
+
+## 2026-10-10 — Add creator game presentation settings and GUI audio
+
+Added native Kohl GAME UI/GAME AUDIO categories backed by game-owned validated runtime configuration and creator-only server authority. Centralized live typography, density, corners, spacing, opacity, labels, hover animations and eight semantic UI sounds; preserved personal Kohl appearance and GameTester permission scope. Verified owner, tester, ordinary-role projection, direct spoof rejection, three clients and responsive extremes. See AI/GAME_PRESENTATION_SETTINGS.md for evidence and runtime-only persistence limits. No gameplay rules or vendor sources changed; no Roblox publication or new Director acceptance.

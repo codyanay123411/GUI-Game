@@ -52,6 +52,9 @@ function Controller.Start()
 		transcript.CanvasPosition = Vector2.new(0, math.max(0, height - transcript.AbsoluteWindowSize.Y))
 	end
 	transcript:GetPropertyChangedSignal("AbsoluteSize"):Connect(fitTranscript)
+	body:GetPropertyChangedSignal("Text"):Connect(fitTranscript)
+	body:GetPropertyChangedSignal("TextSize"):Connect(fitTranscript)
+	body:GetPropertyChangedSignal("FontFace"):Connect(fitTranscript)
 	TextChatService.ChatWindowConfiguration.Enabled = false
 	TextChatService.ChatInputBarConfiguration.Enabled = false
 	TextChatService.BubbleChatConfiguration.Enabled = false

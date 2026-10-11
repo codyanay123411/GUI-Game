@@ -79,13 +79,16 @@ function Controller.Start()
 		local size = gui.AbsoluteSize
 		local w,h = size.X,size.Y
 		if w < 1 or h < 1 then return end
-		local rail = if w < 760 then 80 else 100
-		local drawer = math.clamp(w * 0.34,280,380)
+		local density = Theme.Presentation.UIScale
+		local rail = (if w < 760 then 80 else 100) * density
+		local drawerMax = math.max(180, math.min(400, w - rail - 200))
+		local drawer = math.clamp(w * 0.34 * density, math.min(260, drawerMax), drawerMax)
 		local open = selected ~= "Map"
 		local left = rail + 20
 		local mapWidth = math.max(180,w-left-12-(if open then drawer+12 else 0))
 		position(top,8,4,w-16,64)
 		position(nav,8,76,rail,math.max(120,h-108))
+		for _, button in buttons do button.Size = UDim2.new(1, -8, 0, 42 * density) end
 		nav.CanvasSize = UDim2.fromOffset(0,540)
 		position(top.Gold,math.floor(w*0.42),8,math.floor(w*0.28)-20,48)
 		position(top.Troops,math.floor(w*0.72),8,math.floor(w*0.28)-24,48)
@@ -208,16 +211,11 @@ function Controller.Start()
 		elseif inst:IsA("ScrollingFrame") then
 			inst.ScrollBarThickness=5;inst.ScrollBarImageColor3=C.section
 		end
-		if inst:IsA("TextButton") and not inst:IsDescendantOf(nav) then
-			inst.MouseEnter:Connect(function() if inst.Active then inst.BackgroundTransparency=0.12 end end)
-			inst.MouseLeave:Connect(function() inst.BackgroundTransparency=0 end)
-			inst.MouseButton1Down:Connect(function() if inst.Active then inst.BackgroundTransparency=0.25 end end)
-			inst.MouseButton1Up:Connect(function() inst.BackgroundTransparency=0 end)
-		end
 	end
 	for _, item in gui:GetDescendants() do style(item) end
 	gui.DescendantAdded:Connect(style)
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(layout)
+	Theme.PresentationChanged.Event:Connect(layout)
 	gui.ChildAdded:Connect(function() task.defer(layout) end)
 	local territoryValue = gui.TerritoryInfo.SelectedTerritoryId
 	local previousCommitment: string? = nil

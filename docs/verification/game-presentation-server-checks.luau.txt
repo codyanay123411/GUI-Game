@@ -1,0 +1,52 @@
+-- Temporary Studio server Script after bootstrap; rank mocks restore before return.
+local S = game.ServerScriptService.Services
+local C = require(game.ReplicatedStorage.Shared.Config.GameSettingsConfig)
+local A = require(S.AdminConfig)
+local G = require(S.GameSettingsService)
+local K = shared._K_INTERFACE
+local originalRank = K.Auth.getRank
+local count = 0
+local function check(value, label) assert(value, label); count += 1 end
+local before = G.GetSnapshot()
+local ok, err = pcall(function()
+	K.Auth.getRank = function(id)
+		if id == 900000010 then return K.Data.roles.superadmin._rank, K.Data.roles.superadmin end
+		return originalRank(id)
+	end
+	check(A.CanConfigureGame(106676397), "owner can configure")
+	check(A.IsGameTester(900000010), "SuperAdmin still GameTester")
+	check(not A.CanConfigureGame(900000010), "SuperAdmin cannot configure")
+	for _, id in { 2646795710, 701857, 470733, 555636491 } do
+		check(A.IsGameTester(id), "allowlisted still GameTester")
+		check(not A.CanConfigureGame(id), "GameTester cannot configure")
+		check(not G.Apply(id, "Set", "CornerRadius", 12), "GameTester mutation denied")
+		check(not G.Apply(id, "Reset", "Game UI"), "GameTester reset denied")
+	end
+	check(not G.Apply(900000010, "Set", "PanelOpacity", 0.8), "SuperAdmin mutation denied")
+	check(not G.Apply(900000011, "Set", "Font", "Arial"), "ordinary mutation denied")
+	check(not G.Apply(106676397, "Set", "GoldIncome", 999), "gameplay key rejected")
+	check(not G.Apply(106676397, "Reset", "Gameplay"), "unknown reset rejected")
+	for _, definition in C.Definitions do
+		check(C.Validate(definition.key, definition.default), "default valid " .. definition.key)
+		check(G.Apply(106676397, "Set", definition.key, definition.default), "owner can set " .. definition.key)
+		if definition.min then
+			check(G.Apply(106676397, "Set", definition.key, definition.min), "minimum " .. definition.key)
+			check(G.Apply(106676397, "Set", definition.key, definition.max), "maximum " .. definition.key)
+			for _, invalid in { definition.min - 1, definition.max + 1, 0/0, math.huge, -math.huge, "1", {} } do
+				check(not G.Apply(106676397, "Set", definition.key, invalid), "invalid value " .. definition.key)
+			end
+		end
+	end
+	check(not G.Apply(106676397, "Set", "Font", "untrusted-font-id"), "font whitelist")
+	check(not G.Apply(106676397, "Set", "AnimationsEnabled", 1), "boolean validation")
+	check(G.Apply(106676397, "Reset", "Game UI"), "owner UI reset")
+	check(G.Apply(106676397, "Reset", "Game Audio"), "owner audio reset")
+	local copy = G.GetSnapshot()
+	copy.values.CornerRadius = 500
+	check(G.GetSnapshot().values.CornerRadius == 8, "snapshot cannot mutate authority")
+end)
+K.Auth.getRank = originalRank
+for key, value in before.values do assert(G.Apply(106676397, "Set", key, value)) end
+assert(ok, err)
+print("GAME_PRESENTATION_SERVER_PASS", count)
+script:Destroy()

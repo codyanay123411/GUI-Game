@@ -222,3 +222,13 @@ These rows record Agent verification separately from Director playtesting. Detai
 | VIC-PROD-01: published server, touch interaction and larger-player performance | Not tested | DEFERRED |
 
 No deferred scenario is a pass or Director acceptance. Neutral regeneration is deferred implementation, not a failed or passed test. Communications production transport/filtering acceptance remains governed by its existing backlog.
+
+## Creator presentation settings — 2026-10-10
+
+Agent results are recorded in AI/GAME_PRESENTATION_SETTINGS.md. They do not imply Director acceptance.
+
+| Scenario | Status | Remaining verification |
+| --- | --- | --- |
+| PRES-01 | DIRECTOR VERIFICATION REQUIRED | Judge game font hierarchy, readable density and audio feel with native GAME UI/GAME AUDIO controls. |
+| PRES-02 | NOT TESTABLE IN CURRENT ENVIRONMENT | Published ordinary-account category hiding/remote denial and group-experience creator resolution; Studio uses synthetic tester IDs and an owner account. Server/mock/real remote checks already passed. |
+| PRES-03 | NOT TESTABLE IN CURRENT ENVIRONMENT | Kohl personal saved-appearance backend with Studio API services disabled. No game values use that backend; global game persistence remains future work. |

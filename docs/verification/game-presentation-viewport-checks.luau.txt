@@ -1,0 +1,85 @@
+-- Temporary owner Solo LocalScript. Re-run at each actual Studio emulated viewport.
+local p = game.Players.LocalPlayer
+local gui = p.PlayerGui.HierarchyPrototypeGui
+local C = require(p.PlayerScripts.Controllers.GameSettingsController)
+local Config = require(game.ReplicatedStorage.Shared.Config.GameSettingsConfig)
+local Overview = require(p.PlayerScripts.Controllers.RealmOverviewController)
+local K = require(game.ReplicatedStorage["Kohl's Admin Source"])
+local count = 0
+local function check(value, label) assert(value, label); count += 1 end
+local function profile(mode)
+	for _, definition in Config.Definitions do
+		if definition.category == "Game UI" then
+			local value = definition.default
+			if definition.min and mode ~= "default" then value = definition[if mode == "minimum" then "min" else "max"] end
+			C.Request(definition.key, value)
+		end
+	end
+	local deadline = os.clock() + 10
+	local function matches()
+		for _, definition in Config.Definitions do
+			if definition.category == "Game UI" then
+				local value = if definition.min and mode ~= "default" then definition[if mode == "minimum" then "min" else "max"] else definition.default
+				if C.GetSnapshot().values[definition.key] ~= value then return false end
+			end
+		end
+		return true
+	end
+	repeat task.wait(0.05) until matches() or os.clock() > deadline
+	check(matches(), "all profile values acknowledged " .. mode)
+	task.wait(0.2)
+end
+local function inside(item, container, label)
+	local a, b = item.AbsolutePosition, container.AbsolutePosition
+	local x, y = item.AbsoluteSize, container.AbsoluteSize
+	if container:IsA("ScrollingFrame") then y = Vector2.new(y.X, math.max(y.Y, container.CanvasSize.Y.Offset)) end
+	check(a.X >= b.X - 1 and a.Y >= b.Y - 1 and a.X + x.X <= b.X + y.X + 1 and a.Y + x.Y <= b.Y + y.Y + 1, label)
+end
+for _, mode in { "minimum", "maximum", "default" } do
+	profile(mode)
+	for _, button in gui.StrategyNavigation:GetChildren() do
+		if button:IsA("TextButton") then check(button.TextBounds.X <= button.AbsoluteSize.X and button.TextBounds.Y <= button.AbsoluteSize.Y, "navigation fits " .. button.Name .. mode) end
+	end
+	inside(gui.StrategyNavigation, gui, "navigation bounds")
+	inside(gui.CommunicationsPanel, gui, "drawer bounds")
+	inside(gui.CommunicationsPanel.SendButton, gui.CommunicationsPanel, "Communications send bounds")
+	inside(gui.CommunicationsPanel.HelpButton, gui.CommunicationsPanel, "Communications help bounds")
+	local transcript = gui.CommunicationsPanel.Transcript
+	transcript.Body.Text = string.rep("Typography reflow verification. A longer ruler message wraps within the transcript.\n", 18)
+	task.wait(0.1)
+	check(transcript.Body.Size.Y.Offset >= transcript.Body.TextBounds.Y, "transcript canvas fits " .. mode)
+	Overview.SetOpen(true)
+	task.wait(0.1)
+	inside(gui.RealmOverviewOverlay.Panel, gui, "overview bounds")
+	for _, row in gui.RealmOverviewOverlay.Panel.List:GetChildren() do
+		if row:IsA("TextButton") then
+			for _, name in { "Identity", "Username", "Realm", "Holdings" } do
+				local label = row[name]
+				check(label.TextBounds.Y <= label.AbsoluteSize.Y, "overview text height " .. name .. mode)
+			end
+		end
+	end
+	Overview.SetOpen(false)
+	local victory = gui.VictoryOverlay.Panel
+	victory.Heading.Text = "REALM VICTORY"
+	victory.Winner.Text = "Emperor A Long Ruler Display Name"
+	victory.Body.Text = "The Vale\n\n12 / 16 territories · 75.0% controlled\nDomination achieved · 75% required\n\nThe match has ended. Competitive actions are frozen.\nInspect the map, view Players or continue communicating."
+	gui.VictoryOverlay.Visible = true
+	task.wait(0.1)
+	inside(victory, gui, "victory bounds")
+	for _, name in { "Heading", "Winner", "Body", "Continue" } do
+		local label = victory[name]
+		check(label.TextBounds.Y <= label.AbsoluteSize.Y and (label.TextWrapped or label.TextBounds.X <= label.AbsoluteSize.X), "victory text fits " .. name .. mode)
+	end
+	gui.VictoryOverlay.Visible = false
+	K.Remote.Command:Fire(";adminhelp")
+	task.wait(0.4)
+	local inspect = gui.AdminInspectPanel
+	inside(inspect, gui, "admin result bounds")
+	check(inspect.BodyScroll.Body.Size.Y.Offset >= inspect.BodyScroll.Body.TextBounds.Y, "admin canvas fits " .. mode)
+	inspect.Visible = false
+	print("GAME_PRESENTATION_VIEWPORT_PHASE_PASS", gui.AbsoluteSize, mode, count)
+end
+gui.CommunicationsPanel.Transcript.Body.Text = "Presentation verification completed."
+print("GAME_PRESENTATION_VIEWPORT_PASS", gui.AbsoluteSize, count)
+script:Destroy()

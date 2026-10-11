@@ -105,6 +105,7 @@ local function moduleSourceContains(module: ModuleScript, needle: string): boole
 end
 
 local function shouldReplaceAddon(existing: ModuleScript, sourceName: string): boolean
+	if sourceName == "GamePresentationKohlClient" then return true end
 	if sourceName == "AdminKohlAddon" then
 		return moduleSourceContains(existing, "return runOp")
 			or moduleSourceContains(existing, "local ok, message = AdminBridge")
@@ -240,6 +241,7 @@ local function tryLateRegister()
 end
 
 local function ensureAddonModule(): ModuleScript?
+	placeNamedAddon("GamePresentationKohlClient", true)
 	placeNamedAddon("AdminKohlThemeClient", false)
 	syncKohlConfigTheme()
 	local source = getCanonicalAddon()

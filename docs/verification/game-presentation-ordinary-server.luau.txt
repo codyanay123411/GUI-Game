@@ -1,0 +1,27 @@
+-- Temporary server Script in three-client Studio test. UI admission mock only; authority is real.
+local R = game.ReplicatedStorage
+local A = require(game.ServerScriptService.Services.AdminConfig)
+local G = require(game.ServerScriptService.Services.GameSettingsService)
+local p = game.Players:GetPlayers()[1]
+local original = A.IsGameTester
+local done = false
+local connection = R.PresentationVerificationEvent.OnServerEvent:Connect(function(from, kind) if from == p and kind == "Spoof" then done = true end end)
+local before = G.GetSnapshot()
+local ok, err = pcall(function()
+	A.IsGameTester = function(id) if id == p.UserId then return false end; return original(id) end
+	assert(not A.IsGameTester(p.UserId) and not A.CanConfigureGame(p.UserId))
+	R.PresentationVerificationEvent:FireClient(p, "Spoof")
+	local deadline = os.clock() + 30
+	repeat task.wait(0.1) until done or os.clock() > deadline
+	assert(done and G.GetSnapshot().revision == before.revision)
+	print("GAME_PRESENTATION_ORDINARY_REMOTE_PASS", p.Name)
+	task.wait(2)
+end)
+A.IsGameTester = original
+local snapshot = G.GetSnapshot()
+snapshot.canConfigure = A.CanConfigureGame(p.UserId)
+snapshot.canView = A.IsGameTester(p.UserId)
+R.Remotes.GameSettingsStateEvent:FireClient(p, snapshot)
+connection:Disconnect()
+assert(ok, err)
+script:Destroy()

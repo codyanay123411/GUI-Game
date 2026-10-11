@@ -35,3 +35,4 @@ AdminFeedbackController.Start()
 require(script.Parent.Controllers.StrategyPresentationController).Start()
 
 require(script.Parent.Controllers.VictoryController).Start()
+require(script.Parent.Controllers.GameSettingsController).Start()

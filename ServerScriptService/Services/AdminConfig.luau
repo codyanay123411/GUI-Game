@@ -4,9 +4,10 @@
 -- Preserve the Studio-only synthetic UserId convenience.
 local RunService = game:GetService("RunService")
 local AdminConfig = {}
+local PROJECT_OWNER_USER_ID = 106676397
 
 AdminConfig.GameTesterUserIds = {
-	106676397, -- Existing Director/owner account
+	PROJECT_OWNER_USER_ID, -- Existing Director/owner account
 	2646795710, -- ffrjfss
 	701857, -- coolguy2323
 	470733, -- iceboy10
@@ -40,6 +41,15 @@ function AdminConfig.IsGameTester(userId: number): boolean
 	end
 	local ok, rank = pcall(auth.getRank, userId)
 	return ok and typeof(rank) == "number" and rank >= role._rank
+end
+
+function AdminConfig.CanConfigureGame(userId: number): boolean
+	if not RunService:IsServer() or typeof(userId) ~= "number" or userId <= 0 or userId ~= math.floor(userId) or userId == math.huge then return false end
+	if userId == PROJECT_OWNER_USER_ID then return true end
+	if game.CreatorType == Enum.CreatorType.User then return userId == game.CreatorId end
+	-- Kohl resolves the group experience owner on the server; never infer ownership from rank.
+	local interface = shared._K_INTERFACE
+	return typeof(interface) == "table" and interface.IsServer == true and userId == interface.creatorId
 end
 
 return AdminConfig
