@@ -1,5 +1,13 @@
 # GUI redundancy cleanup — 2026-10-10
 
+## 2026-10-11 — Radial background passes map input
+
+Input-only correction: the radial CanvasGroup declares MapInputThroughBackground; ContextTransitions keeps that root Active=false and BlocksMapInput=false while leaving descendant interaction enabled. The decorative heading is inactive. Each generated action button remains active and carries BlocksMapInput=true, so the existing map guard protects only button bounds. Drawers/offers retain their existing blocking behavior. Appearance, animation timing, opacity and gameplay are unchanged.
+
+Studio HD720 Play verification: three runtime audits passed across open/hide/reopen; no active decorative descendants or full-area button/hitbox exists. Native empty-circle click selected Westmere beneath Northvale's radial; later empty-side click selected Northvale. Province info, Conquer, Military and Realm info each emitted MouseEnter and Activated and opened the expected view without selecting a province under the button. Conquer review was cancelled without declaration. Wheel zoom and drag beginning through the center/heading moved the map; drag retained selection. Final two changed sources matched Studio, temporary tests were removed, and compile/whitespace checks passed. Output: docs/verification/radial-input-output-2026-10-11.txt. Agent verification is separate from Director acceptance.
+
+Final ignored local snapshot: docs/verification/radial-input-final-2026-10-11.rbxl; SHA-256 53A7E4DEDDF79F152ABAB70B62EA996F203F349ACDB327EDC6DD36E7096E9DFC. Export saved the Studio draft; no Roblox Publish action. Prior snapshots remain preserved.
+
 Director-authorized presentation migration. Server gameplay, validation, remotes, rules, resources and match authority are unchanged. This replaces the prior milestone's intentional temporary retention of full legacy navigation. Agent verification is separate from Director acceptance.
 
 ## Surface audit and decisions

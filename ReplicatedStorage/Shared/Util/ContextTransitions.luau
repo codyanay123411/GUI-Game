@@ -28,9 +28,10 @@ function Transitions.Show(group: CanvasGroup, drawer: boolean?)
 	if Transitions.IsOpen(group) then return end
 	local record = stop(group)
 	group:SetAttribute("ContextOpen", true)
-	group:SetAttribute("BlocksMapInput", true)
+	local blocksBackground = group:GetAttribute("MapInputThroughBackground") ~= true
+	group:SetAttribute("BlocksMapInput", blocksBackground)
 	group.Interactable = true
-	group.Active = true
+	group.Active = blocksBackground
 	group.Visible = true
 	group.GroupTransparency = 0
 	record.scale.Scale = 1

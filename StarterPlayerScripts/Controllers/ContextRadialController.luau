@@ -52,6 +52,11 @@ function Radial.Start(screen: ScreenGui, activate: (string) -> ())
 	gui = screen
 	panel = gui:WaitForChild("ContextRadialPanel") :: CanvasGroup
 	heading = panel:WaitForChild("Heading") :: TextLabel
+	-- Keep descendants interactive while the decorative background passes map input.
+	panel:SetAttribute("MapInputThroughBackground", true)
+	panel:SetAttribute("BlocksMapInput", false)
+	panel.Active = false
+	heading.Active = false
 	gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(Radial.Layout)
 	Theme.PresentationChanged.Event:Connect(Radial.Layout)
 	Radial.Activate = activate
@@ -75,6 +80,8 @@ function Radial.Show(context: any, position: Vector2)
 		button.TextSize = 13
 		button.BorderSizePixel = 0
 		button.ZIndex = 82
+		button.Active = true
+		button:SetAttribute("BlocksMapInput", true)
 		Theme.applyPrimaryButton(button, true)
 		local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0, 12); corner.Parent = button
 		button.Parent = panel

@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-10-11 — Radial input layering
+
+**IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Decorative radial background/heading passes map input; only action buttons block it. Native empty-area selection, center drag/zoom and Info/Conquer/Military/Realm hover/click passed in Studio. Existing appearance, animation and gameplay remain unchanged. See GUI_REDUNDANCY_CLEANUP.md for evidence; commit/normal push to main authorized.
+
 ## 2026-10-10 — GUI redundancy migration
 
 **IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Primary navigation is Map, Realm, Titles, Economy, Messages and Players. Territory, Diplomacy and Military are contextual; twenty obsolete Studio objects are archived outside active GUI. Existing controller/service flows are preserved. CanvasGroup transitions respect existing animation/opacity settings and dismiss input immediately. Final source parity: 77/77; three actual clients: 65 cumulative assertions plus both remaining clients' Victory checks; VGA/HD720/wide at 0.9/1/1.1 passed. Native Back, click-through prevention, pan/zoom, conquest, offers and post-match inspection checked. See [GUI_REDUNDANCY_CLEANUP.md](GUI_REDUNDANCY_CLEANUP.md). Director feel/readability and existing real-account chat checks remain pending. Commit/normal push to main authorized; no Roblox publication.

@@ -1,5 +1,9 @@
 # Changelog
 
+## 2026-10-11 — Allow map input through contextual radial background
+
+Made the decorative radial root and heading inactive; transitions preserve background pass-through while action buttons retain per-button map blocking and native interaction. Verified native selection/pan/zoom through the circle and hover/activation on Province info, Conquer, Military and Realm info. Temporary fixtures removed; source parity and compilation passed. No gameplay or visual redesign.
+
 ## 2026-10-10 — Retire redundant GUI and polish map context
 
 Removed obsolete Territory/Diplomacy/Military navigation, duplicate territory/diplomacy panels, player/request lists, templates and unused bindings from active Studio GUI; preserved twenty assets in ServerStorage recovery. Reused recruitment/commitment/lock and offer handlers inside contextual CanvasGroups. Added setting-aware fade/scale/slide with immediate input dismissal, independent selection and compact navigation/result reflow. Corrected compact radial heading overlap and empty-selection global-view dismissal during verification. Three-client relationship/offers/war/disconnect/Victory, nine viewport/scale combinations, native input/conquest and final 77-source parity passed. Reports, fixtures, screenshots and local offline snapshot retained. No gameplay mechanics or Roblox publication.
