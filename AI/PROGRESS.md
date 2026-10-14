@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-10-14 — Town army-capacity plan revision
+
+Documentation only: [plan](BUILDINGS_BALANCE_PROPOSAL.md)/[stats](BUILDINGS_REFERENCE_STATS.md) record approved500 start, additive personal Town capacity and exact10-Troop recruitment prices; revised previews/early-conquest risks and20500-cap/18000-Gold/4050-actual-authority examples. Configuration, arithmetic/link/whitespace/diff checks only; no Studio or runtime/gameplay changes. Next: decide capacity loss, betrayal overflow and damaged-Town effects alongside existing Castle/repair/elimination questions. Only task documentation committed; unrelated source/evidence/recovery remains local.
+
 ## 2026-10-14 — Building reference stats and latest plan revision
 
 Documentation only: revised [plan](BUILDINGS_BALANCE_PROPOSAL.md), added [stat sheet](BUILDINGS_REFERENCE_STATS.md), linked latest future authority. Fixed Farms, local Town batch recommendation, fixed Castle support and conditional modifiers replace conflicting plans. Focused config/decimal arithmetic/link/diff checks; no Studio/runtime/gameplay/UI changes. Next: approve numeric/support/capacity/repair/elimination policies before implementation. Only this task documentation is committed; unrelated Vale/naval implementation/recovery remains local.

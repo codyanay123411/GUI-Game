@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-10-14 — Approved Town pricing and additive personal army cap
+
+Director approved500 starting/base-cap Troops, each functioning personal Town contributing100/250/450/700/1000,10-Troop batches at10 or local9.8/9.6/9.4/9.2/9 Gold and exact fractional prices. All living troops count once, including reservations/support; capacity grants no troops or authority. Supersede100-Troop batches,1000 start and local recruitment-rate windows; prior dated proposals are historical. Retaining over-cap troops and accepting conserved betrayal transfer overflow are recommendations, not approved lifecycle rules; damaged-Town behavior remains open. [Current plan](BUILDINGS_BALANCE_PROPOSAL.md); [stats](BUILDINGS_REFERENCE_STATS.md). No gameplay/UI implementation.
+
 ## 2026-10-14 — Latest building/stat-sheet ruling supersedes earlier tuning
 
 Director approved Farm totals2/5/9/14/20 and rank bonuses on base+Farm, retained100-start/5-base and personal Capital progression. Castle25% unsupported baseline/3×unmodified support requirement is approved; fixed point table and local whole-batch Town prices remain recommended. Supersede earlier percentage Castle, global strongest-Town and Farm tables (including prior25 maximum); no price approval implied. Capital defense/garrison combat applicability, standing support, local capacity, repair and elimination/reconnect remain unresolved. [Plan](BUILDINGS_BALANCE_PROPOSAL.md); [reference assumptions](BUILDINGS_REFERENCE_STATS.md). Prior dated rulings retain provenance; this is future design, not implementation/balance acceptance.

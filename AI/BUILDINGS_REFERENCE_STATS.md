@@ -23,12 +23,18 @@ Scenario: 20 personally owned provinces with Castle/Town/Farm level5 on each and
 | Unsupported Castle after all assumed modifiers | 125 ×1.311 ×1.265 =207.301875 | Assumes Capital combat and all applicable defensive factors affect garrison |
 | Supported Castle after those modifiers | 500 ×1.311 ×1.265 =829.2075 | Same unresolved modifier assumptions |
 | Authority with7500 surviving Troops | 20 ×100 +7500 ÷10 =2750 | Existing personal authority formula; Castle strength excluded |
-| Proposed max Town price | 90 Gold per100 Troops | Unapproved base100 minus fixed local discount10 |
+| Twenty max personal Towns | 500 +20 ×1000 =20500 troop capacity | Approved future living-army cap, not actual troops |
+| Starting Troops | 500 | Approved replacement for historical1000 |
+| Max Town recruitment price | 9 Gold per10 Troops | Approved selected-province price, exact fractional pricing at lower levels |
+| Filling cap from starting Troops | 20000 additional Troops,2000 batches ×9 =18000 Gold | Ignores casualties/transfers and other expenditure |
+| Authority at exactly20500 actual Troops | 20 ×100 +20500 ÷10 =4050 | Actual surviving Troops, not empty capacity |
+
+At500 starting Troops with no Town, cap500 means no recruitment room. Each Town contributes independently; level replaces earlier contribution. Subjects add no capacity. Committed/transported/reserved/support troops count once in living Total, virtual Castle strength never counts.18000 Gold at510/min would take about35.29minutes of constant full reference income if funds start atzero, not a measured match duration.
 
 Castle figures exclude separate actual committed defending strength and combat/defense random rolls. Twenty Castles create no movable army; support is real existing troops, not a grant. Reservations remain in surviving Total for authority. Modifiers cannot raise the375 support requirement. Do not treat7500 as simultaneously available for support **and** commitments elsewhere.
 
 Approved future Capital levels: absent−5% defense;1 replaces penalty with+10% defense;2 adds5% combat;3 adds10% for15% total;4 adds5% defense for15% total;5 adds10% personal Prestige. These exclude descendant holdings. Independent modifiers multiply, no ancestor stacking. Whether combat applies to defense and Castle garrisons must be confirmed; the two207.301875/829.2075 figures are expressly conditional, not promises.
 
-Unresolved: committed versus reserve support, exclusive allocation/partial transition and support casualty policy; slots, local recruitment capacity, whole-batch contract, prices, repair semantics and elimination lifecycle. No troop total or private enemy strength should be exposed through ordinary UI merely to reproduce this sheet.
+Unresolved: committed versus reserve support, exclusive allocation/partial transition and support casualty policy; slots, building purchase prices, over-cap capacity-loss/betrayal handling, damaged-Town effects, repair semantics and elimination lifecycle.10-Troop batch prices and personal army-cap rules are approved, not recruitment-window capacity. No troop total or private enemy strength should be exposed through ordinary UI merely to reproduce this sheet.
 
 Checked with lightweight exact-decimal arithmetic; no Studio, match run or balance acceptance. Supersedes conflicting older reference values; historical prototypes remain dated in existing records.
