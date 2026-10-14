@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-10-14 — Buildings plan revised to Director direction
+
+Documentation only: [proposal](BUILDINGS_BALANCE_PROPOSAL.md) records approved100-start/5-base economy, additive Capital progression and captured-building Repair; revised increasing prices/Farm values, low-income pacing and explicitly unapproved lifecycle/theme decisions. Relevant configuration/arithmetic/link/whitespace checks; no Studio/runtime session or gameplay/UI changes. Next: Director repair/strength/lifecycle decisions before implementation. This task authorizes a documentation-only main commit/push; accumulated Vale/naval source/evidence changes remain local.
+
 ## 2026-10-13 — Accumulated work finalization
 
 Director authorized normal main commit/push. All95 production Luau sources compile; diff/credential/fixture/artifact checks passed, prior system evidence reused. Source/config/docs/screenshots/fixtures included; Studio assets and ignored snapshots/recovery remain local. Published replay, human acceptance and other backlog limits preserved. [Coverage/checks](FINALIZATION.md#2026-10-13--accumulated-implementation-finalization). No Roblox publication.

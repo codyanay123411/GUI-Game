@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-10-14 — Buildings future direction, not implementation
+
+Director approved future starting Gold100/base personal income5, four five-level buildings, personal-only Capital totals (defense15%, combat15%, Prestige10%), Capital-capture personal surrender and 40–60% captured-building Repair with preserved levels/50% cost. This supersedes the prior proposed200/15 economy, replacement Capital3 bonus and Capital4 construction discount. Prices, strength applicability, repair count/basis/effect suspension, slots/Town and elimination lifecycle remain unresolved recommendations. [Approved versus proposed rules](BUILDINGS_BALANCE_PROPOSAL.md). No gameplay/UI implementation or balance acceptance.
+
 ## 2026-10-13 — Approved vassalage strength rules
 
 Director approved immediate-parent9% +1%/direct subject and own-personal-defense2%/direct subject, multiplicative, uncapped, measured at mechanical resolution. Actual combat actors matter, including nested betrayal defender; no inherited root army bonus, troop scaling or political authority change. [Authoritative rule](GAME_DESIGN.md#approved-vassalage-combat-modifiers--2026-10-13); [verification](OPENFRONT_PLAYABILITY_REVIEW.md#vassalage-combat-bonuses--2026-10-13).
