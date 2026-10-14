@@ -1,5 +1,9 @@
 # Progress
 
+## 2026-10-14 — Building reference stats and latest plan revision
+
+Documentation only: revised [plan](BUILDINGS_BALANCE_PROPOSAL.md), added [stat sheet](BUILDINGS_REFERENCE_STATS.md), linked latest future authority. Fixed Farms, local Town batch recommendation, fixed Castle support and conditional modifiers replace conflicting plans. Focused config/decimal arithmetic/link/diff checks; no Studio/runtime/gameplay/UI changes. Next: approve numeric/support/capacity/repair/elimination policies before implementation. Only this task documentation is committed; unrelated Vale/naval implementation/recovery remains local.
+
 ## 2026-10-14 — Buildings plan revised to Director direction
 
 Documentation only: [proposal](BUILDINGS_BALANCE_PROPOSAL.md) records approved100-start/5-base economy, additive Capital progression and captured-building Repair; revised increasing prices/Farm values, low-income pacing and explicitly unapproved lifecycle/theme decisions. Relevant configuration/arithmetic/link/whitespace checks; no Studio/runtime session or gameplay/UI changes. Next: Director repair/strength/lifecycle decisions before implementation. This task authorizes a documentation-only main commit/push; accumulated Vale/naval source/evidence changes remain local.

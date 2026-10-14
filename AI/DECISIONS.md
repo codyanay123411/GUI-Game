@@ -1,5 +1,9 @@
 # Decisions
 
+## 2026-10-14 — Latest building/stat-sheet ruling supersedes earlier tuning
+
+Director approved Farm totals2/5/9/14/20 and rank bonuses on base+Farm, retained100-start/5-base and personal Capital progression. Castle25% unsupported baseline/3×unmodified support requirement is approved; fixed point table and local whole-batch Town prices remain recommended. Supersede earlier percentage Castle, global strongest-Town and Farm tables (including prior25 maximum); no price approval implied. Capital defense/garrison combat applicability, standing support, local capacity, repair and elimination/reconnect remain unresolved. [Plan](BUILDINGS_BALANCE_PROPOSAL.md); [reference assumptions](BUILDINGS_REFERENCE_STATS.md). Prior dated rulings retain provenance; this is future design, not implementation/balance acceptance.
+
 ## 2026-10-14 — Buildings future direction, not implementation
 
 Director approved future starting Gold100/base personal income5, four five-level buildings, personal-only Capital totals (defense15%, combat15%, Prestige10%), Capital-capture personal surrender and 40–60% captured-building Repair with preserved levels/50% cost. This supersedes the prior proposed200/15 economy, replacement Capital3 bonus and Capital4 construction discount. Prices, strength applicability, repair count/basis/effect suspension, slots/Town and elimination lifecycle remain unresolved recommendations. [Approved versus proposed rules](BUILDINGS_BALANCE_PROPOSAL.md). No gameplay/UI implementation or balance acceptance.

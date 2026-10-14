@@ -1,5 +1,9 @@
 # Game Design
 
+## Buildings future direction — 2026-10-14 latest ruling
+
+Planning authority only, not implemented: starting Gold100/base personal province5 per minute; Farm totals2/5/9/14/20, independent fixed additions replacing prior levels, rank bonus on base+Farm. Preserve Prestige/title scaling. Castle approved unsupported25% baseline and full-support requirement3×baseline; points2/4/6/8/10 at50 troop-equivalents each remain recommended tuning. Town is fixed province-local benefit;100 Gold/100-Troop batches and2/4/6/8/10 discounts are recommended, not approved contracts. Capital personal totals15% defense/15% combat/10% Prestige, approved capture elimination/personal surrender and40–60% Repair direction; support/modifier/repair/lifecycle resolutions remain open. [Current plan](BUILDINGS_BALANCE_PROPOSAL.md) and [conditional reference stats](BUILDINGS_REFERENCE_STATS.md) supersede conflicting future recommendations. Historical150/10 and3-Troop/Gold V0.1 sections below describe existing implementation, not new balance instructions. No gameplay/UI authorization from this documentation task.
+
 ## Approved vassalage combat modifiers — 2026-10-13
 
 Director-authorized: subject strength9% +1% per immediate liege direct subject; ruler defense2% per own direct subject only while personally defending directly owned land. No cap, ancestor stacking or bonus from own subjects on offense. Applicable factors multiply. Resolve against authoritative current hierarchy/ownership at mechanical resolution, after betrayal detachment/transfer. Effective strength only; actual troops, reservations, casualty accounting and political authority remain unscaled. Own bonus UI only; no enemy strength disclosure. [Implementation/evidence](OPENFRONT_PLAYABILITY_REVIEW.md#vassalage-combat-bonuses--2026-10-13) is not Director acceptance.
