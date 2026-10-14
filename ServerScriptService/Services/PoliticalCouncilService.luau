@@ -68,7 +68,7 @@ local function pushPlayer(player: Player, force: boolean?)
 	local payload = HttpService:JSONEncode(Service.GetForPlayer(player))
 	if force or lastPayload[player] ~= payload then
 		lastPayload[player] = payload
-		push:FireClient(player, "State", payload)
+		MatchState.Send(push, player, "State", payload)
 	end
 end
 local function pushAll()
@@ -163,9 +163,9 @@ function Service.Start()
 	refresh(now())
 	if MatchState.IsEnded() then freeze(MatchState.GetFinal().endedAt) end
 	task.spawn(function()
-		while not frozen do
+		while started do
 			task.wait(Config.EvaluationIntervalSeconds)
-			if frozen or MatchState.IsEnded() then break end
+			if frozen or MatchState.IsEnded() then continue end
 			local at, evaluated = now(), false
 			for id, due in dueByCouncil do
 				if due <= at then evaluate(id, at); evaluated = true end
@@ -174,4 +174,12 @@ function Service.Start()
 		end
 	end)
 end
+function Service.PublishMatch() refresh(now()) end
+
+function Service.ResetMatch()
+	assert(MatchState.IsResetting())
+	rulers, councils, dueByCouncil, leaving, lastPayload = {}, {}, {}, {}, {}
+	frozen = false
+end
+
 return Service

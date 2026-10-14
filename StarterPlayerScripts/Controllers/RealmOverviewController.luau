@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 -- Public political overview only. Existing services remain authoritative.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -146,13 +147,13 @@ function Controller.Start()
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	for _, system in { "Hierarchy", "Territory", "Diplomacy", "Warfare", "Communications" } do
 		local push = remotes:WaitForChild(system .. "ServerEvent") :: RemoteEvent
-		push.OnClientEvent:Connect(function(kind: any, payload: any)
+		MatchIntent.ConnectPush(push, function(kind: any, payload: any)
 			if kind ~= "State" then return end
 			local ok, decoded = pcall(function() return if typeof(payload) == "string" then HttpService:JSONDecode(payload) else payload end)
 			if ok and typeof(decoded) == "table" then states[system] = decoded; schedule() end
 		end)
 		local intent = remotes:WaitForChild(system .. "ClientEvent") :: RemoteEvent
-		intent:FireServer("Ready")
+		MatchIntent.Send(intent, "Ready")
 	end
 	disableDefault()
 	Controller.SetOpen(false)

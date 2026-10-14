@@ -1,0 +1,8 @@
+{
+  "environment": "Same three-client Studio session; six cancellation cases reached 47 checks; manual disconnect timing failed, bounded actual Player1 disconnect/freeze replacement passed 30",
+  "lines": [
+    "20:01:19.226 VALE_NAVAL_DISCONNECT_READY 47",
+    "20:02:34.289 ServerScriptService.ValeNavalLifecycle:6: actual third client disconnected",
+    "20:04:55.003 VALE_NAVAL_DISCONNECT_FREEZE_PASS 30"
+  ]
+}

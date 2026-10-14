@@ -1,5 +1,39 @@
 # Progress
 
+## Completed implementation finalization — 2026-10-14
+
+Director-authorized main commit/push includes completed Vale32/naval/shared restart, all four buildings/Build drawer, Capital/damage/Repair/elimination/reset, passive markers, current prices, staff/current-server browser and Shift Lock configuration. [Finalization scope, checks, local exclusions and Studio limits](FINALIZATION.md#2026-10-14--completed-local-implementation-finalization); [source/evidence manifest](../docs/verification/completed-implementation-finalization-2026-10-14.json).61 changed/new sources syntax-compile and match live normalized source fingerprints; no new match/runtime acceptance. Old Capital scaffold/stage-price/replay reports are historical and superseded by their implementation reports. Moderation /report/Players/warnings remain planned. Published/multiplayer/human limitations are retained; no Director acceptance or Roblox publication. Disposable fixtures/adapters/recovery and ignored snapshots/tooling remain local by request.
+
+## Building prices, native current server and Shift Lock — 2026-10-14
+
+Implemented approved individual purchase/half-price Repair revision through existing shared config, current-session row within native Kohl Servers (Already here; Studio/non-routable fallback), and StarterPlayer.EnableMouseLockOption=false. Tracked PresentationBindings/early bootstrap enforce the property; Studio edit property is also false. Native Shift key left MouseBehavior Default in fresh Play with player.DevEnableMouseLock=false. No other shortcut changed. [Price evidence](BUILDINGS_BALANCE_PROPOSAL.md#purchase-price-revision--2026-10-14); [server-browser boundaries/limits](ADMIN_PERMISSIONS.md#native-kohl-current-server-row--2026-10-14); [manifest](../docs/verification/prices-servers-input-runtime-2026-10-14.json). Initial guard/fixture/adapter problems were corrected before passes; no Director acceptance or published routing claim. Prior local work/recovery preserved; no commit/push/publication.
+
+## Province building markers — 2026-10-14
+
+Implemented read-only Farm/Town/Castle/Capital province symbols, fixed geometry-contained slots, levels/Max, damage/Repair, inert ruins, hover and zoom simplification with existing camera/theme. Three affected sources match Studio; passive input, native select/pan, synthetic building/Repair/reset and front/transport coexistence evidence are recorded in [the building report](BUILDINGS_BALANCE_PROPOSAL.md#province-building-markers--2026-10-14). Human recognition/readability and real-client concurrent delivery remain unaccepted/unverified. Prior gameplay/recovery preserved; no commit/push/publication.
+
+## Final building stage — 2026-10-14
+
+Implemented Capital/relocation/live effects, independent capture damage/paid Repair, exactly-once elimination/personal surrender, retired troops, reconnect tombstones, spectator restart and reset through existing services/Build drawer. Earlier partial checkpoint is historical. [Rules, actual verification, fixes and remaining limitations](BUILDINGS_BALANCE_PROPOSAL.md#final-building-stage--capital-damagerepair-and-elimination--2026-10-14). Native UI and focused Solo/synthetic checks are not Director acceptance or real-account multiplayer passes. No commit/push/publication.
+
+
+## Historical superseded final-building checkpoint — 2026-10-14
+
+**PARTIAL — NOT PLAYABLE/COMPLETE.** Approved final-stage request is in the Director's attachment. Clarification: either foreign-realm land adjacency or an attacking naval landing on personal land permanently blocks that ruler's Capital placement/relocation for the remainder of the match; clearing the condition does not restore eligibility. Same-server restart clears blockers. This supersedes the agent's suggested active-war-only duration.
+
+Disk BuildingConfig/BuildingPolicy now contain approved Capital costs/effect tables, exact half-price Repair quotes and40–60% capture-probability calculation. These helpers are not wired into live gameplay.20 pure policy checks and57 existing Town/Castle policy checks passed; both affected modules compiled; whitespace passed. Studio is open, but no current Capital source parity or runtime pass is established. No commit/push/publication.
+
+Remaining: BuildingService Capital/damage/repair/relocation ledger and receipt validation; match-long event-driven blockers; battle-only capture transaction, deterministic finalization and coherent victory evaluation; elimination UserId tombstones/reconnect spectating and troop retirement; income/Prestige/combat effects; existing Build UI; targeted runtime/multiplayer verification. Preserve prior stage-two sources and all recovery assets. Next: inspect affected Studio sources against disk before wiring the authoritative transaction; do not interpret helper tests as lifecycle verification.
+
+## Towns and Castles — 2026-10-14
+
+Director-approved stage two:500 starting troops/base personal cap; additive personal Town capacity and selected-province exact10-troop prices; retained over-cap troops; Castle exclusive available-reserve backing, linear partial strength and no backing casualties. Implemented through existing Building/Economy/Military authority and contextual Build drawer; Farms retained. Shared restart clears buildings; transfer/disconnect retains levels. Capital/damage/Repair/elimination remain later work. [Rules, changed files, actual checks and limitations](BUILDINGS_BALANCE_PROPOSAL.md#stage-two--towns-and-castles-implemented--2026-10-14). Agent verification is not Director acceptance; synthetic actors are not real multiplayer. No commit, push or publication.
+
+
+## 2026-10-14 — Farms and contextual Build stage
+
+Implemented Farm total2/5/9/14/20 and approved20/35/60/100/160 purchases through BuildingService/Economy;100 starting Gold/base5, fractional six-second carry, existing themed Build drawer and restart clearing.49 pure checks,70 corrected synthetic Solo integration checks,12 final malformed-request checks and native normal/compact Build/Upgrade/Max evidence; twelve-source correspondence. [Evidence/limits](BUILDINGS_BALANCE_PROPOSAL.md#farm-stage-one--2026-10-14-implementation). Transfers intact; Repair deferred. Town/Castle next, Capital only after lifecycle approval. Recruitment/troops/capacity and other approved work preserved. Not Director-accepted; no commit/push/publication.
+
 ## 2026-10-14 — Town army-capacity plan revision
 
 Documentation only: [plan](BUILDINGS_BALANCE_PROPOSAL.md)/[stats](BUILDINGS_REFERENCE_STATS.md) record approved500 start, additive personal Town capacity and exact10-Troop recruitment prices; revised previews/early-conquest risks and20500-cap/18000-Gold/4050-actual-authority examples. Configuration, arithmetic/link/whitespace/diff checks only; no Studio or runtime/gameplay changes. Next: decide capacity loss, betrayal overflow and damaged-Town effects alongside existing Castle/repair/elimination questions. Only task documentation committed; unrelated source/evidence/recovery remains local.
@@ -11,6 +45,15 @@ Documentation only: revised [plan](BUILDINGS_BALANCE_PROPOSAL.md), added [stat s
 ## 2026-10-14 — Buildings plan revised to Director direction
 
 Documentation only: [proposal](BUILDINGS_BALANCE_PROPOSAL.md) records approved100-start/5-base economy, additive Capital progression and captured-building Repair; revised increasing prices/Farm values, low-income pacing and explicitly unapproved lifecycle/theme decisions. Relevant configuration/arithmetic/link/whitespace checks; no Studio/runtime session or gameplay/UI changes. Next: Director repair/strength/lifecycle decisions before implementation. This task authorizes a documentation-only main commit/push; accumulated Vale/naval source/evidence changes remain local.
+
+## 2026-10-13 — Vale32, automatic naval, shared restart and staff routing
+
+Implemented the approved replacement: three islands/32 provinces, land-priority automatic coastal departure, existing authoritative naval lifecycle and cosmetic fronts, connected-player same-server restart votes, generation-isolated resets and trusted Kohl staff discovery/routing. Current evidence: 101 sources compile, 364 pure assertions, Solo 77, corrected three-client server 60/client 16/16/17, native desktop flows and disconnect-triggered restart. Final scoped Studio equality: 47 sources; ignored current snapshot saved. [Report and limitations](CONQUEST_VICTORY.md#vale32-automatic-naval-and-shared-restart--2026-10-13). Actual late join and published staff routing remain unverified; not Director-accepted. Prior work/recovery preserved. No commit, push or publication. Next: targeted late spectator check, published routing and Director visual/pacing review.
+
+## 2026-10-13 — Vale coastlands and naval conquest
+
+Implemented explicit coastal/water geography (same16 IDs), validated straight transports with locked launch/arrival-only defense, and concave-clipped cosmetic fronts in existing map/UI.67 policy checks, three-client lifecycle/privacy and focused native normal/compact checks; timing-fixture corrections and remaining human/published limits preserved. [Report](CONQUEST_VICTORY.md#vale-coastlands-naval-transport-and-conquest-fronts--2026-10-13). Agent verification is not Director acceptance. Prior work/recovery preserved; no commit, push or publication.
+
 
 ## 2026-10-13 — Accumulated work finalization
 

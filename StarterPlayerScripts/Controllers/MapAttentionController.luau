@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -230,6 +231,12 @@ function Controller.Start()
 	RunService.Heartbeat:Connect(function(dt)
 		elapsed += dt
 		if elapsed >= 1 then elapsed = 0; sync() end
+	end)
+	MatchIntent.OnChanged(function()
+		for _, tween in tweens do tween:Cancel() end
+		for _, marker in markers do marker:Destroy() end
+		events, markers, tweens, acknowledged, rendered = {}, {}, {}, {}, {}
+		redraw()
 	end)
 	sync()
 end

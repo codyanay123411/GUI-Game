@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 -- Private effective capabilities and direct-subject grants in the existing Realm drawer.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -91,7 +92,7 @@ function Controller.Start()
 					if pending or state.frozen then return end
 					pending = { subject = subject.rulerId, permission = permission, revision = subject.revision }
 					message = "Saving permission..."; render()
-					intent:FireServer("Set", subject.rulerId, permission, not granted, subject.revision)
+					MatchIntent.Send(intent, "Set", subject.rulerId, permission, not granted, subject.revision)
 				end)
 				y += height + 8
 			end
@@ -110,13 +111,14 @@ function Controller.Start()
 		end
 	end)
 	local militaryPush = remotes:WaitForChild("MilitaryServerEvent") :: RemoteEvent
-	militaryPush.OnClientEvent:Connect(function(kind, payload)
+	MatchIntent.ConnectPush(militaryPush, function(kind, payload)
 		if kind ~= "State" then return end
 		local ok, data = pcall(HttpService.JSONDecode, HttpService, payload)
 		if ok and typeof(data) == "table" then combatBonuses = data.combatBonuses; render() end
 	end)
 	main:GetPropertyChangedSignal("AbsoluteSize"):Connect(render)
 	Theme.PresentationChanged.Event:Connect(render)
-	intent:FireServer("Ready"); render()
+	MatchIntent.OnChanged(function() pending = nil;message = "";state = { self = {}, subjects = {} };combatBonuses = nil;render() end)
+	MatchIntent.Send(intent, "Ready"); render()
 end
 return Controller

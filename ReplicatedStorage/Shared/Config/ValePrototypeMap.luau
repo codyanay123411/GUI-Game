@@ -1,103 +1,60 @@
 --!strict
-
---[[
-	V0.1 test map preset: 16 irregular quads on a jittered 4x4 lattice.
-	This is one MapConfiguration, not a universal territory count.
-	Ownership is never stored here.
-
-	Vale adjacency is authored 8-neighbor (edge or corner) on this lattice,
-	not runtime proximity. Other maps may use different graphs.
-]]
-
-local NAMES = {
-	{ "westmere", "Westmere" },
-	{ "northvale", "Northvale" },
-	{ "greyfen", "Greyfen" },
-	{ "highmarch", "Highmarch" },
-	{ "ashwood", "Ashwood" },
-	{ "riverholt", "Riverholt" },
-	{ "frostfield", "Frostfield" },
-	{ "sunbarrow", "Sunbarrow" },
-	{ "mossbank", "Mossbank" },
-	{ "ironlea", "Ironlea" },
-	{ "duskfen", "Duskfen" },
-	{ "goldmere", "Goldmere" },
-	{ "stoneford", "Stoneford" },
-	{ "ravenreach", "Ravenreach" },
-	{ "lowmarsh", "Lowmarsh" },
-	{ "brightfen", "Brightfen" },
+-- Three authored islands. Adjacency is explicitly listed; terrain is decorative only.
+local territories = {
+	{ id = "westmere", displayName = "Westmere", island = "Westreach", terrain = "Forest", polygon = { { x = 55, y = 35 }, { x = 81.49, y = 21.37 }, { x = 110.18, y = 38.81 }, { x = 130.83, y = 15.01 }, { x = 155, y = 18 }, { x = 143.03, y = 68.32 }, { x = 145, y = 120 }, { x = 84.13, y = 120.55 }, { x = 25, y = 135 }, { x = 24.78, y = 104.41 }, { x = 53.35, y = 85.74 }, { x = 41.4, y = 55.99 } }, adjacentIds = { "northvale", "ashwood" }, baseGoldIncome = 5 },
+	{ id = "northvale", displayName = "Northvale", island = "Westreach", terrain = "Plain", polygon = { { x = 155, y = 18 }, { x = 187.17, y = 13.87 }, { x = 211.31, y = 39.86 }, { x = 240.77, y = 24.17 }, { x = 265, y = 35 }, { x = 248.11, y = 88.75 }, { x = 245, y = 145 }, { x = 196.7, y = 125.71 }, { x = 145, y = 120 }, { x = 143.03, y = 68.32 } }, adjacentIds = { "westmere", "greyfen", "riverholt" }, baseGoldIncome = 5 },
+	{ id = "greyfen", displayName = "Greyfen", island = "Westreach", terrain = "Mountain", polygon = { { x = 265, y = 35 }, { x = 291.52, y = 33.98 }, { x = 306.11, y = 61.7 }, { x = 332.57, y = 49.12 }, { x = 350, y = 62 }, { x = 335.61, y = 102.26 }, { x = 335, y = 145 }, { x = 290.0, y = 138.0 }, { x = 245, y = 145 }, { x = 248.11, y = 88.75 } }, adjacentIds = { "northvale", "frostfield", "ironlea" }, baseGoldIncome = 5 },
+	{ id = "frostfield", displayName = "Frostfield", island = "Westreach", terrain = "Forest", polygon = { { x = 350, y = 62 }, { x = 369.17, y = 69.28 }, { x = 364.37, y = 96.33 }, { x = 389.76, y = 94.17 }, { x = 395, y = 110 }, { x = 410.73, y = 135.82 }, { x = 395.64, y = 166.15 }, { x = 421.04, y = 185.3 }, { x = 420, y = 210 }, { x = 381.75, y = 171.94 }, { x = 335, y = 145 }, { x = 335.61, y = 102.26 } }, adjacentIds = { "greyfen", "duskfen" }, baseGoldIncome = 5 },
+	{ id = "ashwood", displayName = "Ashwood", island = "Westreach", terrain = "Plain", polygon = { { x = 25, y = 135 }, { x = 84.13, y = 120.55 }, { x = 145, y = 120 }, { x = 135.51, y = 179.71 }, { x = 140, y = 240 }, { x = 91.06, y = 243.15 }, { x = 45, y = 260 }, { x = 30.51, y = 226.42 }, { x = 47.24, y = 191.7 }, { x = 22.69, y = 164.86 } }, adjacentIds = { "westmere", "riverholt", "mossbank" }, baseGoldIncome = 5 },
+	{ id = "riverholt", displayName = "Riverholt", island = "Westreach", terrain = "Mountain", polygon = { { x = 145, y = 120 }, { x = 196.7, y = 125.71 }, { x = 245, y = 145 }, { x = 233.03, y = 201.89 }, { x = 235, y = 260 }, { x = 188.94, y = 243.15 }, { x = 140, y = 240 }, { x = 135.51, y = 179.71 } }, adjacentIds = { "northvale", "ashwood", "ironlea", "stoneford" }, baseGoldIncome = 5 },
+	{ id = "ironlea", displayName = "Ironlea", island = "Westreach", terrain = "Forest", polygon = { { x = 245, y = 145 }, { x = 290.0, y = 138.0 }, { x = 335, y = 145 }, { x = 320.57, y = 196.51 }, { x = 320, y = 250 }, { x = 276.68, y = 248.05 }, { x = 235, y = 260 }, { x = 233.03, y = 201.89 } }, adjacentIds = { "greyfen", "riverholt", "duskfen", "ravenreach" }, baseGoldIncome = 5 },
+	{ id = "duskfen", displayName = "Duskfen", island = "Westreach", terrain = "Plain", polygon = { { x = 335, y = 145 }, { x = 381.75, y = 171.94 }, { x = 420, y = 210 }, { x = 423.24, y = 241.08 }, { x = 396.63, y = 263.22 }, { x = 411.48, y = 292.16 }, { x = 400, y = 315 }, { x = 364.41, y = 277.07 }, { x = 320, y = 250 }, { x = 320.57, y = 196.51 } }, adjacentIds = { "frostfield", "ironlea", "lowmarsh" }, baseGoldIncome = 5 },
+	{ id = "mossbank", displayName = "Mossbank", island = "Westreach", terrain = "Mountain", polygon = { { x = 45, y = 260 }, { x = 91.06, y = 243.15 }, { x = 140, y = 240 }, { x = 154.45, y = 299.13 }, { x = 155, y = 360 }, { x = 138.82, y = 372.97 }, { x = 117.63, y = 355.28 }, { x = 106.52, y = 378.37 }, { x = 90, y = 375 }, { x = 69.02, y = 346.08 }, { x = 78.26, y = 309.31 }, { x = 48.83, y = 289.0 } }, adjacentIds = { "ashwood", "stoneford" }, baseGoldIncome = 5 },
+	{ id = "stoneford", displayName = "Stoneford", island = "Westreach", terrain = "Forest", polygon = { { x = 140, y = 240 }, { x = 188.94, y = 243.15 }, { x = 235, y = 260 }, { x = 254.38, y = 326.23 }, { x = 260, y = 395 }, { x = 227.75, y = 393.74 }, { x = 208.46, y = 364.12 }, { x = 176.94, y = 374.69 }, { x = 155, y = 360 }, { x = 154.45, y = 299.13 } }, adjacentIds = { "riverholt", "mossbank", "ravenreach" }, baseGoldIncome = 5 },
+	{ id = "ravenreach", displayName = "Ravenreach", island = "Westreach", terrain = "Plain", polygon = { { x = 235, y = 260 }, { x = 276.68, y = 248.05 }, { x = 320, y = 250 }, { x = 329.49, y = 299.65 }, { x = 325, y = 350 }, { x = 311.92, y = 370.0 }, { x = 283.15, y = 363.16 }, { x = 278.93, y = 390.41 }, { x = 260, y = 395 }, { x = 254.38, y = 326.23 } }, adjacentIds = { "ironlea", "stoneford", "lowmarsh" }, baseGoldIncome = 5 },
+	{ id = "lowmarsh", displayName = "Lowmarsh", island = "Westreach", terrain = "Mountain", polygon = { { x = 320, y = 250 }, { x = 364.41, y = 277.07 }, { x = 400, y = 315 }, { x = 395.12, y = 340.63 }, { x = 365.0, y = 348.06 }, { x = 371.35, y = 376.35 }, { x = 355, y = 390 }, { x = 339.4, y = 384.2 }, { x = 349.5, y = 361.0 }, { x = 326.3, y = 363.4 }, { x = 325, y = 350 }, { x = 329.49, y = 299.65 } }, adjacentIds = { "duskfen", "ravenreach" }, baseGoldIncome = 5 },
+	{ id = "highmarch", displayName = "Highmarch", island = "Sunward", terrain = "Forest", polygon = { { x = 590, y = 30 }, { x = 608.9, y = 16.21 }, { x = 632.78, y = 33.1 }, { x = 646.12, y = 9.33 }, { x = 665, y = 12 }, { x = 650.55, y = 72.65 }, { x = 650, y = 135 }, { x = 600.72, y = 140.73 }, { x = 555, y = 160 }, { x = 556.11, y = 121.26 }, { x = 586.1, y = 94.48 }, { x = 575.19, y = 58.08 } }, adjacentIds = { "sunbarrow", "dawnwatch" }, baseGoldIncome = 5 },
+	{ id = "sunbarrow", displayName = "Sunbarrow", island = "Sunward", terrain = "Plain", polygon = { { x = 665, y = 12 }, { x = 694.31, y = 11.82 }, { x = 711.44, y = 40.3 }, { x = 740.26, y = 28.42 }, { x = 760, y = 42 }, { x = 748.02, y = 105.45 }, { x = 750, y = 170 }, { x = 702.31, y = 145.89 }, { x = 650, y = 135 }, { x = 650.55, y = 72.65 } }, adjacentIds = { "highmarch", "goldmere", "amberwood" }, baseGoldIncome = 5 },
+	{ id = "goldmere", displayName = "Goldmere", island = "Sunward", terrain = "Mountain", polygon = { { x = 760, y = 42 }, { x = 779.01, y = 28.46 }, { x = 802.62, y = 45.67 }, { x = 816.2, y = 22.08 }, { x = 835, y = 25 }, { x = 849.44, y = 81.59 }, { x = 850, y = 140 }, { x = 797.99, y = 148.3 }, { x = 750, y = 170 }, { x = 748.02, y = 105.45 } }, adjacentIds = { "sunbarrow", "brightfen", "sunspire" }, baseGoldIncome = 5 },
+	{ id = "brightfen", displayName = "Brightfen", island = "Sunward", terrain = "Forest", polygon = { { x = 835, y = 25 }, { x = 861.32, y = 33.14 }, { x = 867.06, y = 64.63 }, { x = 896.89, y = 61.71 }, { x = 910, y = 80 }, { x = 928.44, y = 111.08 }, { x = 916.07, y = 147.24 }, { x = 943.67, y = 170.44 }, { x = 945, y = 200 }, { x = 901.24, y = 164.08 }, { x = 850, y = 140 }, { x = 849.44, y = 81.59 } }, adjacentIds = { "goldmere", "eastcliff" }, baseGoldIncome = 5 },
+	{ id = "dawnwatch", displayName = "Dawnwatch", island = "Sunward", terrain = "Plain", polygon = { { x = 555, y = 160 }, { x = 600.72, y = 140.73 }, { x = 650, y = 135 }, { x = 666.92, y = 201.47 }, { x = 670, y = 270 }, { x = 623.13, y = 275.76 }, { x = 580, y = 295 }, { x = 564.15, y = 258.84 }, { x = 579.53, y = 221.08 }, { x = 553.87, y = 192.32 } }, adjacentIds = { "highmarch", "amberwood", "reedhaven" }, baseGoldIncome = 5 },
+	{ id = "amberwood", displayName = "Amberwood", island = "Sunward", terrain = "Mountain", polygon = { { x = 650, y = 135 }, { x = 702.31, y = 145.89 }, { x = 750, y = 170 }, { x = 764.45, y = 231.67 }, { x = 765, y = 295 }, { x = 719.28, y = 275.73 }, { x = 670, y = 270 }, { x = 666.92, y = 201.47 } }, adjacentIds = { "sunbarrow", "dawnwatch", "sunspire", "cedarfall" }, baseGoldIncome = 5 },
+	{ id = "sunspire", displayName = "Sunspire", island = "Sunward", terrain = "Forest", polygon = { { x = 750, y = 170 }, { x = 797.99, y = 148.3 }, { x = 850, y = 140 }, { x = 840.5, y = 207.24 }, { x = 845, y = 275 }, { x = 803.3, y = 278.21 }, { x = 765, y = 295 }, { x = 764.45, y = 231.67 } }, adjacentIds = { "goldmere", "amberwood", "eastcliff", "whitecape" }, baseGoldIncome = 5 },
+	{ id = "eastcliff", displayName = "Eastcliff", island = "Sunward", terrain = "Plain", polygon = { { x = 850, y = 140 }, { x = 901.24, y = 164.08 }, { x = 945, y = 200 }, { x = 949.73, y = 234.72 }, { x = 924.15, y = 261.99 }, { x = 940.4, y = 293.27 }, { x = 930, y = 320 }, { x = 890.78, y = 291.31 }, { x = 845, y = 275 }, { x = 840.5, y = 207.24 } }, adjacentIds = { "brightfen", "sunspire", "gullpoint" }, baseGoldIncome = 5 },
+	{ id = "reedhaven", displayName = "Reedhaven", island = "Sunward", terrain = "Mountain", polygon = { { x = 580, y = 295 }, { x = 623.13, y = 275.76 }, { x = 670, y = 270 }, { x = 691.83, y = 335.98 }, { x = 700, y = 405 }, { x = 681.85, y = 420.54 }, { x = 656.14, y = 405.92 }, { x = 644.46, y = 430.89 }, { x = 625, y = 430 }, { x = 603.86, y = 395.05 }, { x = 613.48, y = 354.34 }, { x = 583.71, y = 328.26 } }, adjacentIds = { "dawnwatch", "cedarfall" }, baseGoldIncome = 5 },
+	{ id = "cedarfall", displayName = "Cedarfall", island = "Sunward", terrain = "Forest", polygon = { { x = 670, y = 270 }, { x = 719.28, y = 275.73 }, { x = 765, y = 295 }, { x = 776.98, y = 367.02 }, { x = 775, y = 440 }, { x = 750.19, y = 438.36 }, { x = 740.75, y = 409.67 }, { x = 714.29, y = 419.39 }, { x = 700, y = 405 }, { x = 691.83, y = 335.98 } }, adjacentIds = { "amberwood", "reedhaven", "whitecape" }, baseGoldIncome = 5 },
+	{ id = "whitecape", displayName = "Whitecape", island = "Sunward", terrain = "Plain", polygon = { { x = 765, y = 295 }, { x = 803.3, y = 278.21 }, { x = 845, y = 275 }, { x = 854.49, y = 334.71 }, { x = 850, y = 395 }, { x = 833.63, y = 415.32 }, { x = 803.56, y = 407.7 }, { x = 795.85, y = 435.65 }, { x = 775, y = 440 }, { x = 776.98, y = 367.02 } }, adjacentIds = { "sunspire", "cedarfall", "gullpoint" }, baseGoldIncome = 5 },
+	{ id = "gullpoint", displayName = "Gullpoint", island = "Sunward", terrain = "Mountain", polygon = { { x = 845, y = 275 }, { x = 890.78, y = 291.31 }, { x = 930, y = 320 }, { x = 931.67, y = 347.61 }, { x = 904.22, y = 364.22 }, { x = 917.49, y = 391.17 }, { x = 905, y = 410 }, { x = 887.23, y = 414.48 }, { x = 879.27, y = 389.51 }, { x = 860.81, y = 405.2 }, { x = 850, y = 395 }, { x = 854.49, y = 334.71 } }, adjacentIds = { "eastcliff", "whitecape" }, baseGoldIncome = 5 },
+	{ id = "saltmere", displayName = "Saltmere", island = "Southcrown", terrain = "Forest", polygon = { { x = 280, y = 565 }, { x = 301.54, y = 545.58 }, { x = 332.98, y = 555.68 }, { x = 346.46, y = 527.8 }, { x = 370, y = 525 }, { x = 358.03, y = 574.3 }, { x = 360, y = 625 }, { x = 305.88, y = 630.69 }, { x = 255, y = 650 }, { x = 253.37, y = 623.66 }, { x = 280.72, y = 608.62 }, { x = 267.53, y = 582.57 } }, adjacentIds = { "thornbay", "pinehaven" }, baseGoldIncome = 5 },
+	{ id = "thornbay", displayName = "Thornbay", island = "Southcrown", terrain = "Plain", polygon = { { x = 370, y = 525 }, { x = 402.79, y = 523.22 }, { x = 425.42, y = 550.93 }, { x = 456.25, y = 537.42 }, { x = 480, y = 550 }, { x = 487.0, y = 600.0 }, { x = 480, y = 650 }, { x = 421.43, y = 630.65 }, { x = 360, y = 625 }, { x = 358.03, y = 574.3 } }, adjacentIds = { "saltmere", "crownridge", "mistvale" }, baseGoldIncome = 5 },
+	{ id = "crownridge", displayName = "Crownridge", island = "Southcrown", terrain = "Mountain", polygon = { { x = 480, y = 550 }, { x = 508.43, y = 532.92 }, { x = 541.72, y = 546.64 }, { x = 562.86, y = 520.15 }, { x = 590, y = 520 }, { x = 580.51, y = 574.68 }, { x = 585, y = 630 }, { x = 531.19, y = 633.12 }, { x = 480, y = 650 }, { x = 487.0, y = 600.0 } }, adjacentIds = { "thornbay", "seabreak", "southwatch" }, baseGoldIncome = 5 },
+	{ id = "seabreak", displayName = "Seabreak", island = "Southcrown", terrain = "Forest", polygon = { { x = 590, y = 520 }, { x = 622.02, y = 525.95 }, { x = 637.19, y = 558.13 }, { x = 670.13, y = 552.24 }, { x = 690, y = 570 }, { x = 705.76, y = 597.32 }, { x = 690.6, y = 628.66 }, { x = 716.06, y = 649.23 }, { x = 715, y = 675 }, { x = 652.29, y = 645.89 }, { x = 585, y = 630 }, { x = 580.51, y = 574.68 } }, adjacentIds = { "crownridge", "pearlshore" }, baseGoldIncome = 5 },
+	{ id = "pinehaven", displayName = "Pinehaven", island = "Southcrown", terrain = "Plain", polygon = { { x = 255, y = 650 }, { x = 305.88, y = 630.69 }, { x = 360, y = 625 }, { x = 379.34, y = 681.01 }, { x = 385, y = 740 }, { x = 366.85, y = 755.54 }, { x = 341.14, y = 740.92 }, { x = 329.46, y = 765.89 }, { x = 310, y = 765 }, { x = 286.48, y = 736.68 }, { x = 292.58, y = 698.44 }, { x = 261.34, y = 679.47 } }, adjacentIds = { "saltmere", "mistvale" }, baseGoldIncome = 5 },
+	{ id = "mistvale", displayName = "Mistvale", island = "Southcrown", terrain = "Mountain", polygon = { { x = 360, y = 625 }, { x = 421.43, y = 630.65 }, { x = 480, y = 650 }, { x = 470.5, y = 717.24 }, { x = 475, y = 785 }, { x = 445.78, y = 780.45 }, { x = 433.11, y = 749.52 }, { x = 402.57, y = 756.61 }, { x = 385, y = 740 }, { x = 379.34, y = 681.01 } }, adjacentIds = { "thornbay", "pinehaven", "southwatch" }, baseGoldIncome = 5 },
+	{ id = "southwatch", displayName = "Southwatch", island = "Southcrown", terrain = "Forest", polygon = { { x = 480, y = 650 }, { x = 531.19, y = 633.12 }, { x = 585, y = 630 }, { x = 599.44, y = 686.59 }, { x = 600, y = 745 }, { x = 567.74, y = 764.77 }, { x = 529.79, y = 753.82 }, { x = 505.88, y = 782.47 }, { x = 475, y = 785 }, { x = 470.5, y = 717.24 } }, adjacentIds = { "crownridge", "mistvale", "pearlshore" }, baseGoldIncome = 5 },
+	{ id = "pearlshore", displayName = "Pearlshore", island = "Southcrown", terrain = "Plain", polygon = { { x = 585, y = 630 }, { x = 652.29, y = 645.89 }, { x = 715, y = 675 }, { x = 708.76, y = 703.36 }, { x = 677.29, y = 713.46 }, { x = 682.53, y = 744.0 }, { x = 665, y = 760 }, { x = 644.78, y = 764.57 }, { x = 633.47, y = 739.38 }, { x = 613.38, y = 755.27 }, { x = 600, y = 745 }, { x = 599.44, y = 686.59 } }, adjacentIds = { "seabreak", "southwatch" }, baseGoldIncome = 5 },
 }
-
--- 5x5 lattice (map units). Interior jitter keeps quads irregular without gaps.
-local GRID: { { { number } } } = {
-	{ { 0, 0 }, { 198, 12 }, { 402, -6 }, { 604, 10 }, { 800, 2 } },
-	{ { 10, 158 }, { 190, 172 }, { 408, 150 }, { 592, 166 }, { 790, 154 } },
-	{ { -4, 318 }, { 204, 302 }, { 396, 324 }, { 610, 308 }, { 804, 316 } },
-	{ { 8, 472 }, { 186, 488 }, { 414, 458 }, { 598, 478 }, { 792, 464 } },
-	{ { 2, 640 }, { 208, 628 }, { 390, 642 }, { 606, 630 }, { 800, 640 } },
-}
-
-local function pt(col: number, row: number): { x: number, y: number }
-	local p = GRID[row][col]
-	return { x = p[1], y = p[2] }
-end
-
-local function cellVerts(col: number, row: number)
-	return {
-		pt(col, row),
-		pt(col + 1, row),
-		pt(col + 1, row + 1),
-		pt(col, row + 1),
-	}
-end
-
-local function idAt(col: number, row: number): string?
-	if col < 1 or col > 4 or row < 1 or row > 4 then
-		return nil
-	end
-	return NAMES[(row - 1) * 4 + col][1]
-end
-
--- Immediate 8-neighbors: N, NE, E, SE, S, SW, W, NW (skip out-of-bounds).
-local NEIGHBOR_OFFSETS = {
-	{ 0, -1 },
-	{ 1, -1 },
-	{ 1, 0 },
-	{ 1, 1 },
-	{ 0, 1 },
-	{ -1, 1 },
-	{ -1, 0 },
-	{ -1, -1 },
-}
-
-local territories = {}
-for row = 1, 4 do
-	for col = 1, 4 do
-		local adj = {}
-		for _, offset in NEIGHBOR_OFFSETS do
-			local neighborId = idAt(col + offset[1], row + offset[2])
-			if neighborId then
-				table.insert(adj, neighborId)
+-- Exposed authored polygon edges are coasts. Matching shared edges are inland.
+-- This creates coast metadata, never movement adjacency.
+for _, t in territories do
+	t.coastEdges = {}
+	for i, a in t.polygon do
+		local b = t.polygon[i % #t.polygon + 1]
+		local shared = false
+		for _, other in territories do
+			if other == t then continue end
+			for j, c in other.polygon do
+				local d = other.polygon[j % #other.polygon + 1]
+				if a.x == d.x and a.y == d.y and b.x == c.x and b.y == c.y then shared = true end
 			end
 		end
-		table.insert(territories, {
-			id = NAMES[(row - 1) * 4 + col][1],
-			displayName = NAMES[(row - 1) * 4 + col][2],
-			polygon = cellVerts(col, row),
-			adjacentIds = adj,
-			baseGoldIncome = 10,
-		})
+		if not shared then table.insert(t.coastEdges, { a = a, b = b }) end
 	end
 end
-
-local ValePrototypeMap = {
-	mapId = "vale_prototype_16",
-	displayName = "The Vale (Prototype)",
-	territories = territories,
-	unclaimedDefenders = 300,
+return {
+	mapId = "vale_coastlands_32", displayName = "The Vale · Three Crowns",
+	territories = territories, unclaimedDefenders = 300,
+	waterRegions = { { { x = -25, y = -35 }, { x = 995, y = -35 }, { x = 995, y = 835 }, { x = -25, y = 835 } } },
 	victory = { type = "Domination", territoryControlPercent = 0.70 },
-	-- Title requirements use the map-scaled default (16 -> 2/100, 5/250, 10/500).
-
+	-- 32 conquerable definitions: Duke 4/200, King 10/500, Emperor 20/1000.
 }
-
-return ValePrototypeMap

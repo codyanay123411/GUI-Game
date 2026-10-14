@@ -9,7 +9,10 @@ export type Point = { x: number, y: number }
 export type TerritoryDefinition = {
 	id: TerritoryId,
 	displayName: string,
+	island: string?,
+	terrain: string?,
 	polygon: { Point },
+	coastEdges: { { a: Point, b: Point } }?,
 	adjacentIds: { TerritoryId },
 	-- Gold per minute for the direct owner. EconomyService converts this to the payout tick.
 	baseGoldIncome: number,
@@ -32,6 +35,7 @@ export type MapDefinition = {
 	mapId: MapId,
 	displayName: string,
 	territories: { TerritoryDefinition },
+	waterRegions: { { Point } }?,
 	-- Optional explicit per-rank balance overrides; absent ranks use derived defaults.
 	titleRequirements: { TitleRequirementOverride }?,
 	unclaimedDefenders: number?,

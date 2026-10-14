@@ -1,5 +1,36 @@
 # V0.5 Playtest Verification Backlog
 
+## Province building markers — 2026-10-14
+
+[Evidence](BUILDINGS_BALANCE_PROPOSAL.md#province-building-markers--2026-10-14).
+
+| Scenario | Agent evidence | Remaining status |
+| --- | --- | --- |
+| BUILDING-MARKER-UX | Normal/compact and drawer views, native marker select/pan, hover/damage/ruin; compact small slots simplify | DIRECTOR VERIFICATION REQUIRED — silhouette recognition/colors/compact hover readability; touch has no hover. |
+| BUILDING-MARKER-MULTI | One actual client, authoritative synthetic purchases/Repair/relocation/ruin/reset; synthetic cosmetic front/transport coexistence | DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG: multiple real clients receiving simultaneous capture/relocation/restart; not a current pass. |
+
+## Final building stage — 2026-10-14
+
+[Evidence](BUILDINGS_BALANCE_PROPOSAL.md#final-building-stage--capital-damagerepair-and-elimination--2026-10-14).
+
+| Scenario | Agent evidence | Remaining status |
+| --- | --- | --- |
+| CAPITAL-UX | Native Build/Repair/relocate/upgrade/Max, normal/compact UI | DIRECTOR VERIFICATION REQUIRED — pacing/readability. |
+| CAPITAL-MULTI | Solo client plus synthetic server actors; actual combat capture/retirement/reset and client stale guards | DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG: real concurrent/crossed Capitals, nested/autonomous capture and naval landing delivery. |
+| CAPITAL-REJOIN | UserId tombstone gate and reset lifecycle verified in source/server fixtures | NOT TESTABLE IN CURRENT ENVIRONMENT — same published real account reconnect; no actual reconnect pass. |
+
+
+## Town/Castle stage two — 2026-10-14
+
+Evidence: [stage-two report](BUILDINGS_BALANCE_PROPOSAL.md#stage-two--towns-and-castles-implemented--2026-10-14).
+
+| Scenario | Current evidence | Remaining status / next step |
+| --- | --- | --- |
+| BUILD-TC-UX | Native Solo purchases/recruitment, normal/compact rows, Max and over-cap screenshots | DIRECTOR VERIFICATION REQUIRED — readability and500-start early-conquest pacing. |
+| BUILD-TC-MULTI | Synthetic simultaneous backing/cancellation/zero defense/casualty conservation; one actual client request guards | DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG: actual multi-client naval arrival, nested betrayal Castle and disconnect delivery. No current multi-client pass claimed. |
+| BUILD-TC-NET | Correlated duplicate/stale/invalid requests checked in Solo | NOT TESTABLE IN CURRENT ENVIRONMENT — published accounts/network timing. |
+
+
 ## Prestige and map-scaled titles — 2026-10-13
 
 Evidence: [implementation report](OPENFRONT_PLAYABILITY_REVIEW.md#prestige-earning-and-map-scaled-titles--2026-10-13). Design approved; implementation/balance acceptance separate.
@@ -325,3 +356,21 @@ Current agent evidence in [GUI_UX_SPRINT.md](GUI_UX_SPRINT.md#playable-match--gu
 
 - **VASSAL-COMBAT-UX — DIRECTOR VERIFICATION REQUIRED:** own bonus wording/compact scrolling and uncapped balance; no human acceptance claimed.
 - **VASSAL-COMBAT-NET — DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG:** focused real-player offense/defense/result delivery under latency. Core mechanical integration, actual troop ledgers and private actor projection verified in one actual Solo client with synthetic hierarchy. Next: two-player combat, direct/subject-owned targets and own-only result modifier. [Evidence](OPENFRONT_PLAYABILITY_REVIEW.md#vassalage-combat-bonuses--2026-10-13).
+
+
+## Vale coastal/naval follow-up — 2026-10-13
+
+- **VALE-COAST-UX — DIRECTOR VERIFICATION REQUIRED:** human neck/coast readability, personal departure selection, transport-marker visibility and cosmetic versus authoritative ownership. Agent native/geometry evidence does not imply acceptance.
+- **VALE-NAVAL-NET — NOT TESTABLE IN CURRENT ENVIRONMENT:** published accounts/latency and physical touch/gamepad; actual three-client Studio authority/privacy/cancellation and disposable disconnect passed. Next: separately authorized published two-player departure/arrival/cancellation and final-map inspection. [Evidence](CONQUEST_VICTORY.md#vale-coastlands-naval-transport-and-conquest-fronts--2026-10-13).
+## Vale32 / shared restart / staff routing — 2026-10-13
+
+Current [evidence](CONQUEST_VICTORY.md#vale32-automatic-naval-and-shared-restart--2026-10-13) supersedes requester-only reserved replay as the active design, not its historical verification record.
+
+- **VALE32-UX — DIRECTOR VERIFICATION REQUIRED:** geography, coastal targeting, result fronts and shared-vote clarity at normal/compact desktop sizes; assess actual pacing/readability.
+- **RESTART-LATE — DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG:** confirm one actual late spectator arrives during final inspection, receives final state, votes and participates in reset. Attempt did not confirm arrival; pure join/threshold checks passed. Two actual shared resets and disconnect-triggered reset passed.
+- **STAFF-ROUTING — NOT TESTABLE IN CURRENT ENVIRONMENT:** published MemoryStore expiry/discovery and authorized/unauthorized public/private/reserved joining, failures/retry. Studio trusted-role/policy checks passed; no published API/teleport pass claimed. Requires deployed configuration and registered reserved credentials where applicable.
+- **VALE32-VISUAL-EDGES — DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG:** targeted revised pooled-front repulsion/disabled-animation runtime and reset-failure feedback injection; compiled/static checks are not runtime passes. Next: one bounded affected-branch fixture, without full-match rerun.
+## Farm stage one — 2026-10-14
+
+- **FARM-UX — DIRECTOR VERIFICATION REQUIRED:** normal/compact Build/Upgrade/Max readability, disabled reasons and low-income pacing. Agent native walkthrough and Solo synthetic authority checks passed; [current evidence](BUILDINGS_BALANCE_PROPOSAL.md#farm-stage-one--2026-10-14-implementation), not human acceptance.
+- **FARM-NET — NOT TESTABLE IN CURRENT ENVIRONMENT:** published-account latency/disconnect/reconnect and touch. Farm retention follows unchanged unclaim lifecycle; actual disconnect/multi-client Farm receipt delivery was not exercised here. Next: real owner leaves developed land, another owner receives intact Farm income, retry/stale purchase rejects without charges. No full-match rerun needed.

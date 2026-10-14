@@ -1,5 +1,15 @@
 # Architecture
 
+## Final building stage — 2026-10-14
+
+Director-approved Capital effects/prices, match-long foreign-border/naval-landing placement restriction, independent40–60% capture damage, exact half-price Repair, Capital elimination/personal surrender and restart clearing are implemented. Server Building/Economy/Military/Title/Territory/Hierarchy retain ownership; existing Build drawer owns presentation. Existing chat eligibility refresh is reused; no communications code change. Domination waits for ordered due captures; defeated troops have an explicit retired ledger. [Authoritative current rules/evidence and limitations](../AI/BUILDINGS_BALANCE_PROPOSAL.md#final-building-stage--capital-damagerepair-and-elimination--2026-10-14). Agent checks do not imply Director acceptance. Prior speculative relocation/damage-count/whole-Gold-repair/elimination suggestions are superseded.
+
+
+## Towns and Castles — 2026-10-14
+
+Director-approved stage two:500 starting troops/base personal cap; additive personal Town capacity and selected-province exact10-troop prices; retained over-cap troops; Castle exclusive available-reserve backing, linear partial strength and no backing casualties. Implemented through existing Building/Economy/Military authority and contextual Build drawer; Farms retained. Shared restart clears buildings; transfer/disconnect retains levels. Capital/damage/Repair/elimination remain later work. [Rules, changed files, actual checks and limitations](../AI/BUILDINGS_BALANCE_PROPOSAL.md#stage-two--towns-and-castles-implemented--2026-10-14). Agent verification is not Director acceptance; synthetic actors are not real multiplayer. No commit, push or publication.
+
+
 ## Repository / Studio coverage
 
 Audit: 2026-10-11, before workflow edits. Local main, origin/main and GitHub's advertised main matched ea3b0bc9497c4a90376aad0025920ce608695eca; working tree was clean. There were 317 tracked files and 77 production Luau sources, excluding generated Kohl modules. Workflow edits were local at audit completion and subsequently authorized for Git finalization; recheck status and remote refs on subsequent tasks.
@@ -14,6 +24,10 @@ Audit: 2026-10-11, before workflow edits. Local main, origin/main and GitHub's a
 | External Roblox | Kohl loader can auto-update/require asset 1868400649 (fallback InsertService asset 172732271); audio/font assets, native chat filtering/privacy, account/platform services | Vendor dumps ignored. Current external versions/permissions, real-account delivery and persistence/service state are not established by Git or saved-place source parity. |
 
 Ignore rules exclude places/locks, generated Kohl MainModule/MainModuleLegacy, caches, local editor state and throwaway logs; loader/READ_ME and project Luau stay tracked. No checked-in Rojo/project sync manifest, package manager, formatter/linter config or automated test runner was found. Script Sync is historically configured/tested, but current plugin settings were not independently confirmed. Script parity is not full DataModel coverage. “Not represented in Git” does not mean “not implemented.”
+
+### 2026-10-14 scoped implementation-finalization coverage
+
+The completed disk additions include Vale32 geography/naval/fronts, generation-isolated restart, buildings/Capital/capture lifecycle, passive building markers and staff/current-server browser.61 changed/new production sources were fingerprint-compared with stopped Studio (length and two independent normalized-source checks); all compiled. StarterPlayer.EnableMouseLockOption=false, reproduced by tracked PresentationBindings/early bootstrap. Authored StarterGui/DataModel/remotes, sync plugin setup, recovery archives and27 ignored place snapshots are not a tracked complete place export. Runtime-created map art/markers/fronts are code, not missing external production models. Latest snapshot hash is rechecked in [finalization evidence](../docs/verification/completed-implementation-finalization-2026-10-14.json), without claiming full current place/property equality. The earlier coverage table above remains a dated audit. /report/Players/warnings are planning only.
 
 ### Available checks and commands
 
@@ -296,3 +310,30 @@ Diplomacy owns actual Root/Domain pairs and endpoint hierarchy/subtree signature
 One measured themed PoliticalPermissionsController section extends Realm. Existing map/Military review handles explicit betrayal and post-penalty reservation. PlayerRelevantView's optional personal actor supplements root attention filtering without foreign/private details. Communications code/audiences unchanged, including independent-pair Allies eligibility.
 
 Coverage is affected-source-only: scoped Realm Main ScrollingFrame/order baseline, guarded source comparison, preserved originals in PoliticalPermissionsRecovery_20261013, targeted runtime evidence and final parity. Older snapshots remain historical; no whole-place/published claim. [Evidence and gaps](../AI/OPENFRONT_PLAYABILITY_REVIEW.md#liege-permissions-autonomy-and-betrayal--2026-10-13).
+
+
+## Vale naval/map integration — 2026-10-13
+
+`ValePrototypeMap` owns authored land/coast/water definitions, retaining16 provinces. `NavalRoutes` is pure route geometry; `WarfareService` owns authenticated launch/target/domain/receipt validation and travel metadata, `MilitaryService` owns actual reservations/lock, bounded travel evaluation, arrival decision window and combat. `MapGeometry`/`MapTriangles` triangulate/clip concave polygons; `MapBattleEffects` is cosmetic in the existing map WorldModel/camera, driven by public travel and actor-scoped decided results. No new authority service or admin mutation remote. Existing `MapContextController`, Military, themes and attention paths remain the sole workflows. [Scope, coverage and evidence](../AI/CONQUEST_VICTORY.md#vale-coastlands-naval-transport-and-conquest-fronts--2026-10-13).
+
+
+### Vale32 and match generations — 2026-10-13
+
+Current map is `vale_coastlands_32`:32 authored conquerable definitions, three islands, explicit land links and coast/water geometry. NavalRoutes chooses cached geometric candidates/shortest personal source; Warfare revalidates, Military owns locked travel/arrival/combat, existing MapContext is the single attack review. MapGeography is static decorative art with bounded water motion; MapBattleEffects caches province triangles/reuses front wedges in the same WorldModel/camera. No terrain mechanics or new military disclosure.
+
+MatchState owns generation/freeze/reset gates; MatchReplayService now coordinates same-server voting/resets (historical filename), with no teleport route. Each existing service clears/reseeds its owned state through ResetMatch; Start is never rerun. Prestige/council schedules remain installed through freeze; no duplicated connections/channels/loops. MatchIntent tags competitive mutations, rejects stale server pushes and synchronously clears old presentation before new snapshots. Synchronous generation cleanup is necessary because deferred Bindable callbacks can erase fresh state. Native chat channels carry generation tags while their audience/filter rules stay unchanged. Recovery assets/settings/staff remain outside reset.
+
+StaffServerService's MemoryStore/Teleport adapter is independent of competitive generations and GameTester mutations. Server-only authorization/credentials and bounded discovery follow ADMIN_PERMISSIONS. [System evidence](../AI/CONQUEST_VICTORY.md#vale32-automatic-naval-and-shared-restart--2026-10-13) records affected-source coverage, current checks and platform gaps; this is not a whole-place/cloud parity claim.
+### Farm-stage ownership and income — 2026-10-14
+
+BuildingService owns province Farm levels/receipts only; EconomyService owns spending, income/payout/remainders through one installed per-province income provider. Territory retains ownership/revision authority. Buildings remotes expose public level/revision State and actor-only FarmResult; mutation uses current generation, personal identity/owner, expected level/revision and idempotent sequence. MapContextController uses the existing drawer, MapContextState read-only Buildings/own Economy mirrors and shared theme; no new panel/admin mutation route. MatchReplayService clears building state before Territory/Economy reseeding, publishes once after reset. No ruler-removal Farm deletion. Transfers intact pending Repair rules. [Evidence](../AI/BUILDINGS_BALANCE_PROPOSAL.md#farm-stage-one--2026-10-14-implementation).
+
+### Province building markers — 2026-10-14
+
+BuildingMarkerLayout owns pure interior/slot placement; MapBuildingMarkers is read-only presentation from the existing public Buildings snapshot (levels/damage/ruin), not private Capital metadata or military totals. TerritoryMapController.ProjectMapPoint uses the existing camera/viewport. Passive GUI symbols are culled/simplified by projected size and use no new mutation route or camera. Fixed slots update on building/generation/camera/theme events; Start guards repeat mounts, reset hides stale slots. Actor-scoped Military presentation suppresses symbol detail while existing WorldModel fronts/ships continue. [Evidence/limits](../AI/BUILDINGS_BALANCE_PROPOSAL.md#province-building-markers--2026-10-14).
+
+### Native current-server browser and engine input default — 2026-10-14
+
+CurrentServerKohlClient wraps the installed native Kohl Servers RenderItem/list with a local current row; AdminService clones this project addon into supported copied folders. StaffServerService exposes safe session metadata on ReplicatedStorage; reserved credentials, registry lookup and joining remain server-only under existing staff gates. No vendor source/new browser or admin mutation route. Current Studio dictionary key has no teleport destination. [Compatibility and verification](../AI/ADMIN_PERMISSIONS.md#native-kohl-current-server-row--2026-10-14).
+
+Script Sync covers Luau, not arbitrary StarterPlayer property serialization. PresentationBindings.EnableMouseLockOption=false is the tracked input default; thin server bootstrap applies it before player startup. Studio edit StarterPlayer.EnableMouseLockOption is also set false and can be preserved in an ignored local place export. Existing Tab/map controls stay intact. Fresh Solo player property and native Shift input were checked; this is not a published/client-device matrix.

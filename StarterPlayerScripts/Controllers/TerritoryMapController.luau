@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 
 --[[
 	Prototype map renderer and input. Displays server ownership; never mutates it.
@@ -107,7 +108,7 @@ function TerritoryMapController.Start()
 	end
 	local legend = caption("OwnershipLegend")
 	legend.Position = UDim2.fromOffset(8, 4); legend.Size = UDim2.new(1, -94, 0, 44)
-	legend.Text = "Fill: realm · Rim: direct owner\n+ Eligible (corners count)\nPrediction · Server rechecks"
+	legend.Text = "Fill: realm - Rim: direct owner\n+: eligible - Blue: water\nFronts are cosmetic; owner updates after result"
 	local decision = caption("ProvinceDecision")
 	decision.Position = UDim2.new(0, 8, 1, -92); decision.Size = UDim2.new(1, -16, 0, 88)
 	decision.Text = "Select a province for its owner, realm and action reason."
@@ -175,6 +176,11 @@ function TerritoryMapController.Start()
 
 	local world = Instance.new("WorldModel")
 	world.Parent = viewport
+	local sea = Instance.new("Part")
+	sea.Name = "AuthoredWater";sea.Anchored = true;sea.CanCollide = false;sea.CanQuery = false;sea.CanTouch = false;sea.CastShadow = false
+	sea.Size = Vector3.new(spanX + 80,2,spanY + 80);sea.Position = Vector3.new(midX,-8,midY)
+	sea.Color = Color3.fromRGB(22,61,78);sea.Material = Enum.Material.SmoothPlastic;sea.Parent = world
+	require(script.Parent.MapGeography).Start(world,mapDef)
 	local folder = Instance.new("Folder")
 	folder.Name = "Territories"
 	folder.Parent = world
@@ -211,7 +217,7 @@ function TerritoryMapController.Start()
 		rimParts[t.id] = MapTriangles.DrawQuad(rim, t.polygon, RealmColors.Unclaimed, t.id .. "rim", THICK, THICK * 0.2)
 		fillParts[t.id] = MapTriangles.DrawQuad(
 			fill,
-			scaleFromCentroid(t.polygon, 0.18),
+			scaleFromCentroid(t.polygon, 0.08),
 			RealmColors.Unclaimed,
 			t.id .. "fill",
 			THICK,
@@ -264,6 +270,11 @@ function TerritoryMapController.Start()
 		return RealmColors.ByIndex(1)
 	end
 
+	require(script.Parent.MapBattleEffects).Start(world,mapDef,gui,function(id)
+		local ruler = rulerOf(id)
+		return ownerColor(id), ownerColor(if ruler then ruler.rootRulerId else id)
+	end)
+
 	local function cameraHeight(): number
 		local size = viewport.AbsoluteSize
 		local aspect = if size.Y > 0 then size.X / size.Y else 1
@@ -315,6 +326,14 @@ function TerritoryMapController.Start()
 		if not label then return nil end
 		return mapStage.AbsolutePosition + Vector2.new(label.Position.X.Offset, label.Position.Y.Offset)
 	end
+	function TerritoryMapController.ProjectMapPoint(x: number,y: number): Vector2?
+		local size = viewport.AbsoluteSize
+		if size.X < 1 or size.Y < 1 then return nil end
+		local halfZ = cameraHeight() * math.tan(math.rad(FOV * .5))
+		local halfX = halfZ * (if size.Y > 0 then size.X / size.Y else 1)
+		return viewport.AbsolutePosition-mapStage.AbsolutePosition + Vector2.new((.5+(x-lookX)/(2*halfX))*size.X,(.5+(y-lookZ)/(2*halfZ))*size.Y)
+	end
+	require(script.Parent.MapBuildingMarkers).Start(mapStage,mapDef,gui,TerritoryMapController.ProjectMapPoint,TerritoryMapController.CameraChanged)
 	function TerritoryMapController.Focus(territoryId: string): boolean
 		local definition = byId[territoryId]
 		if not definition then return false end
@@ -393,10 +412,10 @@ function TerritoryMapController.Start()
 		local ended = gui:GetAttribute("MatchEnded") == true
 		local now = workspace:GetServerTimeNow()
 		for _, definition in mapDef.territories do
-			local context = Resolver.Resolve(State, mapDef.territories, definition.id, player.UserId, ended, now)
-			eligibilityLabels[definition.id]:SetAttribute("Eligible", context and context.canDeclare == true)
+			local context = Resolver.Resolve(State, mapDef.territories, definition.id, player.UserId, ended, now, mapDef)
+			eligibilityLabels[definition.id]:SetAttribute("Eligible", context and (context.canDeclare == true or context.canNaval == true))
 		end
-		local context = selectedId and Resolver.Resolve(State, mapDef.territories, selectedId, player.UserId, ended, now)
+		local context = selectedId and Resolver.Resolve(State, mapDef.territories, selectedId, player.UserId, ended, now, mapDef)
 		decision.Text = if context then Resolver.SelectionText(context) else (if ended then "Match ended · Select a province to inspect final ownership." else "Select a province for its owner, realm and action reason.")
 		applyCamera()
 	end
@@ -442,7 +461,7 @@ function TerritoryMapController.Start()
 		colorize()
 	end
 
-	territoryPush.OnClientEvent:Connect(function(kind: any, payload: any)
+	MatchIntent.ConnectPush(territoryPush, function(kind: any, payload: any)
 		if kind == "State" then
 			local data = decodeState(payload)
 			if data then
@@ -453,7 +472,7 @@ function TerritoryMapController.Start()
 		end
 	end)
 
-	hierarchyPush.OnClientEvent:Connect(function(kind: any, payload: any)
+	MatchIntent.ConnectPush(hierarchyPush, function(kind: any, payload: any)
 		if kind == "State" then
 			local data = decodeState(payload)
 			if data then
@@ -643,7 +662,13 @@ function TerritoryMapController.Start()
 	viewport:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyCamera)
 	Theme.PresentationChanged.Event:Connect(applyCamera)
 	applyCamera()
-	territoryIntent:FireServer("Ready")
+	MatchIntent.OnChanged(function()
+		selectedId = nil;ownership = {};hierarchyById = {};colorIndex = {}
+		gui.PresentationState.SelectedTerritoryId.Value = ""
+		dragging = false;dragStart = nil;colorize()
+		gui.ResultToast.Visible = false
+	end)
+	MatchIntent.Send(territoryIntent, "Ready")
 	print("[Territory] controller started; Ready sent")
 	colorize()
 	updateDecision()

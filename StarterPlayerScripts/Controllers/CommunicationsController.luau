@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TextChatService = game:GetService("TextChatService")
@@ -104,7 +105,7 @@ function Controller.Start()
 	end
 	Controller.OpenContext = selectContext
 	function Controller.OpenDirect(userId: number)
-		intent:FireServer("OpenDirect", userId)
+		MatchIntent.Send(intent, "OpenDirect", userId)
 	end
 	panel:GetPropertyChangedSignal("Visible"):Connect(function()
 		if panel.Visible and not observing then unread[selected] = 0; Controller.Acknowledged:Fire(selected); renderList() end
@@ -164,13 +165,13 @@ function Controller.Start()
 	TextChatService.MessageReceived:Connect(function(message)
 		local channel = message.TextChannel
 		if message.Status ~= Enum.TextChatMessageStatus.Success or not message.TextSource
-			or not channel or not channel:GetAttribute("CommunicationsContextId") then return end
+			or not channel or not channel:GetAttribute("CommunicationsContextId") or channel:GetAttribute("MatchGeneration") ~= MatchIntent.GetGeneration() then return end
 		local id = message.MessageId
 		pending[id] = message
 		received(id)
 		task.delay(30, function() pending[id], identity[id] = nil, nil end)
 	end)
-	push.OnClientEvent:Connect(function(action, data)
+	MatchIntent.ConnectPush(push, function(action, data)
 		if action == "Identity" and typeof(data) == "table" and typeof(data.messageId) == "string" then
 			identity[data.messageId] = data
 			received(data.messageId)
@@ -195,9 +196,11 @@ function Controller.Start()
 		local channel = channels:FindFirstChild(row.channelName)
 		if not channel or not channel:IsA("TextChannel") then status.Text = "Native channel unavailable."; return end
 		sending = true
+		local generation = MatchIntent.GetGeneration()
 		refresh()
 		task.spawn(function()
 			local ok, result = pcall(function() return channel:SendAsync(text) end)
+			if generation ~= MatchIntent.GetGeneration() then return end
 			sending = false
 			refresh()
 			if not ok or not result then
@@ -227,7 +230,7 @@ function Controller.Start()
 		contacts.Visible = not contacts.Visible
 		transcript.Visible = not contacts.Visible
 		for _, child in contacts:GetChildren() do if child:IsA("TextButton") then child:Destroy() end end
-		for i, contact in availableContacts do button(contacts, contact.name, (i - 1) * 26, function() intent:FireServer("OpenDirect", contact.userId) end) end
+		for i, contact in availableContacts do button(contacts, contact.name, (i - 1) * 26, function() MatchIntent.Send(intent, "OpenDirect", contact.userId) end) end
 		contacts.CanvasSize = UDim2.fromOffset(0, #availableContacts * 26)
 		if #availableContacts == 0 then status.Text = "No currently neighboring contact." end
 	end)
@@ -238,7 +241,12 @@ function Controller.Start()
 		refresh()
 	end)
 	muteButton.Activated:Connect(function() muted = not muted; refresh() end)
-	intent:FireServer("Ready")
+	MatchIntent.OnChanged(function()
+		rows, logs, shown, unread, identity, pending, seen, submitted, observerLog = {}, {}, {}, {}, {}, {}, {}, {}, {}
+		availableContacts = {};selected = "diplomatic";observing = false;sending = false
+		input.Text = "";renderList();refresh()
+	end)
+	MatchIntent.Send(intent, "Ready")
 	refresh()
 end
 return Controller

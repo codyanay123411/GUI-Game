@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
@@ -21,6 +22,7 @@ function Controller.Start()
 	local state: any = nil
 	local shown = false
 	local requestPending = false
+	local voted = false
 	local replayRevision = -1
 	local requestFloorRevision = -1
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
@@ -29,7 +31,7 @@ function Controller.Start()
 	inspectButton.Text = "Inspect final map"
 	local replay = Instance.new("TextButton")
 	replay.Name = "PlayAgainButton"
-	replay.Text = "Play Again"
+	replay.Text = "Vote to restart"
 	replay.ZIndex = inspectButton.ZIndex
 	Theme.applyPrimaryButton(replay, false)
 	replay.Parent = panel
@@ -53,14 +55,14 @@ function Controller.Start()
 	feedback.TextXAlignment = Enum.TextXAlignment.Left
 	feedback.TextYAlignment = Enum.TextYAlignment.Top
 	feedback.ZIndex = body.ZIndex
-	feedback.Text = "Request a fresh reserved match, starting with you alone. Other players stay here."
+	feedback.Text = "Vote to restart together. Everyone stays in this server."
 	Theme.applyText(feedback, "Caption")
 	feedback.Parent = content
-	local function replayEnabled(): boolean return state ~= nil and state.ended == true and not requestPending end
+	local function replayEnabled(): boolean return state ~= nil and state.ended == true and not requestPending and not voted end
 	local function styleReplay()
 		replay.Active = replayEnabled()
 		Theme.applyPrimaryButton(replay, replay.Active)
-		replay.Text = if requestPending then "Preparing…" else "Play Again"
+		replay.Text = if requestPending then "Restarting…" elseif voted then "Vote recorded" else "Vote to restart"
 	end
 	local function progress()
 		local root = View.LocalRootRulerId(State.hierarchy.rulers, player.UserId)
@@ -135,25 +137,27 @@ function Controller.Start()
 		if not replayEnabled() then return end
 		requestPending = true
 		requestFloorRevision = replayRevision
-		feedback.Text = "Requesting a new match. You can keep inspecting while the server responds."
+		feedback.Text = "Submitting your restart vote. Keep inspecting until the vote passes."
 		styleReplay(); layout()
-		intent:FireServer("PlayAgain")
+		MatchIntent.Send(intent, "PlayAgain")
 		-- Resynchronize only; never unlock or start a second transfer on a guessed timeout.
-		task.delay(12,function() if requestPending then intent:FireServer("Ready") end end)
+		task.delay(12,function() if requestPending then MatchIntent.Send(intent, "Ready") end end)
 	end)
 	gui.StrategyNavigation.MatchResult.Activated:Connect(function() if state and state.ended then overlay.Visible = true end end)
 	local push = remotes:WaitForChild("VictoryServerEvent") :: RemoteEvent
-	push.OnClientEvent:Connect(function(kind, payload)
+	MatchIntent.ConnectPush(push, function(kind, payload)
 		if kind == "ReplayStatus" then
 			local ok, status = pcall(function() return HttpService:JSONDecode(payload) end)
 			if not ok or typeof(status) ~= "table" or typeof(status.revision) ~= "number" or status.revision < replayRevision then return end
 			if requestPending and status.pending ~= true and status.revision <= requestFloorRevision then return end
 			replayRevision = status.revision
 			requestPending = status.pending == true
+			voted = status.voted == true
 			feedback.Text = (status.description or "") .. "\n\n" .. (status.message or "")
 			styleReplay(); layout()
 			return
 		end
+		if kind == "MatchReset" then return end
 		if kind ~= "State" then return end
 		local ok, decoded = pcall(function() return HttpService:JSONDecode(payload) end)
 		if not ok or typeof(decoded) ~= "table" then return end
@@ -165,7 +169,7 @@ function Controller.Start()
 		gui.StrategyTopbar:SetAttribute("DominationRequired", state.required)
 		progress()
 		styleReplay()
-		if not ended then return end
+		if not ended then shown = false; overlay.Visible = false; return end
 		local member = false
 		for _, ruler in state.members or {} do if ruler.userId == player.UserId then member = true end end
 		panel.Heading.Text = if state.winnerUserId == player.UserId then "VICTORY" elseif member then "REALM VICTORY" else "DEFEAT"
@@ -181,7 +185,14 @@ function Controller.Start()
 		for _, property in { "Text", "TextSize", "FontFace" } do label:GetPropertyChangedSignal(property):Connect(layout) end
 	end
 	for _, button in { inspectButton, replay } do button:GetPropertyChangedSignal("TextSize"):Connect(layout) end
-	intent:FireServer("Ready")
+	MatchIntent.OnChanged(function()
+		state = nil;shown = false;requestPending = false;voted = false
+		replayRevision, requestFloorRevision = -1, -1
+		overlay.Visible = false;gui:SetAttribute("MatchEnded", false)
+		gui.StrategyNavigation.MatchResult.Visible = false
+		feedback.Text = "New match started in this server.";styleReplay();layout()
+	end)
+	MatchIntent.Send(intent, "Ready")
 	layout()
 end
 

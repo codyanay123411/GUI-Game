@@ -1,0 +1,82 @@
+{
+  "date": "2026-10-14",
+  "scope": "Approved building purchase prices, native Kohl current-session row, Roblox Shift Lock off",
+  "implemented": true,
+  "directorAccepted": false,
+  "sources": [
+    {
+      "path": "ReplicatedStorage/Shared/Config/BuildingConfig.luau",
+      "sha256": "d1e72b721bfcdf14a13ecbc2fd27e2e4427a9d358765355ff52dcc7204f96130"
+    },
+    {
+      "path": "ServerScriptService/Services/StaffServerService.luau",
+      "sha256": "56c02644cfcafc600cbefabfb52781cf5044933056b1fe9e727e2086de5cb117"
+    },
+    {
+      "path": "ServerScriptService/Services/AdminService.luau",
+      "sha256": "f795b95e32e1ba872cd34be304bce821fa63a09bde2cf4f92b13a34802fc94c7"
+    },
+    {
+      "path": "ReplicatedStorage/Shared/Config/PresentationBindings.luau",
+      "sha256": "1091f31c1916dc7c4e021c886a0aacd68f615456895b8636b299886d0c72d036"
+    },
+    {
+      "path": "ServerScriptService/Bootstrap.server.luau",
+      "sha256": "7aa4ad63a3b85c9588809a42d7787a1a501c1fb8761c29106c170696d14c3aed"
+    },
+    {
+      "path": "ServerScriptService/Services/CurrentServerKohlClient.luau",
+      "sha256": "4e50a37f36a2c93843b0a1df36ad8ada5b7d3c2ef9b27b1731af234e0e0de079"
+    }
+  ],
+  "checks": {
+    "purePriceTotalsRepairAffordability": 48,
+    "authoritativeSoloPriceChecks": 9,
+    "nativeRepairUpgradeTownBuildClientState": 3,
+    "nativeListEmptyDedupOtherRowsJoin": 16,
+    "boundedAgeRefresh": "PASS after16s",
+    "shift": "Fresh StarterPlayer/player settings false; native LeftShift kept MouseBehavior Default",
+    "syntaxCompilation": "Six affected sources passed luau-compile --null",
+    "sourceCorrespondence": "Six exact normalized-source assertions passed after Play stopped; editor mouse lock false; recovery retained; temporary fixtures absent",
+    "scopedDiff": "Only building costs changed; staff discovery/join/credentials and other admin policy unchanged",
+    "whitespace": "git diff --check passed"
+  },
+  "coverage": {
+    "studio": "Installed native Servers/ScrollerFast source contracts inspected read-only; project addon only, no vendor edits",
+    "sync": "Five previous project modules preserved in ServerStorage.PriceServersInputRecovery_20261014 plus original mouse-lock attribute; six current modules/config scripts correspond",
+    "trackedInput": "PresentationBindings.EnableMouseLockOption=false applied early by thin server bootstrap",
+    "wholePlaceClaim": false
+  },
+  "localSnapshot": {
+    "path": "docs/verification/prices-servers-input-verified-2026-10-14.rbxl",
+    "bytes": 898842,
+    "sha256": "84e8a005f776b360491e9ee6da5b8e1d412347c0a61b814bab0437f37f003698",
+    "scope": "Edit-state local copy including false StarterPlayer property, final sources and recovery; not seeded runtime state"
+  },
+  "evidence": [
+    "prices-policy-2026-10-14.luau.txt",
+    "prices-authority-2026-10-14.luau.txt",
+    "prices-shift-client-2026-10-14.luau.txt",
+    "current-server-client-2026-10-14.luau.txt",
+    "prices-servers-input-2026-10-14/observed-output.txt",
+    "prices-servers-input-2026-10-14/scoped-diff.json"
+  ],
+  "screenshots": {
+    "directory": "prices-servers-input-2026-10-14",
+    "note": "Native approved Build/Repair/Upgrade and native Current server/Studio session/Already here. Server-row image precedes only uptime-loop lifecycle correction; final age behavior is separately verified in Output."
+  },
+  "limitations": [
+    "Published usable JobId, multi-instance discovery and public/private/reserved teleports not tested in Studio; existing security/routing code preserved",
+    "Synthetic funds/damage and synthetic other discovery row are not natural-play balance or published/multiplayer passes",
+    "Director balance/readability acceptance pending",
+    "Kohl updates require checking native addon contracts again"
+  ],
+  "failedAttempts": [
+    "Initial exact bootstrap guard blocked on CRLF mismatch; corrected normalization, no mutations before correction",
+    "Initial new addon did not reach copied client folder and DataModel metadata was not replicated; delivered all supported Addons folders and moved safe metadata to ReplicatedStorage",
+    "Native button label nested outside clickable child; corrected label selection and tested Already here",
+    "Fixture tried fractional whole-only DebugSetGold and then nonexistent SpendGold; corrected using whole grants minus existing TrySpend",
+    "Current age refresh exited before initial GUI parenting; corrected alive/destruction lifecycle, passed bounded age test"
+  ],
+  "noCommitPushPublication": true
+}

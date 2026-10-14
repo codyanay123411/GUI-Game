@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 
 --[[
 	Prototype GUI driver for Political Hierarchy V0.1.
@@ -98,7 +99,9 @@ function PoliticalHierarchyController.Start()
 		local token = noticeToken
 		resultToastLabel.Text = message
 		resultToast.Visible = true
+		local generation = MatchIntent.GetGeneration()
 		task.delay(6, function()
+			if generation ~= MatchIntent.GetGeneration() then return end
 			if token == noticeToken then
 				resultToast.Visible = false
 			end
@@ -223,10 +226,10 @@ function PoliticalHierarchyController.Start()
 				PrototypeGuiTheme.applyDangerButton(decline)
 				decline.TextSize = 14
 				accept.MouseButton1Click:Connect(function()
-					clientIntent:FireServer("Accept", request.requestId)
+					MatchIntent.Send(clientIntent, "Accept", request.requestId)
 				end)
 				decline.MouseButton1Click:Connect(function()
-					clientIntent:FireServer("Decline", request.requestId)
+					MatchIntent.Send(clientIntent, "Decline", request.requestId)
 				end)
 			end
 		end
@@ -241,7 +244,7 @@ function PoliticalHierarchyController.Start()
 		)
 	end
 
-	serverPush.OnClientEvent:Connect(function(kind: any, payload: any)
+	MatchIntent.ConnectPush(serverPush, function(kind: any, payload: any)
 		if kind == "State" then
 			local data = payload
 			if typeof(payload) == "string" then
@@ -273,7 +276,7 @@ function PoliticalHierarchyController.Start()
 	end)
 
 	refresh()
-	clientIntent:FireServer("Ready")
+	MatchIntent.Send(clientIntent, "Ready")
 	print("[Hierarchy] remote Ready sent", player.Name)
 end
 

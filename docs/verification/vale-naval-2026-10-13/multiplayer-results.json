@@ -1,0 +1,30 @@
+{
+  "environment": "Three actual Studio clients, synthetic ownership/armies; continuation after readiness fixture correction",
+  "lines": [
+    "19:53:20.778 NAVAL_CLIENT Player1 Launch false 0 MapView is not a valid member of Frame \"Players.Player1.PlayerGui.HierarchyPrototypeGui.MapStage\"",
+    "19:53:22.110 NAVAL_CLIENT Player2 Launch true 1",
+    "19:53:22.845 NAVAL_CLIENT Player3 Launch false 0 MapView is not a valid member of Frame \"Players.Player3.PlayerGui.HierarchyPrototypeGui.MapStage\"",
+    "19:56:03.038 NAVAL_CLIENT Player3 Warmup true 1",
+    "19:56:03.070 NAVAL_CLIENT Player2 Warmup true 1",
+    "19:56:03.070 NAVAL_CLIENT Player1 Warmup true 1",
+    "19:56:03.188 NAVAL_CLIENT Player2 Launch true 1",
+    "19:56:03.271 NAVAL_CLIENT Player3 Launch true 2",
+    "19:56:03.304 NAVAL_CLIENT Player1 Launch true 2",
+    "19:56:03.704 NAVAL_CLIENT Player3 Travel true 3",
+    "19:56:04.104 NAVAL_CLIENT Player2 Travel true 5",
+    "19:56:04.122 NAVAL_CLIENT Player1 Travel true 5",
+    "19:56:04.171 NAVAL_CLIENT Player1 Arrival true 3",
+    "19:56:04.187 NAVAL_CLIENT Player3 Arrival true 1",
+    "19:56:04.221 NAVAL_CLIENT Player2 Arrival true 3",
+    "19:56:04.521 NAVAL_CLIENT Player3 NavalFront true 2",
+    "19:56:04.721 NAVAL_CLIENT Player2 NavalFront true 5",
+    "19:56:04.721 NAVAL_CLIENT Player1 NavalFront true 5",
+    "19:56:05.070 NAVAL_CLIENT Player3 LandFront true 2",
+    "19:56:05.305 NAVAL_CLIENT Player2 LandFront true 5",
+    "19:56:05.305 NAVAL_CLIENT Player1 LandFront true 5",
+    "19:56:05.637 NAVAL_CLIENT Player3 Repelled true 2",
+    "19:56:05.871 NAVAL_CLIENT Player2 Repelled true 5",
+    "19:56:05.872 NAVAL_CLIENT Player1 Repelled true 5",
+    "19:56:05.905 VALE_NAVAL_MULTIPLAYER_PASS 52"
+  ]
+}

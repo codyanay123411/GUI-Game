@@ -10,6 +10,7 @@ local Territory = require(script.Parent.TerritoryMapService)
 local Diplomacy = require(script.Parent.DiplomacyService)
 local AdminConfig = require(script.Parent.AdminConfig)
 local Policy = require(script.Parent.CommunicationsPolicy)
+local MatchState = require(script.Parent.MatchState)
 local Service = {}
 
 type Context = {
@@ -56,6 +57,7 @@ local function relationContext(w: any, context: Context): string
 end
 
 local function canDeliver(context: Context, message: TextChatMessage, target: TextSource): boolean
+	if contexts[context.id] ~= context then return false end
 	local source = message.TextSource
 	if not source or not source.CanSend or not context.channel or source.Parent ~= context.channel then
 		return false
@@ -72,7 +74,7 @@ local function canDeliver(context: Context, message: TextChatMessage, target: Te
 		return false
 	end
 	-- Labels alone cannot display text: client joins this envelope to native Success receipt.
-	push:FireClient(to, "Identity", {
+	MatchState.Send(push, to, "Identity", {
 		messageId = message.MessageId, contextId = context.id, kind = context.kind,
 		label = context.label, ordinary = ordinary, observing = observing,
 		prefix = Policy.Prefix(w, context, from.UserId, to.UserId, false),
@@ -94,6 +96,7 @@ local function create(id: string, kind: string, label: string, fields: any?): Co
 	local channel = Instance.new("TextChannel")
 	channel.Name = "Comms_" .. id
 	channel:SetAttribute("CommunicationsContextId", id)
+	channel:SetAttribute("MatchGeneration", MatchState.GetGeneration())
 	channel.Parent = channels
 	context.channel = channel
 	contexts[id] = context
@@ -169,7 +172,7 @@ local function sync()
 				if ok and source and source:IsA("TextSource") then
 					local player = Players:GetPlayerByUserId(userId)
 					local fresh = world()
-					if not player or not (eligible(fresh, context, player) or observer(player)) then
+					if contexts[context.id] ~= context or not player or not (eligible(fresh, context, player) or observer(player)) then
 						source:Destroy()
 					else
 						source.CanSend = eligible(fresh, context, player)
@@ -181,7 +184,7 @@ local function sync()
 		end
 	end
 	for _, player in Players:GetPlayers() do
-		if not excluded[player.UserId] then push:FireClient(player, "State", stateFor(player, w)) end
+		if not excluded[player.UserId] then MatchState.Send(push, player, "State", stateFor(player, w)) end
 	end
 	if snapshotValue then snapshotValue.Value = HttpService:JSONEncode(Service.DebugInspect()) end
 end
@@ -189,7 +192,8 @@ end
 local function queueSync()
 	if queued then return end
 	queued = true
-	task.defer(function() queued = false; sync() end)
+	local generation = MatchState.GetGeneration()
+	task.defer(function() if generation ~= MatchState.GetGeneration() then return end; queued = false; sync() end)
 end
 
 function Service.OpenDirect(player: Player, targetId: any): (boolean, string)
@@ -214,7 +218,7 @@ function Service.OpenDirect(player: Player, targetId: any): (boolean, string)
 		end
 	end
 	sync()
-	push:FireClient(player, "Opened", id)
+	MatchState.Send(push, player, "Opened", id)
 	return true, id
 end
 
@@ -268,17 +272,17 @@ function Service.Start()
 	Diplomacy.StateChanged:Connect(queueSync)
 	Players.PlayerAdded:Connect(function(player) excluded[player.UserId] = nil; queueSync() end)
 	Players.PlayerRemoving:Connect(function(player) excluded[player.UserId] = true; lastIntent[player.UserId] = nil; queueSync() end)
-	intent.OnServerEvent:Connect(function(player, action, arg)
+	MatchState.ConnectIntent(intent, function(player, action, arg)
 		local now = os.clock()
 		if now - (lastIntent[player.UserId] or -math.huge) < 0.15 then return end
 		lastIntent[player.UserId] = now
 		if action == "Ready" then
-			push:FireClient(player, "State", stateFor(player, world()))
+			MatchState.Send(push, player, "State", stateFor(player, world()))
 		elseif action == "OpenDirect" then
 			local ok, message = Service.OpenDirect(player, arg)
-			if not ok then push:FireClient(player, "Notice", message) end
+			if not ok then MatchState.Send(push, player, "Notice", message) end
 		else
-			push:FireClient(player, "Notice", "Unsupported Communications intent.")
+			MatchState.Send(push, player, "Notice", "Unsupported Communications intent.")
 		end
 	end)
 	local debugFolder = Instance.new("Folder")
@@ -302,6 +306,15 @@ function Service.Start()
 	end
 	sync()
 	print("[Communications] NativeDeliveryV01 started.")
+end
+
+function Service.PublishMatch() sync() end
+
+function Service.ResetMatch()
+	assert(require(script.Parent.MatchState).IsResetting())
+	for _, context in contexts do if context.channel then context.channel:Destroy() end end
+	contexts, excluded, lastIntent = {}, {}, {}
+	queued = false
 end
 
 return Service

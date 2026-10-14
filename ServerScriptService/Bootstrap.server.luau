@@ -15,6 +15,9 @@
 	Keep it an orchestrator so systems stay in their own modules.
 ]]
 
+local inputDefaults = require(game:GetService("ReplicatedStorage").Shared.Config.PresentationBindings)
+game:GetService("StarterPlayer").EnableMouseLockOption = inputDefaults.EnableMouseLockOption
+
 local PoliticalHierarchyService = require(script.Parent.Services.PoliticalHierarchyService)
 local TerritoryMapService = require(script.Parent.Services.TerritoryMapService)
 local TitleProgressionService = require(script.Parent.Services.TitleProgressionService)
@@ -30,10 +33,12 @@ TitleProgressionService.Start()
 DiplomacyService.Start()
 WarfareService.Start()
 EconomyService.Start()
+require(script.Parent.Services.BuildingService).Start()
 MilitaryService.Start()
 require(script.Parent.Services.PoliticalCouncilService).Start()
 require(script.Parent.Services.PoliticalPermissionsService).Start()
 CommunicationsService.Start()
 require(script.Parent.Services.VictoryService).Start()
 AdminService.Start()
+require(script.Parent.Services.StaffServerService).Start()
 require(script.Parent.Services.GameSettingsService).Start()

@@ -9,6 +9,10 @@ local Domination = require(ReplicatedStorage.Shared.Util.Domination)
 local Replay = require(script.Parent.MatchReplayService)
 local Service = {}
 local started = false
+local transactionDepth = 0
+local captureDirty = false
+function Service.BeginCaptureBatch() transactionDepth += 1 end
+function Service.EndCaptureBatch() assert(transactionDepth > 0);transactionDepth -= 1;if transactionDepth == 0 and captureDirty then captureDirty = false;Service.Evaluate() end end
 local startedAt = 0
 local push: RemoteEvent
 
@@ -19,11 +23,19 @@ function Service.GetSnapshot(): any
 end
 
 local function send(player: Player?)
-	local payload = HttpService:JSONEncode(Service.GetSnapshot())
-	if player then push:FireClient(player, "State", payload) else push:FireAllClients("State", payload) end
+	local snapshot = table.clone(Service.GetSnapshot())
+	snapshot.generation = MatchState.GetGeneration()
+	local payload = HttpService:JSONEncode(snapshot)
+	if player then MatchState.Send(push, player, "State", payload) else MatchState.Send(push, nil, "State", payload) end
+end
+
+function Service.Restarted()
+	startedAt = workspace:GetServerTimeNow()
+	Service.Evaluate()
 end
 
 function Service.Evaluate(): any
+	if transactionDepth > 0 then captureDirty = true;return MatchState.GetFinal() end
 	if not started or MatchState.IsEnded() then return MatchState.GetFinal() end
 	local rulers = Hierarchy.GetSnapshot().rulers
 	local result = Domination.Evaluate(Territory.GetMapDefinition(), rulers, Territory.GetSnapshot().territories)
@@ -60,7 +72,7 @@ function Service.Start()
 	Domination.Evaluate(Territory.GetMapDefinition(), Hierarchy.GetSnapshot().rulers, Territory.GetSnapshot().territories)
 	started = true
 	Replay.Start(push)
-	intent.OnServerEvent:Connect(function(player, action)
+	MatchState.ConnectIntent(intent, function(player, action)
 		if action == "Ready" then send(player); Replay.SendStatus(player)
 		elseif action == "PlayAgain" then Replay.Request(player) end
 	end)

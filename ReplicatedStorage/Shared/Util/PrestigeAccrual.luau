@@ -1,6 +1,6 @@
 --!strict
 -- Deterministic interval accounting. Only the server Title service owns a ledger.
-export type Account = { value: number, holdings: number, settledAt: number }
+export type Account = { value: number, holdings: number, settledAt: number, multiplier: number }
 local Accrual = {}
 Accrual.__index = Accrual
 
@@ -17,7 +17,7 @@ function Accrual.AddRuler(self: any, id: string, at: number, holdings: number)
 	assert(finite(at), "Invalid Prestige timestamp")
 	assert(holdings >= 0 and holdings % 1 == 0, "Invalid personal holding count")
 	if self.cutoff or self.accounts[id] then return end
-	self.accounts[id] = { value = 0, holdings = holdings, settledAt = at }
+	self.accounts[id] = { value = 0, holdings = holdings, settledAt = at, multiplier = 1 }
 end
 
 function Accrual.Get(self: any, id: string, at: number): number
@@ -26,7 +26,7 @@ function Accrual.Get(self: any, id: string, at: number): number
 	if not account then return 0 end
 	local untilAt = if self.cutoff then math.min(at, self.cutoff) else at
 	if untilAt > account.settledAt then
-		account.value += (untilAt - account.settledAt) * account.holdings * self.rate / 60
+		account.value += (untilAt - account.settledAt) * account.holdings * self.rate * (account.multiplier or 1) / 60
 		account.settledAt = untilAt
 	end
 	return account.value
@@ -40,6 +40,12 @@ function Accrual.SetHoldings(self: any, id: string, holdings: number, at: number
 	assert(at >= account.settledAt, "Prestige transfer predates settled interval")
 	self:Get(id, at)
 	account.holdings = holdings
+end
+
+function Accrual.SetMultiplier(self: any, id: string, factor: number, at: number)
+	if self.cutoff or not self.accounts[id] then return end
+	assert(finite(factor) and factor >= 0)
+	self:Get(id, at);self.accounts[id].multiplier = factor
 end
 
 function Accrual.SetValue(self: any, id: string, value: number, at: number)

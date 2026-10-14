@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-13",
+  "implementation": "Vale coastlands, simple naval transports, cosmetic clipped conquest fronts",
+  "baselineStudioSources": 12,
+  "finalAffectedSourceParity": 13,
+  "affectedLuauCompilation": {
+    "files": 13,
+    "exit": 0
+  },
+  "purePolicyAssertions": 67,
+  "multiplayer": {
+    "clients": 3,
+    "setup": "synthetic ownership/armies",
+    "continuationServerAssertions": 52,
+    "cancellationAssertionsBeforeManualDisconnectTimeout": 47,
+    "actualDisconnectAndFreezeReplacementAssertions": 30,
+    "privateFronts": "unrelated client denied result projection"
+  },
+  "solo": {
+    "nativeReviewAssertions": 2,
+    "nativeCommitment": "50% / 500 troops; preview-only until Confirm",
+    "naturalArrivalSeconds": 6.6,
+    "concurrentFrontSettingsAssertions": 4,
+    "serverVisualAssertions": 5,
+    "serverCleanupAssertions": 3,
+    "clientCleanupAssertions": 2,
+    "layoutCleanupAssertions": {
+      "639x422": 6,
+      "1279x662": 6
+    },
+    "activePanZoom": "native visual observation, separate from after-expiry layout assertions",
+    "fixtureCosmeticExtensions": "25s then120s via existing server debug timing hook only; production presentation5s unchanged"
+  },
+  "fixtureCorrections": [
+    "client MapView startup wait",
+    "manual disconnect timeout: not pass, actual bounded replacement passed",
+    "active-front assertion after expiry: not pass, lifetime-aware cleanup/layout passed",
+    "capture-only command accidentally attempted after Stop; no verification claim, disabled source archived and failed screenshot preserved ignored under tmp"
+  ],
+  "snapshot": {
+    "path": "docs/verification/vale-naval-final-2026-10-13.rbxl",
+    "bytes": 841165,
+    "sha256": "dc1938da92cec0d8d090ab23b530cf29d7070ad1e46b29598feb639e149987aa",
+    "ignored": true
+  },
+  "limits": [
+    "human coastal readability/marker visibility/balance and Director acceptance pending",
+    "published-account latency/service behavior not tested",
+    "touch/gamepad not tested",
+    "final malformed packet-shape guard compiled/static reviewed; Instance-valued request ID not sent in final runtime"
+  ]
+}

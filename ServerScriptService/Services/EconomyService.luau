@@ -20,6 +20,12 @@ local Territory = require(ServerScriptService.Services.TerritoryMapService)
 local MatchState = require(script.Parent.MatchState)
 local EconomyService = {}
 
+local buildingIncome: ((string) -> number)? = nil
+function EconomyService.SetBuildingIncomeProvider(provider: (string) -> number)
+	assert(buildingIncome == nil, "Building provider already installed")
+	buildingIncome = provider
+end
+
 local started = false
 local goldByRuler: { [string]: number } = {}
 local remainderByRuler: { [string]: number } = {}
@@ -75,7 +81,7 @@ local function baseIncome(rulerId: string): number
 	for _, territoryId in Territory.GetOwnedTerritoryIds(rulerId) do
 		local def = byId[territoryId]
 		if def and typeof(def.baseGoldIncome) == "number" then
-			total += def.baseGoldIncome
+			total += def.baseGoldIncome + (if buildingIncome then buildingIncome(territoryId) else 0)
 		end
 	end
 	return total
@@ -128,7 +134,7 @@ local function pushPlayer(player: Player)
 			nextPayoutAt = nextPayoutAt,
 		}
 	end
-	serverPush:FireClient(player, "State", HttpService:JSONEncode(payload))
+	MatchState.Send(serverPush, player, "State", HttpService:JSONEncode(payload))
 end
 
 local function pushAllPlayers()
@@ -155,7 +161,7 @@ local function pushAllPlayers()
 end
 
 local function notice(player: Player, message: string)
-	serverPush:FireClient(player, "Notice", message)
+	MatchState.Send(serverPush, player, "Notice", message)
 end
 
 function EconomyService.GetInspect(rulerId: string): any?
@@ -186,16 +192,18 @@ function EconomyService.TrySpend(rulerId: string, amount: number): (boolean, str
 	if goldByRuler[rulerId] == nil then
 		return false, "No economy state."
 	end
-	if typeof(amount) ~= "number" or amount ~= amount or amount ~= math.floor(amount) or amount <= 0 then
-		return false, "Spend amount must be a whole number greater than 0."
+	if typeof(amount) ~= "number" or amount ~= amount or math.abs(amount) == math.huge or math.abs(amount * 10 - math.round(amount * 10)) > .000001 or amount <= 0 then
+		return false, "Spend amount must be positive exact tenths of Gold."
 	end
 	local balance = goldByRuler[rulerId]
-	if amount > balance then
+	local costTenths = math.round(amount * 10)
+	local balanceTenths = math.round(balance * 10)
+	if costTenths > balanceTenths then
 		return false, "Insufficient Gold."
 	end
-	goldByRuler[rulerId] = balance - amount
+	goldByRuler[rulerId] = (balanceTenths - costTenths) / 10
 	pushAllPlayers()
-	return true, string.format("Spent %d Gold.", amount)
+	return true, string.format("Spent %g Gold.", amount)
 end
 
 function EconomyService.DebugSetGold(rulerId: string, value: number): (boolean, string)
@@ -219,7 +227,7 @@ local function payoutTick()
 		local ownerId = Territory.GetOwnerRulerId(t.id)
 		if ownerId and goldByRuler[ownerId] ~= nil then
 			local def = byId[t.id]
-			local perTick = if def then EconomyPayout.GoldPerTick(def.baseGoldIncome) else nil
+			local perTick = if def then EconomyPayout.GoldPerTick(def.baseGoldIncome + (if buildingIncome then buildingIncome(t.id) else 0)) else nil
 			if perTick and perTick > 0 then
 				credit[ownerId] = (credit[ownerId] or 0) + perTick
 			end
@@ -249,6 +257,7 @@ local function runPayoutLoop()
 			if not started then
 				break
 			end
+			if workspace:GetServerTimeNow() < nextPayoutAt then continue end
 			payoutTick()
 			nextPayoutAt = workspace:GetServerTimeNow() + interval
 			pushAllPlayers()
@@ -283,7 +292,7 @@ function EconomyService.Start()
 	local remotesFolder = ReplicatedStorage:WaitForChild("Remotes") :: Folder
 	clientIntent = remotesFolder:WaitForChild("EconomyClientEvent") :: RemoteEvent
 	serverPush = remotesFolder:WaitForChild("EconomyServerEvent") :: RemoteEvent
-	clientIntent.OnServerEvent:Connect(onClientIntent)
+	MatchState.ConnectIntent(clientIntent, onClientIntent)
 
 	for _, ruler in Hierarchy.GetSnapshot().rulers do
 		ensureGold(ruler.rulerId)
@@ -357,6 +366,15 @@ function EconomyService.Start()
 
 	_G.__EconomyV01 = EconomyService
 	print("[Economy] started. StartingGold", EconomyConfig.StartingGold, "interval", EconomyConfig.PayoutIntervalSeconds)
+end
+
+function EconomyService.PublishMatch() pushAllPlayers() end
+
+function EconomyService.ResetMatch()
+	assert(MatchState.IsResetting())
+	goldByRuler, remainderByRuler = {}, {}
+	for _, ruler in Hierarchy.GetSnapshot().rulers do ensureGold(ruler.rulerId) end
+	nextPayoutAt = workspace:GetServerTimeNow() + EconomyConfig.PayoutIntervalSeconds
 end
 
 return EconomyService

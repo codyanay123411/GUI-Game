@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 
 --[[
 	Prototype title-progression panel. Sends Establish intent only.
@@ -65,7 +66,9 @@ function TitleProgressionController.Start()
 		local token = noticeToken
 		resultToastLabel.Text = message
 		resultToast.Visible = true
+		local generation = MatchIntent.GetGeneration()
 		task.delay(6, function()
+			if generation ~= MatchIntent.GetGeneration() then return end
 			if token == noticeToken then
 				resultToast.Visible = false
 			end
@@ -121,7 +124,7 @@ function TitleProgressionController.Start()
 	for _, attribute in { "PersonalGoldIncome", "GoldRankBonusPercent" } do
 		gui:GetAttributeChangedSignal(attribute):Connect(function() applyRow(myRow) end)
 	end
-	titlePush.OnClientEvent:Connect(function(kind: any, payload: any)
+	MatchIntent.ConnectPush(titlePush, function(kind: any, payload: any)
 		if kind == "Notice" and typeof(payload) == "string" then
 			showNotice(payload)
 			return
@@ -148,11 +151,11 @@ function TitleProgressionController.Start()
 		if not myRow or myRow.eligible ~= true then
 			return
 		end
-		titleIntent:FireServer("Establish")
+		MatchIntent.Send(titleIntent, "Establish")
 	end)
 
 	applyRow(nil)
-	titleIntent:FireServer("Ready")
+	MatchIntent.Send(titleIntent, "Ready")
 	print("[Title] controller started; Ready sent")
 end
 

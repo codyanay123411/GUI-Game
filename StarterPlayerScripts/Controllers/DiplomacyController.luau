@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 
 --[[
 	Incoming diplomacy offers and notices. Target actions live in map context.
@@ -67,7 +68,9 @@ function DiplomacyController.Start()
 		local token = noticeToken
 		resultToastLabel.Text = message
 		resultToast.Visible = true
+		local generation = MatchIntent.GetGeneration()
 		task.delay(6, function()
+			if generation ~= MatchIntent.GetGeneration() then return end
 			if token == noticeToken then
 				resultToast.Visible = false
 			end
@@ -131,10 +134,10 @@ function DiplomacyController.Start()
 					PrototypeGuiTheme.applyDangerButton(decline)
 					local requestId = request.requestId
 					accept.MouseButton1Click:Connect(function()
-						if accept.Active then intent:FireServer("Accept", requestId) end
+						if accept.Active then MatchIntent.Send(intent, "Accept", requestId) end
 					end)
 					decline.MouseButton1Click:Connect(function()
-						if decline.Active then intent:FireServer("Decline", requestId) end
+						if decline.Active then MatchIntent.Send(intent, "Decline", requestId) end
 					end)
 				end
 			end
@@ -142,7 +145,7 @@ function DiplomacyController.Start()
 		if incoming > 0 then Transitions.Show(overlay :: any) else Transitions.Hide(overlay :: any, true) end
 	end
 
-	push.OnClientEvent:Connect(function(kind: any, payload: any)
+	MatchIntent.ConnectPush(push, function(kind: any, payload: any)
 		if kind == "Notice" and typeof(payload) == "string" then
 			showNotice(payload)
 			return
@@ -160,7 +163,7 @@ function DiplomacyController.Start()
 		refresh()
 	end)
 
-	hierarchyPush.OnClientEvent:Connect(function(kind: any, payload: any)
+	MatchIntent.ConnectPush(hierarchyPush, function(kind: any, payload: any)
 		if kind ~= "State" then
 			return
 		end
@@ -174,7 +177,7 @@ function DiplomacyController.Start()
 	require(script.Parent.MapContextState).Changed.Event:Connect(function(system) if system == "permissions" then refresh() end end)
 	gui:GetAttributeChangedSignal("MatchEnded"):Connect(refresh)
 	refresh()
-	intent:FireServer("Ready")
+	MatchIntent.Send(intent, "Ready")
 	print("[Diplomacy] controller started; Ready sent")
 end
 

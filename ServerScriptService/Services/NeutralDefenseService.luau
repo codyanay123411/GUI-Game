@@ -49,4 +49,9 @@ function Service.DebugSet(territoryId: string, amount: any): (boolean, string)
 	return true, "Unclaimed defense updated."
 end
 
+function Service.ResetMatch()
+	assert(MatchState.IsResetting())
+	defenses = {}
+end
+
 return Service

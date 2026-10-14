@@ -1,0 +1,14 @@
+{
+  "environment": "One actual Solo client; synthetic ownership/forces; native 50-percent launch and ordinary travel; cosmetic timestamps extended only for screenshot/camera checks",
+  "lines": [
+    "20:10:44.452 VALE_NAVAL_VISUAL_READY",
+    "20:10:45.757 VALE_NAVAL_REVIEW_PASS 2",
+    "20:13:20.067 VALE_NAVAL_VISUAL_FRONTS_PASS 5",
+    "20:13:21.217 VALE_NAVAL_CONCURRENT_SETTINGS_PASS 4 639, 422",
+    "20:16:39.729 VALE_NAVAL_VISUAL_CLEAN_PASS 3",
+    "20:16:40.076 VALE_NAVAL_EFFECT_CLEAN_PASS 2",
+    "20:20:46.665 VALE_NAVAL_ALIGNMENT_LAYOUT_PASS 6 639, 422 activeFronts 0",
+    "20:21:53.213 VALE_NAVAL_ALIGNMENT_LAYOUT_PASS 6 1279, 662 activeFronts 0"
+  ],
+  "timingCorrections": "An active-front follow-up asserted after expiry; lifetime-aware cleanup/layout rerun passed with activeFronts0, not a current concurrent-front pass"
+}

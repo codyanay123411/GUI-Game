@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 
 --[[
 	Player-relevant Economy V0.1 HUD.
@@ -74,7 +75,7 @@ function EconomyController.Start()
 			return
 		end
 		if gui:GetAttribute("MatchEnded") == true then
-			body.Text = string.format("Gold: %d\nIncome: frozen · Match ended\nNo further payouts.", gold)
+			body.Text = string.format("Gold: %g\nIncome: frozen · Match ended\nNo further payouts.", gold)
 			return
 		end
 		local remaining = remainingOverride
@@ -82,7 +83,7 @@ function EconomyController.Start()
 			remaining = nextPayoutAt - workspace:GetServerTimeNow()
 		end
 		body.Text = string.format(
-			"Gold: %d\nIncome: +%g Gold/min\nPersonal base: %g/min · Rank +%g%%\nSubject income excluded.\nFractional bonuses carry forward.\nNext payout: %s",
+			"Gold: %g\nIncome: +%g Gold/min\nPersonal base: %g/min · Rank +%g%%\nSubject income excluded.\nFractional bonuses carry forward.\nNext payout: %s",
 			gold,
 			income,
 			baseIncome,
@@ -92,7 +93,7 @@ function EconomyController.Start()
 	end
 
 	gui:GetAttributeChangedSignal("MatchEnded"):Connect(function() render() end)
-	push.OnClientEvent:Connect(function(kind: any, payload: any)
+	MatchIntent.ConnectPush(push, function(kind: any, payload: any)
 		if kind == "State" then
 			local state = decodeState(payload)
 			if not state then
@@ -115,7 +116,7 @@ function EconomyController.Start()
 	end)
 
 	PrototypeGuiTheme.ApplyScreen(gui)
-	intent:FireServer("Ready")
+	MatchIntent.Send(intent, "Ready")
 	render()
 end
 

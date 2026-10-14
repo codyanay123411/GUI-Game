@@ -205,10 +205,10 @@ local function pushState(toPlayer: Player?)
 	local n = #payload.rulers
 	if toPlayer then
 		print("[Hierarchy] push State to", toPlayer.Name, "rulers=", n, "requests=", #payload.requests)
-		serverPush:FireClient(toPlayer, "State", encoded)
+		MatchState.Send(serverPush, toPlayer, "State", encoded)
 	else
 		print("[Hierarchy] push State all clients rulers=", n, "requests=", #payload.requests)
-		serverPush:FireAllClients("State", encoded)
+		MatchState.Send(serverPush, nil, "State", encoded)
 	end
 	if councilRefresh then councilRefresh() end
 	if permissionsRefresh then permissionsRefresh() end
@@ -220,7 +220,7 @@ end
 
 local function notice(player: Player, message: string)
 	print("[Hierarchy] notice ->", player.Name, message)
-	serverPush:FireClient(player, "Notice", message)
+	MatchState.Send(serverPush, player, "Notice", message)
 end
 
 local function noticeRuler(ruler: Ruler?, message: string)
@@ -308,7 +308,7 @@ local function createRuler(props: {
 	displayName: string,
 	titleRank: number,
 	isMock: boolean,
-}): Ruler
+}, quiet: boolean?): Ruler
 	local ruler: Ruler = {
 		rulerId = props.rulerId,
 		userId = props.userId,
@@ -325,7 +325,7 @@ local function createRuler(props: {
 	end
 	print("[Hierarchy] ruler created", ruler.displayName, "userId=", tostring(ruler.userId), "id=", ruler.rulerId)
 	if prestigeCreated then prestigeCreated(ruler.rulerId, workspace:GetServerTimeNow()) end
-	rulerCreatedBindable:Fire(ruler.rulerId, ruler.userId)
+	if not quiet then rulerCreatedBindable:Fire(ruler.rulerId, ruler.userId) end
 	return ruler
 end
 
@@ -569,14 +569,23 @@ local function onClientIntent(player: Player, action: any, a: any, b: any)
 	notice(player, "Unknown action.")
 end
 
+local eliminatedUsers: { [number]: boolean } = {}
+function PoliticalHierarchyService.IsEliminated(userId: number): boolean return eliminatedUsers[userId] == true end
+function PoliticalHierarchyService.Eliminate(id: string)
+	local ruler = rulersById[id]
+	if not ruler then return end
+	if ruler.userId then eliminatedUsers[ruler.userId] = true end
+	removeRulerInternal(id);pushState()
+end
+
 local function onPlayerAdded(player: Player)
-	if MatchState.IsEnded() then pushState(player); return end
+	if MatchState.IsEnded() or eliminatedUsers[player.UserId] then pushState(player); return end
 	local existing = rulerIdByUserId[player.UserId]
 	if existing then
 		removeRulerInternal(existing)
 	end
 	createRuler({
-		rulerId = "Player_" .. tostring(player.UserId),
+		rulerId = "Player_" .. tostring(player.UserId) .. "_M" .. tostring(MatchState.GetGeneration()),
 		userId = player.UserId,
 		player = player,
 		displayName = player.DisplayName,
@@ -607,7 +616,7 @@ function PoliticalHierarchyService.Start()
 	clientIntent = remotesFolder:WaitForChild("HierarchyClientEvent") :: RemoteEvent
 	serverPush = remotesFolder:WaitForChild("HierarchyServerEvent") :: RemoteEvent
 
-	clientIntent.OnServerEvent:Connect(onClientIntent)
+	MatchState.ConnectIntent(clientIntent, onClientIntent)
 	Players.PlayerAdded:Connect(onPlayerAdded)
 	Players.PlayerRemoving:Connect(onPlayerRemoving)
 	for _, player in Players:GetPlayers() do
@@ -658,6 +667,18 @@ function PoliticalHierarchyService.Start()
 		print("[Hierarchy] debug Accept", ok, err)
 	end)
 	pushState()
+end
+
+function PoliticalHierarchyService.PublishMatch() pushState() end
+
+function PoliticalHierarchyService.ResetMatch()
+	assert(MatchState.IsResetting())
+	for _, request in requestsById do cancelExpire(request) end
+	rulersById, rulerIdByUserId, requestsById = {}, {}, {}; eliminatedUsers = {}
+	for _, player in MatchState.GetConnectedPlayers() do
+		createRuler({ rulerId = "Player_" .. tostring(player.UserId) .. "_M" .. tostring(MatchState.GetGeneration()),
+			userId = player.UserId, player = player, displayName = player.DisplayName, titleRank = RankRules.Lord, isMock = false }, true)
+	end
 end
 
 return PoliticalHierarchyService

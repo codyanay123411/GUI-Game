@@ -1,0 +1,66 @@
+{
+  "date": "2026-10-14",
+  "status": "implemented; scoped agent verification; not Director accepted",
+  "environment": "Roblox Studio Solo, one actual client; additional rulers/resources seeded server-side",
+  "checks": {
+    "capital_server": "32 initial assertions plus3 corrected-tail assertions; independence is encoded as empty-string liegeId/independent=true",
+    "damage_repair": "CAPITAL_REPAIR_SERVER_PASS28, deterministic probability plus independent building draws, exact repair costs/restored effects",
+    "combat_capture_reset": "CAPITAL_BATTLE_RESET_PASS61, actual declaration/commit/mechanical/presentation/capture/retirement/restart APIs",
+    "client_guards": "CAPITAL_CLIENT_GUARDS_PASS5, actual client remotes",
+    "personal_offense": "CAPITAL_PERSONAL_OFFENSE_PASS4, actual neutral battle multiplier1.15",
+    "transfer_boundary": "CAPITAL_TRANSFER_BOUNDARY_PASS8,44→20/min, admin ruin/no elimination, naval blocker latch",
+    "prestige_pure": "CAPITAL_PRESTIGE_BOUNDARIES_PASS5, promotion/holdings/deactivation/freeze timestamps",
+    "native_UI": "Ordinary initial Capital40-Gold purchase, Farm Repair17.5, free relocation, upgrades3–5, Max dark, shared theme,1280×720 and640×480",
+    "compile": "Affected Luau syntax compilation passed; not Roblox type analysis",
+    "whitespace": "git diff --check passed",
+    "subject_castle": "CAPITAL_SUBJECT_CASTLE_PASS8, actual root-defense actors, subject Capital applies locally to Castle, child troops not borrowed, root backing returned",
+    "source_parity": "12 affected sources synchronized; prior10 plus2 spectator presentation dependencies",
+    "spectator": "CAPITAL_SPECTATOR_SERVER_PASS2 and CAPITAL_SPECTATOR_CLIENT_PASS4: connected player, explicit Eliminated · Spectating HUD and existing province inspection"
+  },
+  "fixtures": [
+    "capital-battle-reset-2026-10-14.luau.txt",
+    "capital-client-guards-2026-10-14.luau.txt",
+    "capital-offense-server-2026-10-14.luau.txt",
+    "capital-policy-2026-10-14.luau.txt",
+    "capital-prestige-boundaries-2026-10-14.luau.txt",
+    "capital-repair-server-2026-10-14.luau.txt",
+    "capital-server-2026-10-14.luau.txt",
+    "capital-spectator-client-2026-10-14.luau.txt",
+    "capital-spectator-server-2026-10-14.luau.txt",
+    "capital-subject-castle-2026-10-14.luau.txt",
+    "capital-transfer-boundary-2026-10-14.luau.txt"
+  ],
+  "screenshots": [
+    "capital-2026-10-14/repair-compact.jpg",
+    "capital-2026-10-14/build-normal.jpg",
+    "capital-2026-10-14/max-normal.jpg",
+    "capital-2026-10-14/ordinary-built-normal.jpg"
+  ],
+  "corrected_fixture_errors": [
+    "Foreign-border fixture originally had no foreign holder",
+    "Snapshot independent field rather than nil liegeId",
+    "Synthetic mock needs lifecycle event initialization before troop mutation",
+    "Title snapshot rows rather than byRulerId"
+  ],
+  "implementation_fixes": [
+    "No capture damage/elimination from DebugResolveWar administrative forced captures",
+    "Relocation labels show preserved source level",
+    "Damaged Town recruitment preview/server pricing use effective level",
+    "Exact Prestige boundary shared by ownership/multiplier changes",
+    "Stale Capital revision correlated with request receipt"
+  ],
+  "limitations": [
+    "No current real multiplayer pass; synthetic actors clearly labeled",
+    "Published real-account reconnect/network timing unverified",
+    "Additional simultaneous/crossed/nested/naval multi-client scenarios in Playtest Backlog",
+    "Human usability/balance/Director acceptance pending"
+  ],
+  "git": "No commit, push, publication or staged changes",
+  "local_snapshot": {
+    "path": "docs/verification/capital-buildings-complete-2026-10-14.rbxl",
+    "bytes": 893824,
+    "sha256": "8D5574EFCC8C4C2397D17E3D9AA358B3A7464ECCA4E2527AB1A74400F26F8BD8",
+    "ignored": true,
+    "scope": "Stopped Edit place;12 affected-source correspondence, not whole-place Git coverage"
+  }
+}

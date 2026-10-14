@@ -6,6 +6,7 @@
 ]]
 
 local MapTriangles = {}
+local Geometry = require(script.Parent.MapGeometry)
 
 local template = Instance.new("WedgePart")
 template.Anchored = true
@@ -28,7 +29,8 @@ function MapTriangles.Draw(
 	c: { x: number, y: number },
 	color: Color3,
 	name: string,
-	thickness: number
+	thickness: number,
+	reuse: { WedgePart }?
 ): { WedgePart }
 	local pa, pb, pc = toV3(a), toV3(b), toV3(c)
 	local ab, ac, bc = pb - pa, pc - pa, pc - pb
@@ -63,8 +65,8 @@ function MapTriangles.Draw(
 	end
 	right = right.Unit
 
-	local w1 = template:Clone()
-	local w2 = template:Clone()
+	local w1 = if reuse and reuse[1] then reuse[1] else template:Clone()
+	local w2 = if reuse and reuse[2] then reuse[2] else template:Clone()
 	w1.Name = name .. "_a"
 	w2.Name = name .. "_b"
 	w1.Color = color
@@ -148,8 +150,8 @@ function MapTriangles.DrawQuad(
 		return {}
 	end
 	local parts = {}
-	for i = 2, #polygon - 1 do
-		local tri = MapTriangles.Draw(parent, polygon[1], polygon[i], polygon[i + 1], color, name .. "_" .. tostring(i), thickness)
+	for i, points in Geometry.Triangulate(polygon) do
+		local tri = MapTriangles.Draw(parent, points[1], points[2], points[3], color, name .. "_" .. tostring(i), thickness)
 		for _, p in tri do
 			if yOffset then
 				p.CFrame = p.CFrame + Vector3.new(0, yOffset, 0)

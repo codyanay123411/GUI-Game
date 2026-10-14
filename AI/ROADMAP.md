@@ -134,3 +134,13 @@ Director explicitly authorized fresh reserved-server Play Again for one requeste
 ## Authorized 2026-10-13 — Personal-domain permissions/autonomy/betrayal
 
 Implemented the two direct-subject grants, strict-greater autonomy and confirmed conserved betrayal with four approved lifecycle policies/nested direct-liege defender. Supersedes earlier root-only restrictions within this scope; broader delegation/rank defaults, seat powers, voting and chat expansion remain future. [Evidence](OPENFRONT_PLAYABILITY_REVIEW.md#liege-permissions-autonomy-and-betrayal--2026-10-13). Human/published verification remains separate.
+
+
+### Vale coastal/naval first pass — 2026-10-13
+
+Director-authorized geography, simple locked-force transports and cosmetic fronts are implemented with focused evidence in [Conquest/Victory](CONQUEST_VICTORY.md#vale-coastlands-naval-transport-and-conquest-fronts--2026-10-13); human/published verification remains as recorded, not Director acceptance. Ports/fleets/interception/naval economy and new politics remain outside this milestone. Historical Vale corner-grid assumptions are superseded only by the new authored map definition.
+
+
+## 2026-10-13 — Authorized Vale32/shared repeat-play update
+
+Current scope replaces the16-province/manual departure and requester-only replay milestone with32 provinces/three islands, automatic naval source and same-server restart voting. Staff discovery/routing is a separate moderation capability; reserved credentials and private invitations impose platform limits. Current evidence and remaining verification belong in CONQUEST_VICTORY/ADMIN_PERMISSIONS; political voting/terrain bonuses remain outside scope.

@@ -52,4 +52,19 @@ function AdminConfig.CanConfigureGame(userId: number): boolean
 	return typeof(interface) == "table" and interface.IsServer == true and userId == interface.creatorId
 end
 
+function AdminConfig.IsStaff(userId: number): boolean
+	if not RunService:IsServer() or typeof(userId) ~= "number" or userId ~= userId or userId % 1 ~= 0 or math.abs(userId) == math.huge then return false end
+	local interface = shared._K_INTERFACE
+	if typeof(interface) ~= "table" or interface.IsServer ~= true or typeof(interface.Auth) ~= "table" then return false end
+	local roles = interface.Data and interface.Data.roles
+	local threshold = math.huge
+	for _, key in { "mod", "moderator" } do
+		local role = roles and roles[key]
+		if role and typeof(role._rank) == "number" and role._rank > 0 and role._rank < threshold then threshold = role._rank end
+	end
+	if threshold == math.huge then return false end
+	local ok, rank = pcall(interface.Auth.getRank, userId)
+	return ok and typeof(rank) == "number" and rank == rank and rank >= threshold
+end
+
 return AdminConfig

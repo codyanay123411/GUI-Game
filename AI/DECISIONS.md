@@ -1,5 +1,19 @@
 # Decisions
 
+## Building purchase-price revision — 2026-10-14
+
+Director-approved: Farm/Town/Castle individual transitions10/15/20/30/40 Gold (115 total each); Capital15/25/35/45/60 (180 total). Repair remains exact half-current-level price, including fractional Gold. Earlier dated purchase-price approvals/recommendations and their verification amounts are superseded; preserve historical evidence. Effects, income, recruitment prices/capacity, support, placement/relocation, damage and elimination rules stay intact. This approves new initial pricing, not tested balance or Director acceptance of implementation. [Current tables/evidence](BUILDINGS_BALANCE_PROPOSAL.md#purchase-price-revision--2026-10-14).
+
+## Final building stage — 2026-10-14
+
+Director-approved Capital effects/prices, match-long foreign-border/naval-landing placement restriction, independent40–60% capture damage, exact half-price Repair, Capital elimination/personal surrender and restart clearing are implemented. Server Building/Economy/Military/Title/Territory/Hierarchy retain ownership; existing Build drawer owns presentation. Existing chat eligibility refresh is reused; no communications code change. Domination waits for ordered due captures; defeated troops have an explicit retired ledger. [Authoritative current rules/evidence and limitations](BUILDINGS_BALANCE_PROPOSAL.md#final-building-stage--capital-damagerepair-and-elimination--2026-10-14). Agent checks do not imply Director acceptance. Prior speculative relocation/damage-count/whole-Gold-repair/elimination suggestions are superseded.
+
+
+## Towns and Castles — 2026-10-14
+
+Director-approved stage two:500 starting troops/base personal cap; additive personal Town capacity and selected-province exact10-troop prices; retained over-cap troops; Castle exclusive available-reserve backing, linear partial strength and no backing casualties. Implemented through existing Building/Economy/Military authority and contextual Build drawer; Farms retained. Shared restart clears buildings; transfer/disconnect retains levels. Capital/damage/Repair/elimination remain later work. [Rules, changed files, actual checks and limitations](BUILDINGS_BALANCE_PROPOSAL.md#stage-two--towns-and-castles-implemented--2026-10-14). Agent verification is not Director acceptance; synthetic actors are not real multiplayer. No commit, push or publication.
+
+
 ## 2026-10-14 — Approved Town pricing and additive personal army cap
 
 Director approved500 starting/base-cap Troops, each functioning personal Town contributing100/250/450/700/1000,10-Troop batches at10 or local9.8/9.6/9.4/9.2/9 Gold and exact fractional prices. All living troops count once, including reservations/support; capacity grants no troops or authority. Supersede100-Troop batches,1000 start and local recruitment-rate windows; prior dated proposals are historical. Retaining over-cap troops and accepting conserved betrayal transfer overflow are recommendations, not approved lifecycle rules; damaged-Town behavior remains open. [Current plan](BUILDINGS_BALANCE_PROPOSAL.md); [stats](BUILDINGS_REFERENCE_STATS.md). No gameplay/UI implementation.
@@ -11,6 +25,11 @@ Director approved Farm totals2/5/9/14/20 and rank bonuses on base+Farm, retained
 ## 2026-10-14 — Buildings future direction, not implementation
 
 Director approved future starting Gold100/base personal income5, four five-level buildings, personal-only Capital totals (defense15%, combat15%, Prestige10%), Capital-capture personal surrender and 40–60% captured-building Repair with preserved levels/50% cost. This supersedes the prior proposed200/15 economy, replacement Capital3 bonus and Capital4 construction discount. Prices, strength applicability, repair count/basis/effect suspension, slots/Town and elimination lifecycle remain unresolved recommendations. [Approved versus proposed rules](BUILDINGS_BALANCE_PROPOSAL.md). No gameplay/UI implementation or balance acceptance.
+
+## 2026-10-13 — Approved coastal transport lifecycle
+
+Director authorized the16-ID coastal reshape, personally owned coastal departures, straight geometry-validated travel, locked launch and arrival-only defender window, and cosmetic conquest fronts. Director explicitly approved cancellation/refund during travel after departure ownership, stale target/domain or loss of both permission/autonomy. Accepted battles keep existing lifecycle. [Rules/evidence](CONQUEST_VICTORY.md#vale-coastlands-naval-transport-and-conquest-fronts--2026-10-13); not Director implementation acceptance.
+
 
 ## 2026-10-13 — Approved vassalage strength rules
 
@@ -280,6 +299,11 @@ Director selected “Fresh reserved server for the requester.” After match end
 ## 2026-10-13 — Approved personal-domain permissions and betrayal
 
 Director authorized denied-by-default direct-liege War/Diplomacy grants, immediate strict-greater autonomy and conserved confirmed betrayal. Approved all four lifecycle policies: block participant/subtree engagement/result; retain own treaties/no inheritance and check NAPs; invalidate hierarchy/domain-changed offers/revalidate permissions; preserve accepted actors/resources/calculated results and clean stale unresolved wars. Nested ruling: **use the former direct liege as defender**, with their own army/subtree, not ancestor forces. This narrowly supersedes root-only restrictions/older proposed root delegation; no rank defaults, seat powers or chat/admin changes. [Implementation/evidence](OPENFRONT_PLAYABILITY_REVIEW.md#liege-permissions-autonomy-and-betrayal--2026-10-13); agent verification is not Director acceptance.
+
+
+## 2026-10-13 — Replacement Vale32/naval/restart/staff scope
+
+Director replaced the earlier combined task:32 conquerable provinces on exactly three islands; land-priority automatic shortest personal coastal departure; retain approved naval guards/combat/front timing; same-server half-connected-player restart vote replaces requester-only reserved replay. New generations must isolate callbacks/requests and reset all match state without changing staff/settings/chat audience rules. Staff server discovery/join includes configured moderator, separately from GameTester, subject to actual Roblox routing credentials/capabilities. No publication or Git mutation authorized. Earlier dated16-province/manual-departure and requester-only replay evidence remains historical. [Implementation and limitations](CONQUEST_VICTORY.md#vale32-automatic-naval-and-shared-restart--2026-10-13).
 
 ## Moderation planning direction — 2026-10-14
 

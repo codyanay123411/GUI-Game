@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 
 --[[
 	Player-relevant Military / Armies V0.1 HUD.
@@ -93,6 +94,13 @@ function MilitaryController.Start()
 
 	local combatBonuses: any = nil
 	local VassalCombat = require(ReplicatedStorage.Shared.Util.VassalCombat)
+	local cap = 500
+	local castleSupport = 0
+	local recruitmentProvinces = {}
+	local function recruitmentProvince(): any
+		for _, row in recruitmentProvinces do if row.territoryId == selectedValue.Value then return row end end
+		return nil
+	end
 	local total = 0
 	local available = 0
 	local committed = 0
@@ -121,17 +129,20 @@ function MilitaryController.Start()
 	end
 
 	local function updateCost()
-		local cost, amount = RecruitmentPolicy.Preview(spendableGold or 0, recruitPercent)
+		local province = recruitmentProvince()
+		local cost, amount = RecruitmentPolicy.Preview(spendableGold or 0, recruitPercent, total, cap, if province then province.townLevel else 0)
 		local ended = gui:GetAttribute("MatchEnded") == true
-		local canEdit = hasState and spendableGold ~= nil and not ended and recruitFlight == nil
+		local canEdit = hasState and spendableGold ~= nil and not ended and recruitFlight == nil and province ~= nil
 		recruitBar.Set(recruitPercent, string.format("%d%% affordable recruitment", recruitPercent), canEdit)
-		local lines = { string.format("Preview: %d Troops / %d Gold", amount, cost) }
+		local lines = { string.format("Preview: %d Troops / %g Gold", amount, cost) }
 		if ended then table.insert(lines, "Recruitment frozen - Match ended.")
-		elseif recruitFlight then table.insert(lines, string.format("Submitting %d Troops for %d Gold...", recruitFlight.amount, recruitFlight.cost))
+		elseif recruitFlight then table.insert(lines, string.format("Submitting %d Troops for %g Gold...", recruitFlight.amount, recruitFlight.cost))
 		elseif not hasState or spendableGold == nil then table.insert(lines, "Waiting for your Gold and troop state.")
-		elseif math.floor(spendableGold) < 1 then table.insert(lines, "Insufficient Gold - At least 1 Gold is needed.")
-		elseif cost == 0 then table.insert(lines, "This stop rounds to zero. Choose a higher stop or wait for Gold.")
+		elseif not province then table.insert(lines, "Select a personally owned recruitment province.")
+		elseif total >= cap then table.insert(lines, if total > cap then "Over cap: existing troops retained. Recruitment blocked." else "Army full: build or upgrade a Town for room.")
+		elseif cost == 0 then table.insert(lines, "Zero whole batches at this stop: choose higher or obtain Gold/army room.")
 		end
+		if province then table.insert(lines, string.format("Town L%d · %g Gold/10 Troops · %d room", province.townLevel, province.priceTenths / 10, math.max(0, cap - total))) end
 		if recruitStatus ~= "" then table.insert(lines, recruitStatus) end
 		costLabel.Text = table.concat(lines, "\n")
 		recruitButton.Text = if recruitFlight then "Recruiting..." else "Recruit"
@@ -145,7 +156,7 @@ function MilitaryController.Start()
 	end, RecruitmentPolicy.Stops)
 
 	local function isLiveWar(war: any): boolean
-		return war ~= nil and (war.phase == "commit" or war.phase == "present")
+		return war ~= nil and (war.phase == "travel" or war.phase == "commit" or war.phase == "present")
 	end
 
 	local function liveWars(): { any }
@@ -258,6 +269,7 @@ function MilitaryController.Start()
 			"Enemy committed: " .. tostring(tonumber(result.enemyCommitted) or 0),
 			"Your casualties: " .. tostring(tonumber(result.casualties) or 0),
 			"Your survivors: " .. tostring(tonumber(result.survivors) or 0),
+			if result.ownCastleStrength then string.format("Your Castle: %g defensive strength · %d backing returned unharmed", result.ownCastleStrength, result.ownCastleSupport or 0) else "",
 		}, "\n")
 	end
 
@@ -268,13 +280,14 @@ function MilitaryController.Start()
 		end
 		lastBattleTokenByTerritory[territoryId] = (lastBattleTokenByTerritory[territoryId] or 0) + 1
 		local token = lastBattleTokenByTerritory[territoryId]
+		local generation = MatchIntent.GetGeneration()
 		lastBattleByTerritory[territoryId] = result
 		local displayed = displayedWar()
 		if displayed == nil or displayed.targetTerritoryId == territoryId then
 			resetCommitInput()
 		end
 		task.delay(lastBattleDuration(), function()
-			if lastBattleTokenByTerritory[territoryId] == token then
+			if generation == MatchIntent.GetGeneration() and lastBattleTokenByTerritory[territoryId] == token then
 				lastBattleByTerritory[territoryId] = nil
 			end
 		end)
@@ -302,7 +315,7 @@ function MilitaryController.Start()
 		local edit = editFor(warId)
 		local flight = CommitmentPolicy.Begin(edit)
 		if not flight then return false end
-		intent:FireServer("SetCommit", warId, flight.amount)
+		MatchIntent.Send(intent, "SetCommit", warId, flight.amount)
 		task.delay(8, function()
 			if edit.flight == flight then
 				edit.flight = nil; edit.rejected = true
@@ -363,8 +376,10 @@ function MilitaryController.Start()
 		local presenting = false
 		for _, active in wars do if active.phase == "present" then presenting = true end end
 		gui:SetAttribute("MilitaryPresenting", presenting)
-		stats.Text = string.format("Total: %d\nAvailable: %d\n%s: %d", total, available,
+		stats.Text = string.format("Total / cap: %d / %d\nAvailable: %d\n%s: %d", total, cap, available,
 			if presenting then "Held (incl. survivors)" else "Reserved across wars", committed)
+		stats.Text ..= string.format("\nCastle support held: %d · Recruitment room: %d", castleSupport, math.max(0, cap - total))
+		if total > cap then stats.Text ..= "\nOver cap · Existing troops retained" end
 		if combatBonuses then stats.Text ..= "\n" .. VassalCombat.Describe(combatBonuses) end
 		for _, active in wars do
 			if active.phase == "present" and active.ownResolvedStrengthMultiplier then
@@ -430,6 +445,15 @@ function MilitaryController.Start()
 			string.format("%s — %s", war.role or "?", war.targetDisplayName or war.targetTerritoryId),
 		}
 		if war.targetKind == "Unclaimed" then table.insert(lines, "Unclaimed militia: " .. tostring(war.neutralDefenders) .. " defenders") end
+		if war.role == "Defender" and war.ownCastleSupport then
+			table.insert(lines, string.format("Castle backing held: %d real troops · no backing casualties", war.ownCastleSupport))
+			if war.ownCastleStrength then table.insert(lines, string.format("Your Castle contribution: %g defensive strength (not troops)", war.ownCastleStrength)) end
+		end
+		if war.phase == "travel" then
+			table.insert(lines,"Transport travelling - troop amount locked at launch.")
+			table.insert(lines,"Arrival in " .. formatCountdown(war.travel.arrivesAt) .. ". Defender decision window starts on arrival.")
+			if war.role == "Attacker" then table.insert(lines,"Server-accepted locked force: " .. tostring(war.intended or 0)) end
+		end
 		if war.phase == "commit" then
 			table.insert(lines, (if war.locked then "Locked force: " else "Server-accepted reservation: ") .. tostring(war.intended or "none"))
 			if not war.locked then
@@ -496,7 +520,7 @@ function MilitaryController.Start()
 		local showBattle = war.phase == "present"
 		battleBanner.Visible = showBattle and not shell.Visible
 		if showBattle then
-			battleBanner.Text = "Combat calculated · Result pending — " .. (war.targetDisplayName or "contested territory")
+			battleBanner.Text = (if war.visualResult and war.visualResult.winner == "Defender" then "Attack repelled - ownership unchanged - " else "Combat decided - cosmetic front; ownership pending - ") .. (war.targetDisplayName or "contested territory")
 		end
 	end
 
@@ -513,30 +537,31 @@ function MilitaryController.Start()
 
 	recruitButton.MouseButton1Click:Connect(function()
 		if recruitFlight or not recruitButton.Active or gui:GetAttribute("MatchEnded") or spendableGold == nil then return end
-		local cost, amount = RecruitmentPolicy.Preview(spendableGold, recruitPercent)
+		local province = recruitmentProvince(); if not province then return end
+		local cost, amount = RecruitmentPolicy.Preview(spendableGold, recruitPercent, total, cap, province.townLevel)
 		if cost < 1 then return end
 		recruitSequence += 1
 		recruitFlight = { id = recruitSequence, amount = amount, cost = cost }
 		recruitStatus = ""
 		updateCost()
-		intent:FireServer("Recruit", amount, recruitSequence)
+		MatchIntent.Send(intent, "Recruit", amount, recruitSequence, selectedValue.Value, province.ownershipRevision, province.townLevel)
 	end)
 	local economyIntent = remotes:WaitForChild("EconomyClientEvent") :: RemoteEvent
 	local economyPush = remotes:WaitForChild("EconomyServerEvent") :: RemoteEvent
-	economyPush.OnClientEvent:Connect(function(kind: any, payload: any)
+	MatchIntent.ConnectPush(economyPush, function(kind: any, payload: any)
 		if kind ~= "State" then return end
 		local state = decodeState(payload)
 		if not state or typeof(state.gold) ~= "number" then return end
 		spendableGold = state.gold
 		updateCost()
 	end)
-	economyIntent:FireServer("Ready")
+	MatchIntent.Send(economyIntent, "Ready")
 
 	lockButton.MouseButton1Click:Connect(function()
 		local war = activeCommitWar()
 		if not war or war.phase ~= "commit" or war.locked or gui:GetAttribute("MatchEnded") then return end
 		if not CommitmentPolicy.CanReady(editFor(war.warId), war.intended) then return end
-		intent:FireServer("LockCommit", war.warId)
+		MatchIntent.Send(intent, "LockCommit", war.warId)
 	end)
 
 	selectedValue:GetPropertyChangedSignal("Value"):Connect(function()
@@ -544,13 +569,13 @@ function MilitaryController.Start()
 		render()
 	end)
 
-	push.OnClientEvent:Connect(function(kind: any, payload: any)
+	MatchIntent.ConnectPush(push, function(kind: any, payload: any)
 		if kind == "RecruitResult" then
 			local receipt = decodeState(payload)
 			if not receipt or not recruitFlight or receipt.requestId ~= recruitFlight.id then return end
 			recruitFlight = nil
 			recruitStatus = receipt.message or "Recruitment response received."
-			if receipt.accepted ~= true then economyIntent:FireServer("Ready") end
+			if receipt.accepted ~= true then MatchIntent.Send(economyIntent, "Ready") end
 			updateCost()
 			return
 		end
@@ -601,6 +626,7 @@ function MilitaryController.Start()
 		if not state then
 			return
 		end
+		cap = tonumber(state.cap) or 500; castleSupport = tonumber(state.castleSupport) or 0; recruitmentProvinces = state.recruitmentProvinces or {}
 		combatBonuses = state.combatBonuses
 		total = tonumber(state.total) or 0
 		available = tonumber(state.available) or 0
@@ -618,8 +644,17 @@ function MilitaryController.Start()
 		end
 	end)
 
+	MatchIntent.OnChanged(function()
+		noticeToken += 1;resultToast.Visible = false;battleBanner.Visible = false
+		for _, edit in edits do edit.token = (edit.token or 0)+1;edit.flight = nil end
+		edits, lastBattleByTerritory, lastBattleTokenByTerritory, wars = {}, {}, {}, {}
+		recruitFlight = nil;recruitStatus = "";recruitSequence = 0;recruitPercent = 25
+		spendableGold = nil;hasState = false;boundSessionWarId = nil;fieldStatus = ""
+		cap = 500;castleSupport = 0;recruitmentProvinces = {}
+		total, available, committed = 0, 0, 0;render()
+	end)
 	PrototypeGuiTheme.ApplyScreen(gui)
-	intent:FireServer("Ready")
+	MatchIntent.Send(intent, "Ready")
 	render()
 end
 

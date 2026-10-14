@@ -1,0 +1,11 @@
+10:09:42.037 SHIFT_FRESH_PASS - Client - CurrentServerUIFixture:1
+10:13:31.228 PRICE_AUTHORITY_PASS 9 westmere - Server - PriceAuthorityFinalFixture:2
+10:13:31.228 SHIFT_SERVER_PASS - Server - PriceAuthorityFinalFixture:2
+10:13:53.213 PRICE_UI_TARGET westmere - Server - PriceUIFundsFixture:1
+10:16:42.902 PRICE_NATIVE_UI_PASS 3 - Client - PriceShiftFixture:1
+10:16:43.736 SHIFT_NATIVE_KEY_PASS Default - Client - PriceShiftFixture:1
+10:20:07.745 CURRENT_SERVER_NATIVE_PASS 16 - Client - CurrentServerFinalFixture:2
+FINAL REFRESH SESSION:
+10:30:27.155 CURRENT_SERVER_NATIVE_PASS 16 - Client - CurrentServerRefreshFixture:2
+10:30:43.170 CURRENT_SERVER_AGE_PASS - Client - CurrentServerRefreshFixture:3
+10:41:20.336 PRICE_SERVERS_INPUT_FINAL_CORRESPONDENCE_PASS 6 mouse lock false; recovery preserved; fixtures removed - Edit

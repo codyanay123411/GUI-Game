@@ -1,0 +1,65 @@
+{
+  "date": "2026-10-14",
+  "scope": "Province building markers; existing public state and camera only",
+  "implemented": true,
+  "directorAccepted": false,
+  "studio": "Solo actual client + synthetic authoritative setup; no real multiplayer or natural progression claim",
+  "sourceCorrespondence": {
+    "count": 3,
+    "method": "Native verified command exact normalized-source equality after final edits; recovery retained, temporary fixtures absent"
+  },
+  "sources": [
+    {
+      "path": "ReplicatedStorage/Shared/Util/BuildingMarkerLayout.luau",
+      "sha256": "13fb446ffd1add3815ab7fd9d32c4a3e922ec1d4455d886a82615257c97b64a5"
+    },
+    {
+      "path": "StarterPlayerScripts/Controllers/MapBuildingMarkers.luau",
+      "sha256": "e9d5f860a306d5da63fb587b7bc6a00820731280fac2d7b2b08dcb0db8e95a94"
+    },
+    {
+      "path": "StarterPlayerScripts/Controllers/TerritoryMapController.luau",
+      "sha256": "1002d83230b9c6f1e1e0fc874ed71a39872b6bda55ff8d32df1f9a09501ed9d9"
+    }
+  ],
+  "checks": {
+    "geometryScenarios": 33,
+    "serverSetup": 24,
+    "clientStateAndPassiveObjects": 13,
+    "paidRepair": 3,
+    "clientRepairAndRepeatMount": 4,
+    "nativeSelection": 1,
+    "nativePanAndProjection": 2,
+    "serverSharedReset": 33,
+    "hiddenClientSlotsAfterReset": 128,
+    "syntheticCosmeticCoexistence": 3,
+    "syntheticCosmeticCleanup": 1,
+    "syntaxCompilation": "Three affected modules passed",
+    "whitespace": "git diff --check passed; affected tracked/untracked source/document whitespace checked"
+  },
+  "screenshots": {
+    "directory": "building-markers-2026-10-14",
+    "conditions": "Seeded levels/resources; native Studio device views. Compact small provinces simplify rather than displaying full badges; damaged/repaired close-up images predate only the lowered detail cutoff, same full-detail appearance."
+  },
+  "privacy": "Existing BuildingService public province level/damage/ruin snapshot, not private Capital metadata, troop/support counts or enemy war results",
+  "limitations": [
+    "Human recognition/readability and Director acceptance pending",
+    "No real-account concurrent capture/relocation/restart delivery pass",
+    "Synthetic cosmetic front/transport payloads did not launch or resolve a real naval war",
+    "Touch has no hover; existing Build remains detail path"
+  ],
+  "failedAttempts": [
+    "Initial undefined-baseline sync corrected with exact actual-source guard",
+    "Badge/tooltip text-style backing and map-container hover filter corrected",
+    "Initial clamped-direction pan and over-strict 1px GUI rounding assertion; reverse pan passed with2px tolerance"
+  ],
+  "output": "building-markers-2026-10-14/observed-output.txt",
+  "noCommitPushPublication": true,
+  "priorMapPreserved": true,
+  "localSnapshot": {
+    "path": "docs/verification/building-markers-verified-2026-10-14.rbxl",
+    "bytes": 896786,
+    "sha256": "8811d5e42a7ead63e7b12512eafcdeb6b716bdd3260a340cc292198f6f682afe",
+    "scope": "Local edit-state place after final source correspondence; not runtime seeded match; no publication"
+  }
+}

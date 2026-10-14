@@ -1,5 +1,40 @@
 # Changelog
 
+## 2026-10-14 — Finalize completed Vale and building implementation
+
+Preserve accumulated Vale32/automatic naval/cosmetic fronts/shared restart, buildings/Capital/damage/Repair/elimination, map markers, latest prices, staff/current-server browser and Shift Lock in main. Include production source/configuration and substantive existing verification evidence; exclude disposable untracked fixtures, local tooling and recovery assets. Correct stale active planning/completion/price references; preserve historical tests, approval distinctions and moderation features as planned. See [finalization](FINALIZATION.md#2026-10-14--completed-local-implementation-finalization). No Roblox publication.
+
+## Building prices, native current server and Shift Lock — 2026-10-14
+
+Implemented approved individual purchase/half-price Repair revision through existing shared config, current-session row within native Kohl Servers (Already here; Studio/non-routable fallback), and StarterPlayer.EnableMouseLockOption=false. Tracked PresentationBindings/early bootstrap enforce the property; Studio edit property is also false. Native Shift key left MouseBehavior Default in fresh Play with player.DevEnableMouseLock=false. No other shortcut changed. [Price evidence](BUILDINGS_BALANCE_PROPOSAL.md#purchase-price-revision--2026-10-14); [server-browser boundaries/limits](ADMIN_PERMISSIONS.md#native-kohl-current-server-row--2026-10-14); [manifest](../docs/verification/prices-servers-input-runtime-2026-10-14.json). Initial guard/fixture/adapter problems were corrected before passes; no Director acceptance or published routing claim. Prior local work/recovery preserved; no commit/push/publication.
+
+## Province building markers — 2026-10-14
+
+Implemented read-only Farm/Town/Castle/Capital province symbols, fixed geometry-contained slots, levels/Max, damage/Repair, inert ruins, hover and zoom simplification with existing camera/theme. Three affected sources match Studio; passive input, native select/pan, synthetic building/Repair/reset and front/transport coexistence evidence are recorded in [the building report](BUILDINGS_BALANCE_PROPOSAL.md#province-building-markers--2026-10-14). Human recognition/readability and real-client concurrent delivery remain unaccepted/unverified. Prior gameplay/recovery preserved; no commit/push/publication.
+
+## Final building stage — 2026-10-14
+
+Director-approved Capital effects/prices, match-long foreign-border/naval-landing placement restriction, independent40–60% capture damage, exact half-price Repair, Capital elimination/personal surrender and restart clearing are implemented. Server Building/Economy/Military/Title/Territory/Hierarchy retain ownership; existing Build drawer owns presentation. Existing chat eligibility refresh is reused; no communications code change. Domination waits for ordered due captures; defeated troops have an explicit retired ledger. [Authoritative current rules/evidence and limitations](BUILDINGS_BALANCE_PROPOSAL.md#final-building-stage--capital-damagerepair-and-elimination--2026-10-14). Agent checks do not imply Director acceptance. Prior speculative relocation/damage-count/whole-Gold-repair/elimination suggestions are superseded.
+
+
+## Towns and Castles — 2026-10-14
+
+Director-approved stage two:500 starting troops/base personal cap; additive personal Town capacity and selected-province exact10-troop prices; retained over-cap troops; Castle exclusive available-reserve backing, linear partial strength and no backing casualties. Implemented through existing Building/Economy/Military authority and contextual Build drawer; Farms retained. Shared restart clears buildings; transfer/disconnect retains levels. Capital/damage/Repair/elimination remain later work. [Rules, changed files, actual checks and limitations](BUILDINGS_BALANCE_PROPOSAL.md#stage-two--towns-and-castles-implemented--2026-10-14). Agent verification is not Director acceptance; synthetic actors are not real multiplayer. No commit, push or publication.
+
+
+## 2026-10-14 — Add Farms to contextual Build
+
+One Farm per province, sequential validated purchases, current-owner production and existing drawer Build/Upgrade/Max. Set100 starting Gold/base5 and extend existing rank fractional carry to fractional base ticks; same-server restart clears Farms. No Repair or Town/Castle/Capital mechanics. [Current evidence](BUILDINGS_BALANCE_PROPOSAL.md#farm-stage-one--2026-10-14-implementation).
+
+## 2026-10-13 — Expand Vale and replace replay with shared restart
+
+Add three-island Vale32, automatic shortest authored naval departure with land priority, decorative geography and pooled decided fronts. Replace reserved replay with generation-isolated same-server votes/resets; add trusted staff server discovery/routing without changing GameTester authority. [Evidence and platform limitations](CONQUEST_VICTORY.md#vale32-automatic-naval-and-shared-restart--2026-10-13). The old replay helper is archived, not discarded; historical checks below retain their scope.
+
+## 2026-10-13 — Add coastal Vale and naval transport attacks
+
+Replace Vale grid adjacency with authored coastlands/neck/channel, add server-held naval travel using existing Warfare/Military contracts, and animate actor-scoped decided conquest fronts without early ownership mutation. [Checks/limits](CONQUEST_VICTORY.md#vale-coastlands-naval-transport-and-conquest-fronts--2026-10-13).
+
+
 ## 2026-10-13 — Finalize accumulated GUI, progression and politics work
 
 Preserve implemented GUI/loop/theme/admin improvements, personal Prestige/scaled titles, rank Gold, fixed-stop commitment/recruitment, council/authority, grants/autonomy/domain diplomacy/betrayal, Play Again route and combat bonuses with documentation/evidence. [Finalization boundaries](FINALIZATION.md#2026-10-13--accumulated-implementation-finalization); no new acceptance or published routing claim.

@@ -4,8 +4,8 @@
 	Translates configured Gold/minute into the V0.1 global payout interval.
 
 	Territory config stores Gold per minute, not "+1 per 6 seconds".
-	V0.1 requires that (goldPerMinute * intervalSeconds / 60) is a whole number.
-	Rank bonuses carry exact fractional units; configured base payouts remain whole.
+	Farm-stage production may pay fractional Gold; fixed-point carry preserves it.
+	Configured whole Gold/minute at the six-second cadence yields tenths before rank.
 ]]
 
 local EconomyConfig = require(script.Parent.Parent.Config.EconomyConfig)
@@ -20,7 +20,7 @@ function EconomyPayout.GoldPerTick(goldPerMinute: number): number?
 	if typeof(goldPerMinute) ~= "number" then
 		return nil
 	end
-	if goldPerMinute < 0 or goldPerMinute ~= goldPerMinute then
+	if goldPerMinute < 0 or goldPerMinute ~= goldPerMinute or goldPerMinute == math.huge then
 		return nil
 	end
 	if goldPerMinute ~= math.floor(goldPerMinute) then
@@ -28,9 +28,6 @@ function EconomyPayout.GoldPerTick(goldPerMinute: number): number?
 	end
 	local interval = EconomyConfig.PayoutIntervalSeconds
 	local numerator = goldPerMinute * interval
-	if numerator % 60 ~= 0 then
-		return nil
-	end
 	return numerator / 60
 end
 
@@ -41,7 +38,7 @@ function EconomyPayout.ValidateTerritoryIncome(territoryId: string, goldPerMinut
 	if EconomyPayout.GoldPerTick(goldPerMinute) == nil then
 		return false,
 			string.format(
-				"Territory %s baseGoldIncome %s Gold/min is not a whole payout at %ss (goldPerMinute * interval / 60 must be a whole number).",
+				"Territory %s baseGoldIncome %s Gold/min is not valid finite whole Gold/minute at %ss.",
 				territoryId,
 				tostring(goldPerMinute),
 				tostring(EconomyConfig.PayoutIntervalSeconds)
@@ -75,10 +72,11 @@ function EconomyPayout.IncomeWithRank(baseIncome: number, rank: number): number
 end
 
 -- Only personal province payouts call this. Grants/start/spending never enter it.
-function EconomyPayout.CreditWithRank(baseWholePayout: number, rank: number, remainder: number): (number, number)
-	assert(baseWholePayout >= 0 and baseWholePayout % 1 == 0 and baseWholePayout < math.huge, "Invalid base payout")
+function EconomyPayout.CreditWithRank(basePayout: number, rank: number, remainder: number): (number, number)
+	assert(basePayout >= 0 and basePayout < math.huge, "Invalid base payout")
 	assert(remainder >= 0 and remainder < 10000 and remainder % 1 == 0, "Invalid Gold remainder")
-	local units = baseWholePayout * (10000 + (EconomyConfig.RankBonusBasisPoints[rank] or 0)) + remainder
+	-- Whole Gold/minute, six-second ticks and configured basis points yield integer units; round binary noise only.
+	local units = math.round(basePayout * (10000 + (EconomyConfig.RankBonusBasisPoints[rank] or 0))) + remainder
 	return math.floor(units / 10000), units % 10000
 end
 

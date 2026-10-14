@@ -93,7 +93,7 @@ end
 
 local function noticePlayer(player: Player, message: string)
 	print("[Diplomacy] notice ->", player.Name, message)
-	serverPush:FireClient(player, "Notice", message)
+	MatchState.Send(serverPush, player, "Notice", message)
 end
 
 local function noticeRulerId(rulerId: string, message: string)
@@ -213,10 +213,10 @@ local function pushState(toPlayer: Player?)
 	end
 	if toPlayer then
 		print("[Diplomacy] push State to", toPlayer.Name)
-		serverPush:FireClient(toPlayer, "State", encoded)
+		MatchState.Send(serverPush, toPlayer, "State", encoded)
 	else
 		print("[Diplomacy] push State all clients agreements=", #payload.agreements, "requests=", #payload.requests)
-		serverPush:FireAllClients("State", encoded)
+		MatchState.Send(serverPush, nil, "State", encoded)
 	end
 end
 
@@ -551,7 +551,7 @@ function DiplomacyService.Start()
 	local remotesFolder = ReplicatedStorage:WaitForChild("Remotes") :: Folder
 	clientIntent = remotesFolder:WaitForChild("DiplomacyClientEvent") :: RemoteEvent
 	serverPush = remotesFolder:WaitForChild("DiplomacyServerEvent") :: RemoteEvent
-	clientIntent.OnServerEvent:Connect(onClientIntent)
+	MatchState.ConnectIntent(clientIntent, onClientIntent)
 
 	local debugFolder = ServerScriptService:FindFirstChild("DiplomacyDebug")
 	if debugFolder then
@@ -644,6 +644,14 @@ function DiplomacyService.Start()
 
 	pushState()
 	print("[Diplomacy] service started")
+end
+
+function DiplomacyService.PublishMatch() pushState() end
+
+function DiplomacyService.ResetMatch()
+	assert(MatchState.IsResetting())
+	for _, request in requestsById do cancelExpire(request) end
+	agreementsByKey, requestsById = {}, {}
 end
 
 return DiplomacyService

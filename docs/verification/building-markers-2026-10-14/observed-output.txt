@@ -1,0 +1,14 @@
+08:38:17.221 BUILDING_MARKER_SERVER_SETUP_PASS 24 - Server - BuildingMarkerServerFixture:23
+08:38:40.837 BUILDING_MARKER_CLIENT_PASS 13 decorative properties + current public state - Client - BuildingMarkerClientFixture:20
+08:40:14.116 BUILDING_MARKER_NATIVE_SELECT_PASS - Client - BuildingMarkerSelectFixture:1
+08:41:25.051 BUILDING_MARKER_REPAIR_PASS 3 - Server - BuildingMarkerRepairFixture:1
+08:41:46.095 BUILDING_MARKER_NATIVE_PAN_ALIGNMENT_PASS 2 - Client - BuildingMarkerAlignmentFixture:1
+08:42:41.628 BUILDING_MARKER_REPAIR_CLIENT_MOUNT_PASS 4 - Client - BuildingMarkerRepairClientFixture:1
+08:45:07.760 BUILDING_MARKER_RESET_SERVER_PASS 33 - Server - BuildingMarkerResetFixture:1
+08:45:22.402 BUILDING_MARKER_RESET_CLIENT_PASS 128 - Client - BuildingMarkerResetClientFixture:1
+FINAL SOURCE SESSION:
+08:47:27.632 BUILDING_MARKER_SERVER_SETUP_PASS 24 - Server - BuildingMarkerServerFixture:23
+08:47:50.898 BUILDING_MARKER_CLIENT_PASS 13 decorative properties + current public state - Client - BuildingMarkerClientFixture:20
+08:52:37.253 BUILDING_MARKER_EFFECT_COEXISTENCE_PASS 3 - Client - BuildingMarkerEffectsFixture:2
+08:53:02.468 BUILDING_MARKER_EFFECT_CLEANUP_PASS - Client - BuildingMarkerEffectsFixture:2
+08:56:04.411 BUILDING_MARKER_FINAL_CORRESPONDENCE_PASS 3 no active fixtures; recovery retained - Edit

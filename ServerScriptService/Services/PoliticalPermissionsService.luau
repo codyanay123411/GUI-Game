@@ -58,12 +58,12 @@ function Service.GetForPlayer(player: Player): any
 	return { self = if id then Service.GetEffective(id) else {}, subjects = subjects, frozen = Match.IsEnded() }
 end
 function Service.Refresh()
-	if not started then return end
+	if not started or Match.IsResetting() then return end
 	local rows = Domain.Index(Hierarchy.GetSnapshot().rulers)
 	for id in grants do if not rows[id] then grants[id] = nil else edge(id, rows[id]) end end
 	for _, player in Players:GetPlayers() do
 		local payload = HttpService:JSONEncode(Service.GetForPlayer(player))
-		if lastPayload[player] ~= payload then lastPayload[player] = payload; push:FireClient(player, "State", payload) end
+		if lastPayload[player] ~= payload then lastPayload[player] = payload; Match.Send(push, player, "State", payload) end
 	end
 	Service.Changed:Fire()
 end
@@ -90,17 +90,22 @@ function Service.Start()
 		return item
 	end
 	push = remote("PermissionsServerEvent")
-	remote("PermissionsClientEvent").OnServerEvent:Connect(function(player, action, subject, permission, enabled, revision)
-		if action == "Ready" then push:FireClient(player, "State", HttpService:JSONEncode(Service.GetForPlayer(player))); return end
+	Match.ConnectIntent(remote("PermissionsClientEvent"), function(player, action, subject, permission, enabled, revision)
+		if action == "Ready" then Match.Send(push, player, "State", HttpService:JSONEncode(Service.GetForPlayer(player))); return end
 		local id = Hierarchy.GetRulerIdForUserId(player.UserId)
 		if action ~= "Set" or not id or typeof(subject) ~= "string" then return end
 		local ok, message = Service.Set(id, subject, permission, enabled, revision)
-		push:FireClient(player, "PermissionResult", HttpService:JSONEncode({ subject = subject, permission = permission, revision = revision, accepted = ok, message = message }))
-		if not ok then push:FireClient(player, "State", HttpService:JSONEncode(Service.GetForPlayer(player))) end
+		Match.Send(push, player, "PermissionResult", HttpService:JSONEncode({ subject = subject, permission = permission, revision = revision, accepted = ok, message = message }))
+		if not ok then Match.Send(push, player, "State", HttpService:JSONEncode(Service.GetForPlayer(player))) end
 	end)
 	Hierarchy.SetPermissionsRefresh(Service.Refresh)
 	require(script.Parent.PoliticalCouncilService).AuthorityChanged:Connect(Service.Refresh)
 	Players.PlayerRemoving:Connect(function(player) lastPayload[player] = nil end)
 	Service.Refresh()
 end
+function Service.ResetMatch()
+	assert(Match.IsResetting())
+	grants, lastPayload = {}, {}
+end
+
 return Service

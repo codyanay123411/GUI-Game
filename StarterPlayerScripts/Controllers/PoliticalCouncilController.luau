@@ -1,4 +1,5 @@
 --!strict
+local MatchIntent = require(game:GetService("ReplicatedStorage").Shared.Util.MatchIntent)
 -- Only server-filtered membership; no strength calculation or political actions.
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -36,7 +37,7 @@ function Controller.Start()
 	body.Parent = main
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	local push = remotes:WaitForChild("CouncilServerEvent") :: RemoteEvent
-	push.OnClientEvent:Connect(function(kind: any, payload: any)
+	MatchIntent.ConnectPush(push, function(kind: any, payload: any)
 		if kind ~= "State" or typeof(payload) ~= "string" then return end
 		local ok, state = pcall(function() return HttpService:JSONDecode(payload) end)
 		if not ok or typeof(state) ~= "table" or typeof(state.councils) ~= "table" then return end
@@ -52,6 +53,6 @@ function Controller.Start()
 		body.Text = table.concat(lines, "\n")
 	end)
 	local intent = remotes:WaitForChild("CouncilClientEvent") :: RemoteEvent
-	intent:FireServer("Ready")
+	MatchIntent.Send(intent, "Ready")
 end
 return Controller

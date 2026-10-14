@@ -152,6 +152,46 @@ return function(_K)
 		gate.commands[def] = true
 		_K.Registry.registerCommand(_K, def)
 	end
+	-- Separate moderation capability: this never admits GameTester commands.
+	local staffGate = _K._strategyStaffServerGate
+	if not staffGate then
+		staffGate = { commands = {}, original = _K.Auth.hasCommand };_K._strategyStaffServerGate = staffGate
+		_K.Auth.hasCommand = function(userId, command)
+			local def = if typeof(command) == "string" then _K.Registry.commands[string.lower(command)] else command
+			if not staffGate.commands[def] then return staffGate.original(userId, command) end
+			local player = Players:GetPlayerByUserId(userId)
+			local allowed = if RunService:IsServer() then require(ServerScriptService.Services.AdminConfig).IsStaff(userId)
+				else player ~= nil and player:GetAttribute("_StaffServerAuthorized") == true
+			if not allowed then return false end
+			local rank = _K.Auth.getRank(userId)
+			return math.max(1, rank)
+		end
+	end
+	local function staffCommand(def)
+		def.group = "Moderation";staffGate.commands[def] = true;_K.Registry.registerCommand(_K, def)
+	end
+	local function staffFeedback(context, ok: boolean, result: any)
+		local message = result
+		if ok and typeof(result) == "table" then
+			local lines = { "Active project instances (latest 100). Join with ;joinstrategyserver <instance ID>." }
+			for _, row in result do table.insert(lines, string.format("%s | place %s | %s | %d/%d | %s | %s", row.id, tostring(row.placeId), row.kind, row.players, row.capacity,
+				if row.ended then "Ended / inspection" else "Playing", row.note)) end
+			if #result == 0 then table.insert(lines, "No fresh registry entries. Older servers need this version before they advertise.") end
+			message = table.concat(lines, "\n")
+		end
+		context._K.Remote.Notify:Fire(context.fromPlayer, { Text = tostring(message):gsub("&", "&amp;"):gsub("<", "&lt;"):gsub(">", "&gt;") })
+	end
+	staffCommand({ name = "strategyservers", description = "Staff: list active project public/private/reserved instances. Credentials stay server-only; inaccessible routes are explained.", args = {},
+		run = function(context)
+			if not RunService:IsServer() then return end
+			local ok, result = require(ServerScriptService.Services.StaffServerService).List(context.fromPlayer);staffFeedback(context, ok, result)
+		end })
+	staffCommand({ name = "joinstrategyserver", description = "Staff: leave this server and join a listed instance. Roblox access/full/closed checks apply; reserved access requires registered server credentials.",
+		args = { { type = "rawString", name = "instanceId", description = "ID from strategyservers; never an access code" } },
+		run = function(context, id)
+			if not RunService:IsServer() then return end
+			local ok, result = require(ServerScriptService.Services.StaffServerService).Join(context.fromPlayer, id);staffFeedback(context, ok, result)
+		end })
 
 	register({
 		name = "adminhelp",

@@ -121,10 +121,10 @@ local function pushState(toPlayer: Player?)
 	end
 	if toPlayer then
 		print("[Territory] push State to", toPlayer.Name)
-		serverPush:FireClient(toPlayer, "State", encoded)
+		MatchState.Send(serverPush, toPlayer, "State", encoded)
 	else
 		print("[Territory] push State all clients")
-		serverPush:FireAllClients("State", encoded)
+		MatchState.Send(serverPush, nil, "State", encoded)
 	end
 	if councilRefresh then councilRefresh() end
 	ownerChangedBindable:Fire()
@@ -150,8 +150,8 @@ local function unclaimRuler(rulerId: string)
 	pushState()
 end
 
-local function assignStartingTerritory(rulerId: string)
-	if MatchState.IsEnded() then return end
+local function assignStartingTerritory(rulerId: string, resetting: boolean?)
+	if MatchState.IsEnded() and not (resetting and MatchState.IsResetting()) then return end
 	local existing = territoriesByRuler[rulerId]
 	if existing and #existing > 0 then
 		return
@@ -313,7 +313,7 @@ function TerritoryMapService.Start()
 	clientIntent = remotesFolder:WaitForChild("TerritoryClientEvent") :: RemoteEvent
 	serverPush = remotesFolder:WaitForChild("TerritoryServerEvent") :: RemoteEvent
 
-	clientIntent.OnServerEvent:Connect(onClientIntent)
+	MatchState.ConnectIntent(clientIntent, onClientIntent)
 
 	local debugFolder = ServerScriptService:FindFirstChild("TerritoryMapDebug")
 	if debugFolder then
@@ -360,6 +360,13 @@ function TerritoryMapService.Start()
 
 	-- Prototype/debug: running instance for Command Bar / MCP. Not a client remote.
 	_G.__TerritoryMapV01 = TerritoryMapService
+end
+
+function TerritoryMapService.ResetMatch()
+	assert(MatchState.IsResetting())
+	ownerByTerritory, territoriesByRuler, colorIndexByRuler, revisionByTerritory = {}, {}, {}, {}
+	nextColorIndex = 1
+	for _, ruler in Hierarchy.GetSnapshot().rulers do if ruler.hasUser then assignStartingTerritory(ruler.rulerId, true) end end
 end
 
 return TerritoryMapService

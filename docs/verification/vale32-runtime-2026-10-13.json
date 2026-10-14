@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-13",
+  "scope": "Vale32, automatic naval departure, same-server restart and trusted staff routing",
+  "acceptance": "Implemented; agent verification is not Director acceptance",
+  "automatic": {
+    "productionLuauCompiled": 101,
+    "pureAssertions": { "mapRoutesTitles": 338, "tiesAndLandBlocker": 3, "restartAndStaffPolicy": 23 },
+    "diffCheck": "PASS"
+  },
+  "studio": {
+    "soloAssertions": 77,
+    "correctedThreeClientServerAssertions": 60,
+    "correctedClientAssertions": [16, 16, 17],
+    "setup": "Synthetic ownership/hierarchy/troops and controlled mechanical timing; not a natural full match",
+    "rerunReason": "Deferred generation cleanup erased fresh client state; synchronous cleanup fixed and affected three-client scenario rerun",
+    "nativeFlows": ["normal/compact automatic preview", "fixed-stop selection and locked launch", "concurrent decided land/naval fronts", "pan/zoom alignment", "final inspection/reopening", "duplicate-safe votes", "disconnect-triggered threshold/reset"],
+    "visualFixture": "Runtime-only extended cosmetic presentation interval for screenshots; production duration unchanged",
+    "finalAffectedSourceEquality": { "count": 47, "output": "VALE32_FINAL_SOURCE_PARITY_PASS47", "localTime": "22:33:18.942" },
+    "activeVerificationFixtures": false
+  },
+  "localSnapshot": {
+    "path": "docs/verification/vale32-final-2026-10-13.rbxl",
+    "savedLocalTime": "22:36:30",
+    "bytes": 869354,
+    "sha256": "f8a21494b641a17afc08cb7c3482ed44028e4e18766da7012eafee034cbb8ea9",
+    "gitIgnored": true,
+    "coverage": "Saved current Studio place; no claim of external assets/services or published parity"
+  },
+  "unverified": [
+    "Actual late spectator arrival/vote: attempted addition did not confirm arrival",
+    "Published MemoryStore registration/expiry and Roblox public/private/reserved routing",
+    "Revised pooled-front repulsion and disabled-animation runtime branches",
+    "Fault-injected reset-failure feedback and final timer-guard runtime refinements",
+    "Human usability, balance acceptance and touch"
+  ],
+  "preservation": "Prior local work, ignored snapshots and Studio recovery retained; obsolete reserved replay helper archived inactive",
+  "gitCommitPush": false,
+  "robloxPublication": false
+}

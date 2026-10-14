@@ -76,4 +76,9 @@ end
 function Service.Remove(actor: string)
 	quotes[actor], accepted[actor] = nil, nil
 end
+function Service.ResetMatch()
+	assert(Match.IsResetting())
+	quotes, accepted = {}, {}
+end
+
 return Service

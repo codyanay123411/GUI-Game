@@ -1,5 +1,7 @@
 # Contextual map interaction and attention markers
 
+**2026-10-13 replacement:** Vale32 uses land-priority review and automatic personal coastal departure, with no manual departure selector. Map art/fronts preserve shape clipping, political meaning and non-button pass-through; match-generation cleanup removes stale selection, attention and workflows before new state arrives. Normal/compact native evidence and remaining limits: [current report](CONQUEST_VICTORY.md#vale32-automatic-naval-and-shared-restart--2026-10-13).
+
 **Subsequent migration:** The temporary retention of full legacy navigation described here was superseded by the Director-authorized [GUI redundancy cleanup](GUI_REDUNDANCY_CLEANUP.md). Historical verification below remains intact.
 
 Status: IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED. No Roblox publication.
@@ -71,3 +73,8 @@ Synthetic successful Communications receipts verify attention presentation only.
 Director acceptance remains pending for action discoverability, readability, notification density and overall game feel. Nearest ruler anchor uses authored borders, then centroid proximity and stable ID; a ruler with no personally held land has no province marker. Existing offers/toasts/full views remain accessible. An already declared war retains its existing cancellation/commitment rules; drawer Cancel is a pre-declaration navigation action.
 
 Next milestone recommendation: Director playtesting of map action discoverability and attention density, followed by real-account Communications checks before serious multiplayer playtesting. Do not infer gameplay acceptance from agent presentation checks.
+
+
+## Coastal map extension — 2026-10-13
+
+Existing radial/workflow now offers Naval attack when a personal coastal departure has a geometry-valid route. Existing fixed-stop bar remains preview-only until explicit launch/lock; travel and arrival use the existing Military workflow/attention path. Blue water is not land adjacency. WorldModel fronts are actor-scoped cosmetic decided results; owner labels remain authoritative, selection and passive radial space preserved. [Implementation, fixture corrections and limits](CONQUEST_VICTORY.md#vale-coastlands-naval-transport-and-conquest-fronts--2026-10-13). Historical corner-grid statements describe the prior Vale geography.

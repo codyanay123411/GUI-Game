@@ -25,6 +25,14 @@ local TitleProgressionService = {}
 assert(Config.UpdateIntervalSeconds >= 0.1 and Config.UpdateIntervalSeconds <= 60, "Prestige update interval must be bounded")
 local ledger = Accrual.new(Config.PrestigePerPersonalProvincePerMinute)
 local conquerable: { [string]: boolean } = {}
+function TitleProgressionService.SettleCapital(id: string): number
+	local at = workspace:GetServerTimeNow();ledger:Get(id, at);return at
+end
+function TitleProgressionService.RefreshCapital(id: string, boundary: number?)
+	local level = require(script.Parent.BuildingService).GetCapitalLevel(id)
+	local _, _, bonus = require(ReplicatedStorage.Shared.Util.BuildingPolicy).Capital(level)
+	ledger:SetMultiplier(id, 1 + bonus, boundary or workspace:GetServerTimeNow())
+end
 
 local started = false
 local clientIntent: RemoteEvent
@@ -72,7 +80,7 @@ local function buildRow(ruler: any): any
 	local control = realmControl(ruler.rulerId)
 	local prestige = getPrestige(ruler.rulerId)
 	local personal = personalHoldings(ruler.rulerId)
-	local rate = if MatchState.IsEnded() then 0 else personal * Config.PrestigePerPersonalProvincePerMinute
+	local rate = if MatchState.IsEnded() then 0 else personal * Config.PrestigePerPersonalProvincePerMinute * (if ledger.accounts[ruler.rulerId] then ledger.accounts[ruler.rulerId].multiplier or 1 else 1)
 	if nextRank == nil then
 		return {
 			rulerId = ruler.rulerId,
@@ -159,16 +167,16 @@ local function pushState(toPlayer: Player?)
 	end
 	if toPlayer then
 		print("[Title] push State to", toPlayer.Name)
-		serverPush:FireClient(toPlayer, "State", encoded)
+		MatchState.Send(serverPush, toPlayer, "State", encoded)
 	else
 		print("[Title] push State all clients")
-		serverPush:FireAllClients("State", encoded)
+		MatchState.Send(serverPush, nil, "State", encoded)
 	end
 end
 
 local function notice(player: Player, message: string)
 	print("[Title] notice ->", player.Name, message)
-	serverPush:FireClient(player, "Notice", message)
+	MatchState.Send(serverPush, player, "Notice", message)
 end
 
 local function refresh()
@@ -257,7 +265,7 @@ function TitleProgressionService.Start()
 	local remotesFolder = ReplicatedStorage:WaitForChild("Remotes") :: Folder
 	clientIntent = remotesFolder:WaitForChild("TitleClientEvent") :: RemoteEvent
 	serverPush = remotesFolder:WaitForChild("TitleServerEvent") :: RemoteEvent
-	clientIntent.OnServerEvent:Connect(onClientIntent)
+	MatchState.ConnectIntent(clientIntent, onClientIntent)
 
 	local debugFolder = ServerScriptService:FindFirstChild("TitleProgressionDebug")
 	if debugFolder then
@@ -319,6 +327,7 @@ function TitleProgressionService.Start()
 	end)
 	Territory.SetOwnershipAccounting(function(id, previous, nextOwner, at)
 		if not conquerable[id] then return end
+		require(script.Parent.BuildingService).OwnershipBoundary(id, previous, nextOwner, at)
 		if previous and ledger.accounts[previous] then
 			ledger:SetHoldings(previous, ledger.accounts[previous].holdings - 1, at)
 		end
@@ -336,7 +345,7 @@ function TitleProgressionService.Start()
 	Hierarchy.RulerCreated:Connect(refresh)
 	Hierarchy.RulerRemoving:Connect(refresh)
 	task.spawn(function()
-		while not MatchState.IsEnded() do
+		while started do
 			task.wait(Config.UpdateIntervalSeconds)
 			if not MatchState.IsEnded() then refresh() end
 		end
@@ -355,6 +364,15 @@ function TitleProgressionService.Start()
 	-- Prototype/debug: bind the running instance for Command Bar / MCP.
 	-- Not a client remote. Do not use from ordinary gameplay.
 	_G.__TitleProgressionV01 = TitleProgressionService
+end
+
+function TitleProgressionService.PublishMatch() refresh() end
+
+function TitleProgressionService.ResetMatch()
+	assert(MatchState.IsResetting())
+	ledger = Accrual.new(Config.PrestigePerPersonalProvincePerMinute)
+	local at = workspace:GetServerTimeNow()
+	for _, ruler in Hierarchy.GetSnapshot().rulers do ledger:AddRuler(ruler.rulerId, at, 0) end
 end
 
 return TitleProgressionService

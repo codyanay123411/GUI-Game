@@ -222,13 +222,14 @@ function Controller.Start()
 		top.Gold.Text = "GOLD  "..gold.."\n"..income.."\n"..prestigeText
 		top.Troops.Text = "TROOPS  " .. tostring(gui:GetAttribute("MilitaryAvailable") or "—") .. " available\n" .. tostring(gui:GetAttribute("MilitaryCommitted") or "0") .. (if gui:GetAttribute("MilitaryPresenting") then " held" else " reserved")
 		local self = gui.Main.SelfInfo.Text
-		top.Ruler.Text = if gui:GetAttribute("MatchEnded") and not string.match(self,"Name: ([^\n]+)") then "Spectator  ·  Match ended" else (string.match(self,"Rank: ([^\n]+)") or "Ruler").."  ·  "..(string.match(self,"Name: ([^\n]+)") or "Connecting")
+		top.Ruler.Text = if gui:GetAttribute("Eliminated") then "Eliminated  ·  Spectating" elseif gui:GetAttribute("MatchEnded") and not string.match(self,"Name: ([^\n]+)") then "Spectator  ·  Match ended" else (string.match(self,"Rank: ([^\n]+)") or "Ruler").."  ·  "..(string.match(self,"Name: ([^\n]+)") or "Connecting")
 		top.Brand.Text = (if gui:GetAttribute("MatchEnded") then "FINAL REALM" else "REALM") .. "  "
 			.. tostring(top:GetAttribute("DominationControlled") or "—") .. "/" .. tostring(top:GetAttribute("DominationRequired") or "—")
 			.. " · Domination"
 
 	end
 	gui:GetAttributeChangedSignal("MatchEnded"):Connect(summaries)
+	gui:GetAttributeChangedSignal("Eliminated"):Connect(summaries)
 	for _, attribute in { "DominationControlled", "DominationRequired" } do top:GetAttributeChangedSignal(attribute):Connect(summaries) end
 	for _, label in {gui.EconomyPanel.Body,gui.Main.SelfInfo} do
 		label:GetPropertyChangedSignal("Text"):Connect(summaries)

@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-14",
+  "status": "implemented; agent verified in specified scopes; not Director accepted",
+  "environment": "Roblox Studio Solo, one actual client and synthetic additional server rulers",
+  "checks": {
+    "pure_assertions": 57,
+    "corrected_server_assertions": 115,
+    "edge_assertions": 29,
+    "client_request_assertions": 11,
+    "source_parity": 13,
+    "native": "Build Town/Castle; recruit10 cost9.8 and30 cost28.8; compact/normal; Max; over-cap900/750; no opening spend",
+    "live_seeded_defense": "375 backing, Castle500, seven committed casualties, Total593/cap750; backing released unharmed",
+    "shared_reset": "actual coordinator clears32 province building rows and restores500 troops/cap,100 Gold",
+    "compilation": "13 affected production sources, luau-compile --null PASS after final edit",
+    "whitespace": "git -c core.safecrlf=false diff --check PASS"
+  },
+  "corrections": [
+    "Initial fixture exhausted synthetic funds, not implementation failure",
+    "Continuation exposed stranded support on direct Warfare cancellation; fixed and corrected115-check fixture passed"
+  ],
+  "fixtures": [
+    "town-castle-server-2026-10-14.luau.txt",
+    "town-castle-edge-2026-10-14.luau.txt",
+    "town-castle-ui-server-2026-10-14.luau.txt",
+    "town-recruit-guards-client-2026-10-14.luau.txt",
+    "town-castle-policy-2026-10-14.luau.txt",
+    "town-castle-policy-adapters-2026-10-14.py.txt"
+  ],
+  "representative_screenshots": [
+    "build-normal.jpg",
+    "recruit-normal.jpg",
+    "recruited-fractional.jpg",
+    "supported-defense-normal.jpg",
+    "defense-compact.jpg",
+    "build-max-compact.jpg",
+    "recruit-controls-compact.jpg",
+    "over-cap-compact.jpg"
+  ],
+  "limitations": [
+    "No current real multi-client pass",
+    "Published network/account timing unverified",
+    "Naval-arrival/nested-betrayal Castle live scenario deferred",
+    "Human pacing/readability not accepted",
+    "Visual fixture alone extended cosmetic duration; production unchanged",
+    "No full Roblox type analysis"
+  ],
+  "local_snapshot": {
+    "path": "docs/verification/town-castle-stage-final-2026-10-14.rbxl",
+    "bytes": 884934,
+    "sha256": "f108f1f8d5bc259e0dc3298358e6e5f0a72ce1695f78a7e6eb86d4feaa4f7e0c",
+    "ignored": true,
+    "scope": "Stopped Edit place; scoped13-source parity, not whole-place/Git coverage"
+  }
+}

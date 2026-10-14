@@ -8,7 +8,7 @@
 ]]
 
 local EconomyConfig = {
-	StartingGold = 150,
+	StartingGold = 100,
 	PayoutIntervalSeconds = 6,
 	-- Current rank only; basis points keep whole-Gold remainder accounting exact.
 	RankBonusBasisPoints = table.freeze({ [1] = 0, [2] = 50, [3] = 100, [4] = 200 }),

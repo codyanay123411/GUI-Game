@@ -8,8 +8,11 @@ local MilitaryConfig = {
 	SubjectCombatBase = 0.09,
 	SubjectCombatPerLiegeSubject = 0.01,
 	PersonalDefensePerSubject = 0.02,
-	StartingTroops = 1000,
-	TroopsPerGold = 3,
+	NavalMapUnitsPerSecond = 25,
+	NavalMinTravelSeconds = 5,
+	NavalMaxTravelSeconds = 35,
+	StartingTroops = 500,
+	-- Recruitment uses BuildingConfig ten-Troop local prices; no legacy per-Gold conversion.
 	CommitWindowSeconds = 40,
 	HardTimeoutSeconds = 55,
 	PresentationSeconds = 5,

@@ -18,6 +18,7 @@ local AdminConfig = require(script.Parent.AdminConfig)
 local function refreshGameTesterAccess()
 	for _, player in Players:GetPlayers() do
 		player:SetAttribute("_GameTesterAuthorized", AdminConfig.IsGameTester(player.UserId))
+		player:SetAttribute("_StaffServerAuthorized", AdminConfig.IsStaff(player.UserId))
 	end
 end
 
@@ -105,6 +106,7 @@ local function moduleSourceContains(module: ModuleScript, needle: string): boole
 end
 
 local function shouldReplaceAddon(existing: ModuleScript, sourceName: string): boolean
+	if sourceName == "CurrentServerKohlClient" then return true end
 	if sourceName == "GamePresentationKohlClient" then return true end
 	if sourceName == "AdminKohlAddon" then
 		return moduleSourceContains(existing, "return runOp")
@@ -145,6 +147,11 @@ local function placeNamedAddon(sourceName: string, tag: boolean): ModuleScript?
 	local placed: ModuleScript? = nil
 	for _, addons in folders do
 		local existing = addons:FindFirstChild(sourceName)
+		-- New project addon must reach each supported copied client/server container.
+		if not existing and sourceName == "CurrentServerKohlClient" then
+			existing = source:Clone()
+			existing.Parent = addons
+		end
 		if existing and existing:IsA("ModuleScript") then
 			if existing ~= source and shouldReplaceAddon(existing, sourceName) then
 				existing = replaceAddonWithCanonical(existing, source)
@@ -244,6 +251,7 @@ end
 
 local function ensureAddonModule(): ModuleScript?
 	placeNamedAddon("GamePresentationKohlClient", true)
+	placeNamedAddon("CurrentServerKohlClient", true)
 	placeNamedAddon("AdminKohlThemeClient", false)
 	syncKohlConfigTheme()
 	local source = getCanonicalAddon()
