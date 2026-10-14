@@ -280,3 +280,7 @@ Director selected “Fresh reserved server for the requester.” After match end
 ## 2026-10-13 — Approved personal-domain permissions and betrayal
 
 Director authorized denied-by-default direct-liege War/Diplomacy grants, immediate strict-greater autonomy and conserved confirmed betrayal. Approved all four lifecycle policies: block participant/subtree engagement/result; retain own treaties/no inheritance and check NAPs; invalidate hierarchy/domain-changed offers/revalidate permissions; preserve accepted actors/resources/calculated results and clean stale unresolved wars. Nested ruling: **use the former direct liege as defender**, with their own army/subtree, not ancestor forces. This narrowly supersedes root-only restrictions/older proposed root delegation; no rank defaults, seat powers or chat/admin changes. [Implementation/evidence](OPENFRONT_PLAYABILITY_REVIEW.md#liege-permissions-autonomy-and-betrayal--2026-10-13); agent verification is not Director acceptance.
+
+## Moderation planning direction — 2026-10-14
+
+Director authorizes planning for ordinary-player /report, staff-only durable reports/notifications, JobId/UserId copy interaction, and a persistent Players directory with warning history alongside Members. Reports/warning counts never automatically punish. [Moderation plan](MODERATION_PLAN.md) records the approved direction separately from proposed limits, rank defaults, storage/search and retention decisions. No implementation, acceptance or expanded permission is established by this planning entry.

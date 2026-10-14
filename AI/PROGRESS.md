@@ -269,3 +269,7 @@ Map-first centralized navigation and responsive system drawers implemented; unif
 ## 2026-10-10 — Custom Realm Overview
 
 Director-authorized hold-Tab political player list implemented and agent-verified in Solo and three-client Local Server. Players navigation supplies nonkeyboard access. PlayerList-only CoreGui disable survives respawn; private resources excluded. Live hierarchy, holdings, Alliance/NAP/war, disconnect/root cleanup and same-root Direct revocation verified. Small/common/wide layouts, 50 diagnostic rows, typing focus and map input isolation exercised. See [REALM_OVERVIEW.md](REALM_OVERVIEW.md) for source/assets, fields, matrix and limits. NOT Director-accepted; no gameplay advancement, commit, push or publication.
+
+## Moderation plan — 2026-10-14
+
+Documentation-only: [Moderation plan](MODERATION_PLAN.md) defines three stages: report window/server persistence/staff log; cross-server staff notices and honest ID-copy interaction; persistent Players/search/warnings. Focused local adapter/permission inspection and official Roblox API references support the plan; no Studio, cloud persistence, UI or multiplayer checks were run. Limits/ranks/retention/note semantics/search details remain proposed; no implementation or Director acceptance claimed. Only this plan and its decision/progress references are authorized for this commit; accumulated source/assets and prior evidence remain local. Next: resolve listed policies and separately authorize stage 1 implementation.
