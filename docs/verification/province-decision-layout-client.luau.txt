@@ -1,0 +1,43 @@
+-- Disposable running-client LocalScript. Presentation only; no gameplay requests.
+-- Run after ordinary conquest, with Goldmere available. Change VGA/HD720 profiles.
+local p = game:GetService("Players").LocalPlayer
+local g = p.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local C = p.PlayerScripts.Controllers
+local Map = require(C.TerritoryMapController)
+local Context = require(C.MapContextController)
+local Strategy = require(C.StrategyPresentationController)
+local Text = game:GetService("TextService")
+local count = 0
+local function check(value, message) assert(value, message); count += 1 end
+local function fits(label)
+	local height = Text:GetTextSize(label.Text, label.TextSize, label.Font, Vector2.new(label.AbsoluteSize.X, 100000)).Y
+	check(height <= label.AbsoluteSize.Y + 2, label.Name .. " text fits")
+end
+local busy = false
+local function verify()
+	if busy then return end
+	busy = true
+	local ok, err = pcall(function()
+		Strategy.OpenSystem("Map"); Map.Select("goldmere", "War"); task.wait(.5)
+		local stage, drawer = g.MapStage, g.ContextWorkflowPanel
+		check(stage.AbsolutePosition.X + stage.AbsoluteSize.X <= drawer.AbsolutePosition.X, "Map separate from drawer")
+		fits(stage.OwnershipLegend); fits(stage.ProvinceDecision)
+		check(not stage.OwnershipLegend.Active and not stage.ProvinceDecision.Active, "Captions inactive")
+		check(stage.RecenterMap.Active and stage.RecenterMap:GetAttribute("BlocksMapInput"), "Only recenter blocks its bounds")
+		check(stage.MapView.AbsoluteSize.Y > 0, "Map viewport usable")
+		check(drawer.Content.CanvasSize.Y.Offset >= drawer.Content.CancelButton.Position.Y.Offset + drawer.Content.CancelButton.Size.Y.Offset, "Cancel scroll reachable")
+		check(drawer.Content.CanvasSize.Y.Offset >= drawer.Content.CommitAmount.Position.Y.Offset + drawer.Content.CommitAmount.Size.Y.Offset, "Amount scroll reachable")
+		Context.OpenWorkflow("Info"); task.wait(.2); fits(stage.ProvinceDecision)
+		Map.Select("goldmere"); task.wait(.2)
+		check(not g.ContextRadialPanel.Active, "Radial background inactive")
+		for _, button in g.ContextRadialPanel:GetChildren() do
+			if button:IsA("TextButton") then check(button.Active and button:GetAttribute("BlocksMapInput"), "Radial actions interactive") end
+		end
+		check(not Map.Focus("missing"), "Unknown camera target safe")
+		print("PROVINCE_LAYOUT_PASS", g.AbsoluteSize, count)
+	end)
+	if not ok then warn("PROVINCE_LAYOUT_FAIL", err) end
+	busy = false
+end
+g:GetPropertyChangedSignal("AbsoluteSize"):Connect(function() task.defer(verify) end)
+verify()

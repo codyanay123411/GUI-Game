@@ -96,32 +96,8 @@ local ValePrototypeMap = {
 	territories = territories,
 	unclaimedDefenders = 300,
 	victory = { type = "Domination", territoryControlPercent = 0.70 },
-	titleRequirements = {
-		{
-			rank = 2,
-			titleName = "Duke",
-			establishLabel = "Establish Duchy",
-			establishedNotice = "Duchy established.",
-			territoryCount = 2,
-			prestige = 100,
-		},
-		{
-			rank = 3,
-			titleName = "King",
-			establishLabel = "Establish Kingdom",
-			establishedNotice = "Kingdom established.",
-			territoryCount = 5,
-			prestige = 250,
-		},
-		{
-			rank = 4,
-			titleName = "Emperor",
-			establishLabel = "Establish Empire",
-			establishedNotice = "Empire established.",
-			territoryCount = 10,
-			prestige = 500,
-		},
-	},
+	-- Title requirements use the map-scaled default (16 -> 2/100, 5/250, 10/500).
+
 }
 
 return ValePrototypeMap

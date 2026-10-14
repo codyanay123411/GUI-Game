@@ -1,0 +1,14 @@
+-- Synthetic delayed-Gold view only, bounded30s; server funds remain authoritative.
+local p=game.Players:GetPlayers()[1]
+assert(game.ServerScriptService.RecruitmentVerification.SetGold:Invoke(0))
+local active=true
+local connection=game.ReplicatedStorage.Remotes.MilitaryClientEvent.OnServerEvent:Connect(function(actor,action)
+ if actor==p and action=="Recruit"then active=false end
+end)
+local at=os.clock()
+while active and os.clock()-at<30 do
+ game.ReplicatedStorage.Remotes.EconomyServerEvent:FireClient(p,"State",game:GetService("HttpService"):JSONEncode({gold=150,incomeGoldPerMinute=10,nextPayoutAt=workspace:GetServerTimeNow()+6}))
+ task.wait(.3)
+end
+connection:Disconnect()
+print("RECRUIT_STALE_PREVIEW_FINISHED",not active)

@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-13",
+  "method": "Actual three-client Local Server, seeded ownership/hierarchy and explicit test Prestige for sequential rank subfixture; real elapsed fractional earning and actual Player3 disconnect. Not natural progression.",
+  "entries": [
+    {
+      "kind": "CLIENT",
+      "result": "Player1 Personal true 7"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player2 Personal true 7"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player3 Personal true 7"
+    },
+    {
+      "kind": "PHASE_PASS",
+      "result": "Personal 25"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player2 Subject true 12"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player3 Subject true 12"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player1 Subject true 13"
+    },
+    {
+      "kind": "PHASE_PASS",
+      "result": "Subject 31"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player3 Transferred true 17"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player2 Transferred true 17"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player1 Transferred true 18"
+    },
+    {
+      "kind": "PHASE_PASS",
+      "result": "Transferred 39"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player1 RejectAndReady true 23"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player2 RejectAndReady true 22"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player3 RejectAndReady true 22"
+    },
+    {
+      "kind": "PHASE_PASS",
+      "result": "RejectAndReady 50"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player3 Titles true 26"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player2 Titles true 26"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player1 Titles true 28"
+    },
+    {
+      "kind": "PHASE_PASS",
+      "result": "Titles 82"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player2 Ended true 33"
+    },
+    {
+      "kind": "CLIENT",
+      "result": "Player1 Ended true 35"
+    },
+    {
+      "kind": "PHASE_PASS",
+      "result": "Ended 96"
+    },
+    {
+      "kind": "SERVER_PASS",
+      "result": "96 cutoff 1791916768.001887 frozen 506.4918959140779"
+    }
+  ],
+  "serverAssertions": 96,
+  "limitations": [
+    "Same-account published reconnect unavailable; deterministic Remove/Add same ID checked separately",
+    "Natural progression verified separately"
+  ]
+}

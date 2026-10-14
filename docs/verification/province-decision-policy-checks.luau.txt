@@ -1,0 +1,56 @@
+-- Pure presentation checks. Studio: run in a disposable verification Script.
+local U = game.ReplicatedStorage.Shared.Util
+local Resolver = require(U.ContextActionResolver)
+local Domination = require(U.Domination)
+local map = require(game.ReplicatedStorage.Shared.Config.ValePrototypeMap)
+local passed = 0
+local function check(value, name) assert(value, name); passed += 1 end
+local function ruler(id, user, root, liege)
+	return { rulerId = id, userId = user, rootRulerId = root or id, liegeId = liege,
+		independent = not liege, displayName = id, titleName = "Lord", titleRank = 1 }
+end
+local state = { hierarchy = { rulers = { ruler("A", 1), ruler("B", 2), ruler("S", 3, "A", "A") }, requests = {} },
+	territory = { territories = {} }, diplomacy = { agreements = {}, requests = {} },
+	warfare = { wars = {}, cooldowns = {} }, military = { available = 1000, wars = {} }, communications = { contexts = {}, contacts = {} } }
+for _, t in map.territories do table.insert(state.territory.territories, { territoryId = t.id, neutralDefense = { current = 300 } }) end
+local function owner(id, value) for _, t in state.territory.territories do if t.territoryId == id then t.ownerRulerId = value end end end
+local function resolve(id, user, ended, now) return Resolver.Resolve(state, map.territories, id, user or 1, ended == true, now or 100) end
+owner("frostfield", "A"); owner("westmere", "B"); owner("highmarch", "S")
+check(resolve("greyfen").canDeclare, "Edge neighbor eligible")
+check(resolve("northvale").canDeclare, "Authored corner neighbor eligible")
+check(not resolve("stoneford").canDeclare, "Distant neutral blocked")
+check(not resolve("frostfield").canDeclare, "Own realm blocked")
+check(not resolve("greyfen", 3).canDeclare, "Subject cannot declare")
+check(resolve("highmarch").holder.rulerId == "S", "Direct owner preserved")
+check(string.find(Resolver.SelectionText(resolve("highmarch")), "Warfare controlled by root A", 1, true), "Subject root explained")
+check(not resolve("greyfen", 1, true).canDeclare, "End freeze cue")
+check(resolve("greyfen", 1, true).warReason == "Match ended", "End reason stable")
+state.diplomacy.agreements = { { leftRulerId = "A", rightRulerId = "B", nap = true } }
+owner("northvale", "B")
+check(resolve("northvale").warReason == "Non-Aggression Pact blocks war", "NAP reason")
+state.diplomacy.agreements[1].nap = false; state.diplomacy.agreements[1].alliance = true
+check(resolve("northvale").canDeclare, "Alliance does not prohibit war")
+state.warfare.cooldowns = { { territoryId = "northvale", endsAt = 110 } }
+check(resolve("northvale").warReason == "Post-war cooldown", "Live cooldown")
+check(resolve("northvale", 1, false, 111).canDeclare, "Cooldown expires without push")
+check(resolve("northvale", 1, true).warReason == "Match ended", "Cooldown cannot obscure freeze")
+state.warfare.cooldowns = {}
+state.warfare.wars = { { warId = "local", targetTerritoryId = "northvale", attackerRootId = "A", defenderRootId = "B" } }
+check(resolve("northvale").war ~= nil and not resolve("northvale").canDeclare, "Relevant contest")
+state.warfare.wars[1].attackerRootId = "Z"; state.warfare.wars[1].defenderRootId = "B"
+local hidden = resolve("northvale")
+check(hidden.war == nil and hidden.warReason == nil, "Unrelated conflict not exposed; prediction may be rejected")
+check(not string.find(Resolver.SelectionText(hidden), "conflict", 1, true), "No unrelated conflict label")
+state.warfare.wars = {}; owner("northvale", nil)
+local totals = Domination.Evaluate(map, state.hierarchy.rulers, state.territory.territories)
+check(totals.counts.A == 2, "Subject included in root progress")
+check(totals.required == math.ceil(totals.total * map.victory.territoryControlPercent), "Configured target")
+state.hierarchy.rulers[3] = ruler("S", 3)
+check(Domination.Evaluate(map, state.hierarchy.rulers, state.territory.territories).counts.A == 1, "Hierarchy change recount")
+owner("greyfen", "A")
+check(Domination.Evaluate(map, state.hierarchy.rulers, state.territory.territories).counts.A == 2, "Ownership change recount")
+check(resolve("greyfen").warReason == "Target belongs to your realm", "Ownership changes eligibility")
+owner("sunbarrow", "B")
+check(resolve("sunbarrow").canDeclare, "New foreign target eligible")
+check(resolve("not-a-province") == nil, "Stale territory safe")
+print("PROVINCE_POLICY_PASS", passed)

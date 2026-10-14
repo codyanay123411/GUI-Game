@@ -1,5 +1,30 @@
 # V0.5 Playtest Verification Backlog
 
+## Prestige and map-scaled titles — 2026-10-13
+
+Evidence: [implementation report](OPENFRONT_PLAYABILITY_REVIEW.md#prestige-earning-and-map-scaled-titles--2026-10-13). Design approved; implementation/balance acceptance separate.
+
+| Scenario | Agent evidence | Remaining status / next check |
+| --- | --- | --- |
+| PRESTIGE-SYNC-01 | Current saved-place decode: eleven sources match disk, decimal formatting included; fixtures disabled under recovery | AGENT-VERIFIED — scoped snapshot correspondence only. Fractional-override visual runtime DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG; pure override validation/compile verified, default Vale output unchanged. |
+| PRESTIGE-PACE-01 | Native ordinary Solo Duke/King/Emperor; theoretical rapid victory before higher titles | DIRECTOR VERIFICATION REQUIRED — human multiplayer pacing/land-loss/subject flow; decide balance from observed matches, not agent inspection delays. |
+| PRESTIGE-UI-01 | Normal/compact140 layout assertions,4 fonts/settings extremes, screenshots | DIRECTOR VERIFICATION REQUIRED — judge explanation, personal/subtree distinction and preferred display settings. |
+| PRESTIGE-REJOIN-01 | Pure same-ID new lifetime reset and actual Local Server disconnect cleanup | NOT TESTABLE IN CURRENT ENVIRONMENT — same real identity disconnect/rejoin and published peers; verify fresh Lord/zero/new allocation without restored/offline Prestige. |
+| PRESTIGE-TOUCH-01 | Desktop layout/input only | DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG; separate authorized touch work, not a touch pass. |
+
+## Province decision clarity — 2026-10-11
+
+Evidence: [CONTEXTUAL_MAP_INTERACTION.md](CONTEXTUAL_MAP_INTERACTION.md#province-decision-clarity-milestone--2026-10-11). Agent results do not imply novice usability or Director acceptance.
+
+| Scenario | Agent evidence | Remaining status / concrete next check |
+| --- | --- | --- |
+| PROV-POL-01 | 24 pure production-module assertions: authored corners, root/subject, treaties, cooldown, private-conflict filtering, configured count/recount | DIRECTOR VERIFICATION REQUIRED — judge whether cues/reasons explain a real decision |
+| PROV-MP-01 | Three actual clients: player reservations/locks/privacy/result, hierarchy progress, cooldown and end freeze/final inspection | DIRECTOR VERIFICATION REQUIRED — ordinary-account desktop match; published-account/latency behavior unverified |
+| PROV-UI-01 | Mouse conquest 500 vs 300; accepted/held/released figures and 2/12 progress; native result focus and radial pass-through | DIRECTOR VERIFICATION REQUIRED — walkthrough from selection through result |
+| PROV-UI-02 | VGA/HD720 default settings: captions fit, drawer separation and controls scroll reachable; mouse pan/zoom/Recenter | DIRECTOR VERIFICATION REQUIRED — preferred font/UI scales, long ruler names, dense simultaneous edge markers |
+| PROV-TOUCH-01 | No touch gesture implementation/test in desktop milestone | DEFERRED — separate authorized touch milestone; mouse layout is not touch navigation evidence |
+| PROV-COM-01 | Existing event presentation extended; native transport unchanged | NOT TESTABLE IN CURRENT ENVIRONMENT — published peer delivery/filtering/privacy needs real accounts |
+
 ## GUI redundancy cleanup — 2026-10-10
 
 Evidence: AI/GUI_REDUNDANCY_CLEANUP.md. Agent passes do not grant Director acceptance.
@@ -258,3 +283,45 @@ Agent results are recorded in AI/GAME_PRESENTATION_SETTINGS.md. They do not impl
 | PRES-01 | DIRECTOR VERIFICATION REQUIRED | Judge game font hierarchy, readable density and audio feel with native GAME UI/GAME AUDIO controls. |
 | PRES-02 | NOT TESTABLE IN CURRENT ENVIRONMENT | Published ordinary-account category hiding/remote denial and group-experience creator resolution; Studio uses synthetic tester IDs and an owner account. Server/mock/real remote checks already passed. |
 | PRES-03 | NOT TESTABLE IN CURRENT ENVIRONMENT | Kohl personal saved-appearance backend with Studio API services disabled. No game values use that backend; global game persistence remains future work. |
+
+## Playable match / GUI consistency — 2026-10-13
+
+Current agent evidence in [GUI_UX_SPRINT.md](GUI_UX_SPRINT.md#playable-match--gui-consistency-milestone--2026-10-13) supersedes no historical acceptance. Natural Solo loop and separate three-client regression passed; this does not establish a human competitive match.
+
+- **LOOP-DIR-01 — DIRECTOR VERIFICATION REQUIRED:** ordinary human multiplayer join/orientation, conquest/defense, earned recruitment, diplomacy/fealty, natural end and final inspection; assess pacing without agent inspection pauses. Next: follow report walkthrough with real players.
+- **GUI-DIR-13 — DIRECTOR VERIFICATION REQUIRED:** normal/compact typography, scroll reach, primary/secondary/error/offer/result distinctions and audio/animation feel with creator settings. Current agent geometry/settings/native checks passed; human usability remains untested.
+- **PRESTIGE-DESIGN-01 — UNRESOLVED DESIGN / NOT IMPLEMENTED:** decide ordinary earning sources, formula, caps/pacing and abuse safeguards. Existing thresholds enforced; Domination success is not natural title progression. No fixture grants imply completion.
+- **GUI-PROD-13 — NOT TESTABLE IN CURRENT ENVIRONMENT:** physical touch and published-account communications/filtering/personal saved-settings behavior. Retain existing production/load backlog; no deferred case is PASS.
+
+## Rank/commitment follow-up — 2026-10-13
+
+- RANK-COMMIT-UX — **DIRECTOR VERIFICATION REQUIRED:** normal/compact readability, five-stop click/drag and accepted-versus-preview wording. Agent evidence in GUI_UX_SPRINT; no novice usability claim.
+- RANK-COMMIT-NET — **NOT TESTABLE IN CURRENT ENVIRONMENT:** real-account delayed/rejected/queued commit delivery. Pure edit-state policy and Solo rejection/retry passed; this is not multiplayer latency acceptance.
+
+## Political council foundation follow-up — 2026-10-13
+
+- COUNCIL-UX — **DIRECTOR VERIFICATION REQUIRED:** compact/normal Realm readability, membership interpretation and no-permission/chat distinction. [Evidence](OPENFRONT_PLAYABILITY_REVIEW.md#political-authority-and-council-foundation--2026-10-13-implementation).
+- COUNCIL-SIX — **DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG:** six-plus connected direct subjects exercising live-service timed replacement and multiple challengers. Pure synthetic policy and real30-second synthetic server policy passed; not a live six-player service pass.
+- COUNCIL-NET — **NOT TESTABLE IN CURRENT ENVIRONMENT:** published-account network conditions; three Studio clients verified delivery scopes. Touch/gamepad not verified.
+
+## Repeat-play follow-up — 2026-10-13
+
+- **REPLAY-PROD — NOT TESTABLE IN CURRENT ENVIRONMENT:** TeleportService cannot transfer in Studio; no publication authorized. Next after separately authorized publication: distinct fresh reserved JobId/requester alone, normal startup/resource lifecycle, other players preserving ended server, duplicate protection and real API/init-failure retry. Pure fake transport and seeded Solo are not routing passes.
+- **REPLAY-UX — DIRECTOR VERIFICATION REQUIRED:** normal/compact result wording, inspection/reopening while waiting and readable retry feedback. Agent themed geometry/native inspection checks passed; no human usability acceptance. [Evidence](CONQUEST_VICTORY.md#requester-only-play-again--2026-10-13).
+
+## Recruitment follow-up — 2026-10-13
+
+- **RECRUIT-UX — DIRECTOR VERIFICATION REQUIRED:** affordable-percent meaning, preview/action distinction and compact scroll readability. Agent native input and geometry checks passed; no human acceptance.
+- **RECRUIT-NET — NOT TESTABLE IN CURRENT ENVIRONMENT:** published-account latency/disconnect timing and physical touch/gamepad. Current duplicate receipts and synthetic stale-Gold rejection are not a real network pass. [Evidence](GUI_UX_SPRINT.md#fixed-stop-affordable-recruitment--2026-10-13).
+
+
+## Political permissions/autonomy/betrayal follow-up — 2026-10-13
+
+- **POLITICS-UX — DIRECTOR VERIFICATION REQUIRED:** ordinary two-player grants/revokes, blocked reasons, autonomy without scores, explicit transfer and compact scrolling. [Agent evidence](OPENFRONT_PLAYABILITY_REVIEW.md#liege-permissions-autonomy-and-betrayal--2026-10-13), not human acceptance.
+- **POLITICS-NET — NOT TESTABLE IN CURRENT ENVIRONMENT:** published latency/disconnect/hostile delivery scheduling and physical touch/gamepad. Next: separately authorized real-account stale/duplicate review, direct-edge transitions and final inspection. Core remote denials/transactions/same-turn invalidation passed focused Studio/fixtures; not published-network evidence.
+
+
+## Vassalage combat follow-up — 2026-10-13
+
+- **VASSAL-COMBAT-UX — DIRECTOR VERIFICATION REQUIRED:** own bonus wording/compact scrolling and uncapped balance; no human acceptance claimed.
+- **VASSAL-COMBAT-NET — DEFERRED — NON-BLOCKING — V0.5 PLAYTEST VERIFICATION BACKLOG:** focused real-player offense/defense/result delivery under latency. Core mechanical integration, actual troop ledgers and private actor projection verified in one actual Solo client with synthetic hierarchy. Next: two-player combat, direct/subject-owned targets and own-only result modifier. [Evidence](OPENFRONT_PLAYABILITY_REVIEW.md#vassalage-combat-bonuses--2026-10-13).

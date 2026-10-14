@@ -1,0 +1,26 @@
+-- Runtime-only presentation surface audit; no action callbacks or gameplay mutations.
+local p=game.Players.LocalPlayer
+local g=p.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local C=p.PlayerScripts.Controllers
+local Map,Context,Strategy=require(C.TerritoryMapController),require(C.MapContextController),require(C.StrategyPresentationController)
+local Theme=require(game.ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
+local Text=game:GetService("TextService")
+local count=0
+local function check(v,m) assert(v,m);count+=1 end
+for _,kind in {"Info","War","Diplomacy","Message","Realm","Military"} do
+ Strategy.OpenSystem("Map");task.wait(.1);Map.Select("riverholt",kind);task.wait(.4)
+ local shell=if kind=="Military" then g.MilitaryWorkflowPanel else g.ContextWorkflowPanel
+ check(shell.Visible,"Existing workflow opens "..kind)
+ for _,v in shell:GetDescendants() do
+  if v:IsA("TextBox") then
+   check(v:GetAttribute("ThemeRole")=="Input","Input component "..kind)
+   check(v.BackgroundColor3==(if v.TextEditable then Theme.Colors.well else Theme.Colors.disabled),"Input enabled state")
+  elseif v:IsA("TextButton") and v.Visible then
+   check(v.FontFace.Family:find("GothamSSm")~=nil,"Button current font "..kind)
+  end
+ end
+ print("GUI_MATCH_SURFACE_PASS",kind,count)
+end
+Strategy.OpenSystem("Map");Map.Select("goldmere");task.wait(.3)
+check(not g.ContextRadialPanel.Active,"Background remains inactive")
+print("GUI_MATCH_SURFACES_PASS",g.AbsoluteSize,count)

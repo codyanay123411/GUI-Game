@@ -9,12 +9,16 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local HttpService = game:GetService("HttpService")
 local GuiService = game:GetService("GuiService")
+local TextService = game:GetService("TextService")
 
 local Theme = require(ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
 local MapCatalog = require(ReplicatedStorage.Shared.Config.MapCatalog)
 local RealmColors = require(ReplicatedStorage.Shared.Config.RealmColors)
 local MapGeometry = require(ReplicatedStorage.Shared.Util.MapGeometry)
 local MapTriangles = require(ReplicatedStorage.Shared.Util.MapTriangles)
+local Resolver = require(ReplicatedStorage.Shared.Util.ContextActionResolver)
+local State = require(script.Parent.MapContextState)
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local TerritoryMapController = {}
@@ -90,6 +94,52 @@ function TerritoryMapController.Start()
 		viewport.Parent = mapStage
 	end
 	viewport.Active = false
+	viewport.Position = UDim2.fromOffset(0, 48)
+	viewport.Size = UDim2.new(1, 0, 1, -144)
+	local function caption(name: string): TextLabel
+		local label = Instance.new("TextLabel")
+		label.Name = name; label.Active = false; label.BackgroundTransparency = 1
+		label.TextWrapped = true; label.TextXAlignment = Enum.TextXAlignment.Left
+		label.TextYAlignment = Enum.TextYAlignment.Top; label.Font = Enum.Font.Gotham
+		label.TextSize = 11; label.TextColor3 = Theme.Colors.textPrimary; label.ZIndex = 3
+		label.Parent = mapStage
+		return label
+	end
+	local legend = caption("OwnershipLegend")
+	legend.Position = UDim2.fromOffset(8, 4); legend.Size = UDim2.new(1, -94, 0, 44)
+	legend.Text = "Fill: realm · Rim: direct owner\n+ Eligible (corners count)\nPrediction · Server rechecks"
+	local decision = caption("ProvinceDecision")
+	decision.Position = UDim2.new(0, 8, 1, -92); decision.Size = UDim2.new(1, -16, 0, 88)
+	decision.Text = "Select a province for its owner, realm and action reason."
+	-- Caption height follows supported font/scale settings and the drawer's width.
+	-- Keep this space outside the map viewport so text never becomes a map hitbox.
+	local function layoutCaptions()
+		local width = mapStage.AbsoluteSize.X
+		if width <= 0 then return end
+		local function height(label: TextLabel, inset: number, minimum: number): number
+			return math.max(minimum, TextService:GetTextSize(label.Text, label.TextSize, label.Font,
+				Vector2.new(math.max(1, width - inset), 100000)).Y + 4)
+		end
+		local legendHeight = height(legend, 94, 44)
+		local decisionHeight = height(decision, 16, 88)
+		legend.Size = UDim2.new(1, -94, 0, legendHeight)
+		decision.Position = UDim2.new(0, 8, 1, -decisionHeight - 4)
+		decision.Size = UDim2.new(1, -16, 0, decisionHeight)
+		viewport.Position = UDim2.fromOffset(0, legendHeight + 8)
+		viewport.Size = UDim2.new(1, 0, 1, -legendHeight - decisionHeight - 20)
+	end
+	mapStage:GetPropertyChangedSignal("AbsoluteSize"):Connect(layoutCaptions)
+	for _, label in { legend, decision } do
+		for _, property in { "Text", "TextSize", "FontFace" } do
+			label:GetPropertyChangedSignal(property):Connect(layoutCaptions)
+		end
+	end
+	task.defer(layoutCaptions)
+	local recenter = Instance.new("TextButton")
+	recenter.Name = "RecenterMap"; recenter.Text = "Recenter"; recenter.TextSize = 11; recenter.Font = Enum.Font.Gotham
+	recenter.Position = UDim2.new(1, -82, 0, 8); recenter.Size = UDim2.fromOffset(74, 28)
+	recenter.ZIndex = 4; recenter:SetAttribute("BlocksMapInput", true); recenter.Parent = mapStage
+	Theme.applyPrimaryButton(recenter, true)
 	local selectedValue = gui:WaitForChild("PresentationState"):WaitForChild("SelectedTerritoryId") :: StringValue
 
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
@@ -175,6 +225,7 @@ function TerritoryMapController.Start()
 	viewport.CurrentCamera = camera
 	-- Noninteractive province names use the same projection as map picking.
 	local provinceLabels = {}
+	local eligibilityLabels = {}
 	for _, t in mapDef.territories do
 		local label = Instance.new("TextLabel")
 		label.Name = "ProvinceName_" .. t.id
@@ -190,6 +241,12 @@ function TerritoryMapController.Start()
 		label.ZIndex = 2
 		label.Parent = mapStage
 		provinceLabels[t.id] = label
+		local cue = caption("Eligibility_" .. t.id)
+		cue.Text = "+"; cue.TextSize = 16; cue.TextColor3 = Color3.fromRGB(123, 245, 174)
+		cue.TextStrokeTransparency = 0.2; cue.TextStrokeColor3 = Color3.fromRGB(15, 30, 25)
+		cue.AnchorPoint = Vector2.new(0.5, 1); cue.TextXAlignment = Enum.TextXAlignment.Center
+		cue.Size = UDim2.fromOffset(20, 20); cue.Visible = false
+		eligibilityLabels[t.id] = cue
 	end
 
 	local function rulerOf(rulerId: string?): any?
@@ -208,7 +265,7 @@ function TerritoryMapController.Start()
 	end
 
 	local function cameraHeight(): number
-		local size = mapStage.AbsoluteSize
+		local size = viewport.AbsoluteSize
 		local aspect = if size.Y > 0 then size.X / size.Y else 1
 		local half = math.max(spanX / aspect, spanY) * 0.55 / zoom
 		return half / math.tan(math.rad(FOV * 0.5))
@@ -216,7 +273,7 @@ function TerritoryMapController.Start()
 
 	local function applyCamera()
 		local h = cameraHeight()
-		local size = mapStage.AbsoluteSize
+		local size = viewport.AbsoluteSize
 		local aspect = if size.Y > 0 then size.X / size.Y else 1
 		local halfZ = h * math.tan(math.rad(FOV * 0.5))
 		local halfX = halfZ * aspect
@@ -243,10 +300,13 @@ function TerritoryMapController.Start()
 			local py = (0.5 + (cy - lookZ) / (2 * halfZ)) * size.Y
 			local x1, _, x2 = MapGeometry.PolygonBounds(t.polygon)
 			local width = (x2 - x1) / (2 * halfX) * size.X * 0.85
-			label.Position = UDim2.fromOffset(px, py)
+			label.Position = UDim2.fromOffset(px, py + 48)
 			label.Size = UDim2.fromOffset(width, 24)
 			label.TextSize = if width < 90 then 10 else 12
 			label.Visible = Theme.Presentation.ProvinceLabelsEnabled and width >= 54 and px > 0 and py > 0 and px < size.X and py < size.Y
+			local cue = eligibilityLabels[t.id]
+			cue.Position = UDim2.fromOffset(px, py + 40)
+			cue.Visible = cue:GetAttribute("Eligible") == true and px > 10 and py > 20 and px < size.X - 10 and py < size.Y - 10
 		end
 		TerritoryMapController.CameraChanged:Fire()
 	end
@@ -255,6 +315,20 @@ function TerritoryMapController.Start()
 		if not label then return nil end
 		return mapStage.AbsolutePosition + Vector2.new(label.Position.X.Offset, label.Position.Y.Offset)
 	end
+	function TerritoryMapController.Focus(territoryId: string): boolean
+		local definition = byId[territoryId]
+		if not definition then return false end
+		lookX, lookZ = MapGeometry.Centroid(definition.polygon)
+		zoom = math.clamp(math.max(zoom, 1.6), MIN_ZOOM, MAX_ZOOM)
+		dragging = false; dragStart = nil
+		applyCamera()
+		return true
+	end
+	recenter.Activated:Connect(function()
+		if gui:GetAttribute("RealmOverviewOpen") or gui:GetAttribute("VictoryOverlayOpen") then return end
+		zoom = 1; lookX = midX; lookZ = midY; dragging = false; dragStart = nil
+		applyCamera()
+	end)
 
 	local function screenToMap(screen: Vector2): (number?, number?)
 		local abs = viewport.AbsolutePosition
@@ -315,6 +389,25 @@ function TerritoryMapController.Start()
 			selectedValue.Value = selectedId or ""
 		end
 	end
+	local function updateDecision()
+		local ended = gui:GetAttribute("MatchEnded") == true
+		local now = workspace:GetServerTimeNow()
+		for _, definition in mapDef.territories do
+			local context = Resolver.Resolve(State, mapDef.territories, definition.id, player.UserId, ended, now)
+			eligibilityLabels[definition.id]:SetAttribute("Eligible", context and context.canDeclare == true)
+		end
+		local context = selectedId and Resolver.Resolve(State, mapDef.territories, selectedId, player.UserId, ended, now)
+		decision.Text = if context then Resolver.SelectionText(context) else (if ended then "Match ended · Select a province to inspect final ownership." else "Select a province for its owner, realm and action reason.")
+		applyCamera()
+	end
+	State.Changed.Event:Connect(function(_, kind) if kind == "State" then updateDecision() end end)
+	gui:GetAttributeChangedSignal("MatchEnded"):Connect(updateDecision)
+	local decisionElapsed = 0
+	RunService.Heartbeat:Connect(function(dt)
+		decisionElapsed += dt
+		if decisionElapsed >= 1 then decisionElapsed = 0; updateDecision() end
+	end)
+	TerritoryMapController.SelectionChanged.Event:Connect(updateDecision)
 
 	local function applyTerritoryState(data: any)
 		ownership = {}
@@ -437,7 +530,7 @@ function TerritoryMapController.Start()
 	local function pointerOnHigherGui(screen: Vector2): boolean
 		local objects = player.PlayerGui:GetGuiObjectsAtPosition(screen.X, screen.Y)
 		for _, obj in objects do
-			if obj:IsA("GuiObject") and obj.Visible and not isMapDescendant(obj) then
+			if obj:IsA("GuiObject") and obj.Visible and (not isMapDescendant(obj) or obj:GetAttribute("BlocksMapInput") == true) then
 				if isKohlBlockingGui(obj) then
 					return true
 				end
@@ -537,6 +630,7 @@ function TerritoryMapController.Start()
 		TerritoryMapController.SelectionChanged:Fire(selectedId, pos)
 	end)
 	function TerritoryMapController.Select(territoryId: string?, contextWorkflow: string?)
+		if territoryId and not byId[territoryId] then return end
 		selectedId = territoryId
 		colorize()
 		TerritoryMapController.SelectionChanged:Fire(selectedId, if territoryId then TerritoryMapController.Project(territoryId) else nil, contextWorkflow)
@@ -546,11 +640,13 @@ function TerritoryMapController.Start()
 		applyCamera()
 	end)
 
+	viewport:GetPropertyChangedSignal("AbsoluteSize"):Connect(applyCamera)
 	Theme.PresentationChanged.Event:Connect(applyCamera)
 	applyCamera()
 	territoryIntent:FireServer("Ready")
 	print("[Territory] controller started; Ready sent")
 	colorize()
+	updateDecision()
 end
 
 return TerritoryMapController

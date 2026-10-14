@@ -26,11 +26,14 @@ export type TitleRequirement = {
 	prestige: number,
 }
 
+export type TitleRequirementOverride = { rank: number, territoryCount: number, prestige: number }
+
 export type MapDefinition = {
 	mapId: MapId,
 	displayName: string,
 	territories: { TerritoryDefinition },
-	titleRequirements: { TitleRequirement }?,
+	-- Optional explicit per-rank balance overrides; absent ranks use derived defaults.
+	titleRequirements: { TitleRequirementOverride }?,
 	unclaimedDefenders: number?,
 	victory: { type: string, territoryControlPercent: number },
 }

@@ -1,0 +1,14 @@
+-- Existing creator-authorized presentation API; no additional admin permission.
+local S=game.ServerScriptService.Services
+local Settings,Admin=require(S.GameSettingsService),require(S.AdminConfig)
+local creator=106676397;assert(Admin.CanConfigureGame(creator))
+local p=game.Players:GetPlayers()[1]
+local E=game.ReplicatedStorage.Remotes.VictoryServerEvent
+for _,font in {"GothamSSm","SourceSansPro","Roboto","Arial"}do
+ assert(Settings.Apply(creator,"Set","Font",font));task.wait(.4)
+ E:FireClient(p,"VerifyReplay",font);task.wait(.4)
+end
+assert(Settings.Apply(creator,"Set","UIScale",1.1))
+assert(Settings.Apply(creator,"Set","FontScale",1.1));task.wait(.5)
+E:FireClient(p,"VerifyReplay","scale1.1")
+print("REPLAY_LAYOUT_VARIANTS_SENT")

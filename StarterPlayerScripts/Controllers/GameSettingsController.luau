@@ -100,6 +100,7 @@ function Controller.Start()
 		if records[item] then return end
 		local templates = gui:FindFirstChild("Templates")
 		if templates and item:IsDescendantOf(templates) then return end
+		Theme.StyleControl(item)
 		local keys = properties(item)
 		local base = {}
 		for _, key in keys do base[key] = item[key] end
@@ -107,6 +108,9 @@ function Controller.Start()
 		if not next(base) then return end
 		local record = { base = base, applied = {}, keys = keys }
 		records[item] = record
+		if item:IsA("TextBox") then
+			item:GetPropertyChangedSignal("TextEditable"):Connect(function() Theme.applyInputState(item) end)
+		end
 		for _, key in keys do
 			item:GetPropertyChangedSignal(key):Connect(function()
 				if record.applying or item[key] == record.applied[key] then return end

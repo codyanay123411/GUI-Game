@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-13",
+  "method": "Studio Solo owner account, native map/radial/recruit/commit/Ready controls; read-only client observer",
+  "seeded": false,
+  "forced_outcomes": false,
+  "admin_assistance": false,
+  "timers_modified": false,
+  "note": "Inspection pauses; not a timed human/balance pass. Greyfen used the ordinary decision deadline. Final UI wording/frozen-economy fixes verified separately.",
+  "start": {
+    "troops": 1000,
+    "gold": 150,
+    "provinces": 1
+  },
+  "recruitment": {
+    "troops": 933,
+    "gold_paid": 311,
+    "control": "Existing Max button; earned treasury"
+  },
+  "battles": [
+    {
+      "province": "mossbank",
+      "fielded": 500,
+      "casualties": 67,
+      "survivors": 433
+    },
+    {
+      "province": "ashwood",
+      "fielded": 500,
+      "casualties": 52,
+      "survivors": 448
+    },
+    {
+      "province": "westmere",
+      "fielded": 500,
+      "casualties": 72,
+      "survivors": 428
+    },
+    {
+      "province": "northvale",
+      "fielded": 500,
+      "casualties": 54,
+      "survivors": 446
+    },
+    {
+      "province": "greyfen",
+      "fielded": 500,
+      "casualties": 75,
+      "survivors": 425
+    },
+    {
+      "province": "highmarch",
+      "fielded": 500,
+      "casualties": 65,
+      "survivors": 435
+    },
+    {
+      "province": "sunbarrow",
+      "fielded": 500,
+      "casualties": 59,
+      "survivors": 441
+    },
+    {
+      "province": "goldmere",
+      "fielded": 500,
+      "casualties": 86,
+      "survivors": 414
+    },
+    {
+      "province": "brightfen",
+      "fielded": 500,
+      "casualties": 63,
+      "survivors": 437
+    },
+    {
+      "province": "lowmarsh",
+      "fielded": 500,
+      "casualties": 60,
+      "survivors": 440
+    },
+    {
+      "province": "ravenreach",
+      "fielded": 500,
+      "casualties": 82,
+      "survivors": 418
+    }
+  ],
+  "final": {
+    "controlled": 12,
+    "total": 16,
+    "required": 12,
+    "troops": 1198,
+    "reserved": 0,
+    "gold": 2012,
+    "result": "VICTORY",
+    "title": "Lord",
+    "test_prestige": 0
+  },
+  "verification": {
+    "natural_ownership_results": 11,
+    "ledger": true,
+    "final_map_inspected": true
+  }
+}

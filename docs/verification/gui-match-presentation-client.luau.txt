@@ -1,0 +1,60 @@
+-- Runtime-only client presentation regression. No gameplay requests or state grants.
+local P = game:GetService("Players").LocalPlayer
+local g = P.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local C = P.PlayerScripts.Controllers
+local Strategy, Settings = require(C.StrategyPresentationController), require(C.GameSettingsController)
+local Map, Context = require(C.TerritoryMapController), require(C.MapContextController)
+local Overview = require(C.RealmOverviewController)
+local Theme = require(game.ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
+local Text = game:GetService("TextService")
+local count = 0
+local function check(v, m) assert(v,m); count += 1 end
+local function fits(v)
+ local h=Text:GetTextSize(v.Text,v.TextSize,v.Font,Vector2.new(math.max(1,v.AbsoluteSize.X),100000)).Y
+ check(h<=v.AbsoluteSize.Y+2,v:GetFullName().." text overflow "..h.."/"..v.AbsoluteSize.Y)
+end
+local function state(key,value)
+ Settings.Request(key,value)
+ local deadline=os.clock()+5
+ repeat task.wait(.1) until Settings.GetSnapshot().values[key]==value or os.clock()>deadline
+ check(Settings.GetSnapshot().values[key]==value,"Setting accepted "..key)
+end
+local function surfaces()
+ for _,name in {"Realm","Titles","Economy","Messages","Map"} do
+  Strategy.OpenSystem(name);task.wait(.25)
+  if name=="Titles" then
+   check(g.TitlePanel:IsA("ScrollingFrame"),"Titles scroll")
+   fits(g.TitlePanel.Body)
+   check(g.TitlePanel.Body.AbsolutePosition.X+g.TitlePanel.Body.AbsoluteSize.X<=g.TitlePanel.AbsolutePosition.X+g.TitlePanel.AbsoluteSize.X-6,"Title body inside viewport")
+   check(g.TitlePanel.CanvasSize.Y.Offset>=g.TitlePanel.EstablishButton.Position.Y.Offset+g.TitlePanel.EstablishButton.Size.Y.Offset,"Title action reachable")
+  end
+ end
+ Overview.SetOpen(true);task.wait(.2);check(g.RealmOverviewOverlay.Visible,"Players opens");Overview.SetOpen(false)
+ -- The existing authored Vale target is used only to open a presentation surface, not alter ownership.
+ Map.Select("goldmere","Info");task.wait(.2)
+ fits(g.MapStage.OwnershipLegend);fits(g.MapStage.ProvinceDecision)
+ Context.OpenWorkflow("War");task.wait(.2)
+ local content=g.ContextWorkflowPanel.Content
+ local input=content:FindFirstChild("CommitAmount")
+ if input then check(input:GetAttribute("ThemeRole")=="Input","Input admitted") end
+ Map.Select("goldmere");task.wait(.2)
+ check(not g.ContextRadialPanel.Active,"Radial background passes input")
+ for _,b in g.ContextRadialPanel:GetChildren() do if b:IsA("TextButton") then check(b.Active and b:GetAttribute("BlocksMapInput"),"Radial action remains interactive") end end
+ check(not Map.Focus("missing"),"Stale focus safe")
+end
+local function run()
+ check(Settings.GetSnapshot().canConfigure,"Owner settings authorization")
+ for _,font in {"GothamSSm","SourceSansPro","Roboto","Arial"} do
+  state("Font",font);surfaces()
+  check(g.TitlePanel.Body.FontFace.Family:find("fonts/families")~=nil,"Font family available")
+ end
+ state("Font","GothamSSm")
+ for _,scale in {.9,1.1} do state("UIScale",scale);state("FontScale",scale);state("PanelOpacity",.8);surfaces() end
+ print("GUI_MATCH_PRESENTATION_PASS",g.AbsoluteSize,count)
+end
+task.wait(3)
+local ok,err=pcall(run)
+Settings.Reset("Game UI")
+task.wait(2)
+if not ok then warn("GUI_MATCH_PRESENTATION_FAIL",err) end
+print("GUI_MATCH_SETTINGS_RESET",Settings.GetSnapshot().values.Font,Settings.GetSnapshot().values.UIScale)

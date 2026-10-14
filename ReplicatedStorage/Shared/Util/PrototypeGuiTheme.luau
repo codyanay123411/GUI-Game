@@ -25,7 +25,7 @@ function PrototypeGuiTheme.ApplyPresentation(item: Instance, base: any)
 	local scale = settings.UIScale
 	if item:IsA("TextLabel") or item:IsA("TextButton") or item:IsA("TextBox") then
 		local fonts = { GothamSSm = Enum.Font.Gotham, SourceSansPro = Enum.Font.SourceSans, Roboto = Enum.Font.Roboto, Arial = Enum.Font.Arial }
-		local family = Font.fromEnum(fonts[settings.Font]).Family
+		local family = if settings.Font == "GothamSSm" then "rbxasset://fonts/families/GothamSSm.json" else Font.fromEnum(fonts[settings.Font]).Family
 		local face = base.FontFace
 		item.FontFace = Font.new(family, face.Weight, face.Style)
 		item.TextSize = math.round(math.clamp(base.TextSize * settings.FontScale * scale, 10, 42))
@@ -128,12 +128,13 @@ local function styleLabel(label: TextLabel, size: number, color: Color3, bold: b
 end
 
 function PrototypeGuiTheme.applyPrimaryButton(button: TextButton, enabled: boolean)
+	button:SetAttribute("ThemeRole", "Primary")
 	button.BorderSizePixel = 0
 	button.AutoButtonColor = enabled
 	button.Font = Enum.Font.GothamBold
 	button.TextSize = 14
 	button.TextScaled = false
-	button.TextWrapped = false
+	button.TextWrapped = true
 	ensureCorner(button, 6)
 	if enabled then
 		button.BackgroundColor3 = C.action
@@ -167,14 +168,16 @@ function PrototypeGuiTheme.applyToast(toast: GuiObject, kind: string)
 end
 
 function PrototypeGuiTheme.applyDangerButton(button: TextButton)
+	button:SetAttribute("ThemeRole", "Danger")
+	local enabled = button.Active
 	button.BorderSizePixel = 0
-	button.AutoButtonColor = true
+	button.AutoButtonColor = enabled
 	button.Font = Enum.Font.GothamBold
 	button.TextSize = 14
 	button.TextScaled = false
-	button.TextWrapped = false
-	button.BackgroundColor3 = C.danger
-	button.TextColor3 = C.dangerText
+	button.TextWrapped = true
+	button.BackgroundColor3 = if enabled then C.danger else C.disabled
+	button.TextColor3 = if enabled then C.dangerText else C.disabledText
 	ensureCorner(button, 6)
 end
 
@@ -186,6 +189,74 @@ local function styleScroll(scroll: ScrollingFrame)
 	scroll.ScrollBarImageColor3 = C.scrollBar
 	scroll.ScrollBarImageTransparency = 0.15
 	ensureCorner(scroll, 6)
+end
+
+-- Small component reference; layout and input authority stay with each controller.
+function PrototypeGuiTheme.applySecondaryButton(button: TextButton, enabled: boolean)
+	PrototypeGuiTheme.applyPrimaryButton(button, enabled)
+	button:SetAttribute("ThemeRole", "Secondary")
+	if enabled then
+		button.BackgroundColor3 = C.well
+		button.TextColor3 = C.textPrimary
+	end
+	button.TextWrapped = true
+end
+
+function PrototypeGuiTheme.applyInputState(input: TextBox)
+	input.BackgroundColor3 = if input.TextEditable then C.well else C.disabled
+	input.TextColor3 = if input.TextEditable then C.textPrimary else C.disabledText
+	input.PlaceholderColor3 = C.textMuted
+end
+
+function PrototypeGuiTheme.applyInput(input: TextBox)
+	input:SetAttribute("ThemeRole", "Input")
+	PrototypeGuiTheme.applyInputState(input)
+	input.PlaceholderColor3 = C.textMuted
+	input.BorderSizePixel = 0
+	input.Font = Enum.Font.Gotham
+	input.TextSize = 14
+	ensureCorner(input, 6)
+	ensureStroke(input, 1, C.stroke)
+end
+
+function PrototypeGuiTheme.applyPanel(panel: GuiObject, urgent: boolean?)
+	panel:SetAttribute("ThemeRole", if urgent then "UrgentPanel" else "Panel")
+	panel.BackgroundColor3 = if urgent then C.overlay else C.panel
+	panel.BorderSizePixel = 0
+	ensureCorner(panel, 8)
+	ensureStroke(panel, 1, if urgent then C.accentGold else C.stroke)
+end
+
+function PrototypeGuiTheme.applyScroll(scroll: ScrollingFrame)
+	styleScroll(scroll)
+	scroll:SetAttribute("ThemeRole", "Scroll")
+end
+
+function PrototypeGuiTheme.applyText(label: TextLabel, role: string)
+	label:SetAttribute("ThemeRole", role)
+	styleLabel(label, if role == "Heading" then 16 elseif role == "Caption" then 12 else 14,
+		if role == "Heading" then C.textPrimary elseif role == "Caption" then C.textMuted else C.textSecondary,
+		role == "Heading")
+end
+
+-- Authored/dynamic descendant admission. Preserve semantic rows, map geometry,
+-- selection colors and overlay scrims; these are documented purposeful exceptions.
+function PrototypeGuiTheme.StyleControl(item: Instance)
+	if item:IsA("TextBox") then
+		PrototypeGuiTheme.applyInput(item)
+	elseif item:IsA("ScrollingFrame") then
+		item.ScrollBarThickness = 6
+		item.ScrollBarImageColor3 = C.scrollBar
+		item.ScrollBarImageTransparency = 0.15
+	elseif item:IsA("TextButton") then
+		local role = item:GetAttribute("ThemeRole")
+		if item.Name == "CancelButton" or item.Name == "BackButton" or item.Name == "Close" or item.Name == "CloseButton"
+			or item.Name == "HelpButton" or item.Name == "MuteObserver" or item.Name == "DirectButton" or item.Name == "ObserverButton" or item.Name == "Continue" then
+			PrototypeGuiTheme.applySecondaryButton(item, item.Active)
+		elseif role == "Secondary" then PrototypeGuiTheme.applySecondaryButton(item, item.Active)
+		elseif role == "Primary" then PrototypeGuiTheme.applyPrimaryButton(item, item.Active)
+		elseif role == "Danger" then PrototypeGuiTheme.applyDangerButton(item) end
+	end
 end
 
 local function styleSectionHeader(label: TextLabel)
@@ -496,6 +567,40 @@ function PrototypeGuiTheme.ApplyScreen(gui: ScreenGui)
 			end
 		end
 	end
+
+	-- Remaining active surfaces share the same component vocabulary. No layout,
+	-- visibility, Active or BlocksMapInput changes belong in this theme pass.
+	for _, name in { "CommunicationsPanel", "TitlePanel", "EconomyPanel" } do
+		local panel = gui:FindFirstChild(name)
+		if panel and panel:IsA("GuiObject") then
+			PrototypeGuiTheme.applyPanel(panel)
+			local header = panel:FindFirstChild("Header")
+			if header and header:IsA("TextLabel") then PrototypeGuiTheme.applyText(header, "Heading") end
+		end
+	end
+	for _, name in { "ContextWorkflowPanel", "MilitaryWorkflowPanel" } do
+		local shell = gui:FindFirstChild(name)
+		local content = shell and shell:FindFirstChild("Content")
+		if content and content:IsA("GuiObject") then
+			PrototypeGuiTheme.applyPanel(content)
+			local header = content:FindFirstChild("Heading") or content:FindFirstChild("Header")
+			if header and header:IsA("TextLabel") then PrototypeGuiTheme.applyText(header, "Heading") end
+		end
+	end
+	local overview = gui:FindFirstChild("RealmOverviewOverlay")
+	local overviewPanel = overview and overview:FindFirstChild("Panel")
+	if overviewPanel and overviewPanel:IsA("GuiObject") then PrototypeGuiTheme.applyPanel(overviewPanel) end
+	local victory = gui:FindFirstChild("VictoryOverlay")
+	local victoryPanel = victory and victory:FindFirstChild("Panel")
+	if victoryPanel and victoryPanel:IsA("GuiObject") then
+		PrototypeGuiTheme.applyPanel(victoryPanel)
+		local heading = victoryPanel:FindFirstChild("Heading")
+		if heading and heading:IsA("TextLabel") then
+			PrototypeGuiTheme.applyText(heading, "Heading")
+			heading.TextSize = 24; heading.TextColor3 = C.accentGold
+		end
+	end
+	for _, item in gui:GetDescendants() do PrototypeGuiTheme.StyleControl(item) end
 end
 
 return PrototypeGuiTheme

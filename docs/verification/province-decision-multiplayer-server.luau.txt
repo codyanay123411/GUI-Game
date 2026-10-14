@@ -1,0 +1,54 @@
+-- Disposable Local Server fixture, three real clients. No production bootstrap changes.
+local P = game:GetService("Players")
+local R = game:GetService("ReplicatedStorage")
+local S = game.ServerScriptService.Services
+local H, T, D, W, M, V = require(S.PoliticalHierarchyService), require(S.TerritoryMapService), require(S.DiplomacyService), require(S.WarfareService), require(S.MilitaryService), require(S.VictoryService)
+local control = Instance.new("Folder"); control.Name = "ProvinceVerification"; control.Parent = R
+local ack = Instance.new("RemoteEvent"); ack.Name = "Ack"; ack.Parent = control
+local replies = {}
+ack.OnServerEvent:Connect(function(p, phase, ok, count, message)
+	if phase == control:GetAttribute("Phase") then replies[p.UserId] = { ok, count, message }; print("PROVINCE_CLIENT",p.Name,phase,ok,count,message) end
+end)
+local deadline = os.clock()+90
+repeat task.wait(.2) until #P:GetPlayers()==3 and #H.GetSnapshot().rulers==3 or os.clock()>deadline
+assert(#P:GetPlayers()==3,"Three real clients required")
+task.wait(3)
+local players=P:GetPlayers(); table.sort(players,function(a,b) return a.Name<b.Name end)
+local ids={}
+for i,p in players do ids[i]=H.GetRulerIdForUserId(p.UserId);p:SetAttribute("ProvinceTestIndex",i) end
+for _,t in T.GetMapDefinition().territories do assert(T.SetOwner(t.id,nil)) end
+assert(T.SetOwner("westmere",ids[1]));assert(T.SetOwner("highmarch",ids[2]));assert(T.SetOwner("greyfen",ids[2]));assert(T.SetOwner("northvale",ids[3]))
+local function phase(name)
+	table.clear(replies);control:SetAttribute("Phase",name)
+	local untilAt=os.clock()+18
+	repeat task.wait(.1) until replies[players[1].UserId] and replies[players[2].UserId] and replies[players[3].UserId] or os.clock()>untilAt
+	for _,p in players do local r=replies[p.UserId];assert(r and r[1],name.." failed on "..p.Name..": "..tostring(r and r[3])) end
+	print("PROVINCE_MP_PHASE_PASS",name)
+end
+phase("Baseline")
+local ok,request=H.OfferFealty(ids[3],ids[1]);assert(ok,request);assert(H.AcceptFealty(request,ids[1]))
+phase("Hierarchy")
+local nap,nid=D.Offer(ids[2],ids[1],"NAP");assert(nap,nid);assert(D.Accept(nid,ids[1]))
+phase("NAP")
+assert(D.Break(ids[1],ids[2],"NAP"))
+local war,wid=W.DeclareWar(ids[2],"northvale");assert(war,wid);control:SetAttribute("WarId",wid)
+phase("Commit")
+-- Client fixture sends SetCommit through real player remotes; verify server reservations.
+task.wait(1)
+phase("Reserved")
+phase("LockOne")
+phase("LockBoth")
+task.wait(.25)
+phase("Present")
+task.wait(5.5)
+phase("Result")
+phase("Cooldown")
+task.wait(10.5)
+phase("CooldownExpired")
+-- End freeze through existing ownership/victory APIs, no timer/calculation overrides.
+for _,t in T.GetMapDefinition().territories do if not V.GetSnapshot().ended and t.id~="highmarch" then assert(T.SetOwner(t.id,ids[1])) end end
+assert(V.GetSnapshot().ended)
+phase("Ended")
+assert(not W.DeclareWar(ids[2],"westmere"))
+assert(not M.Recruit(ids[1],3))
+print("PROVINCE_MP_SERVER_PASS","freeze and ordinary reservation/lock/result lifecycle")

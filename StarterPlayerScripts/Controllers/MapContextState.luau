@@ -4,7 +4,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local HttpService = game:GetService("HttpService")
 local State = { hierarchy = { rulers = {}, requests = {} }, territory = { territories = {} },
 	diplomacy = { agreements = {}, requests = {} }, warfare = { wars = {}, cooldowns = {} },
-	military = { wars = {} }, communications = { contexts = {}, contacts = {} } } :: any
+	permissions = { self = {}, subjects = {} }, military = { wars = {} }, communications = { contexts = {}, contacts = {} } } :: any
 State.Changed = Instance.new("BindableEvent")
 local started = false
 function State.Start()
@@ -12,7 +12,7 @@ function State.Start()
 	started = true
 	local remotes = ReplicatedStorage:WaitForChild("Remotes")
 	for key, prefix in { hierarchy = "Hierarchy", territory = "Territory", diplomacy = "Diplomacy",
-		warfare = "Warfare", military = "Military", communications = "Communications" } do
+		warfare = "Warfare", military = "Military", communications = "Communications", permissions = "Permissions" } do
 		local push = remotes:WaitForChild(prefix .. "ServerEvent") :: RemoteEvent
 		push.OnClientEvent:Connect(function(kind, payload)
 			local data = payload

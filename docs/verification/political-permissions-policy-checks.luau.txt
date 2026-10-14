@@ -1,0 +1,52 @@
+local P=require("./Permission")
+local D=require("./Domain")
+local A=require("./Authority")
+local C=require("./Config")
+local n=0
+local function check(v,m) assert(v,m);n+=1 end
+local root={rulerId="A",liegeId="",independent=true}
+local subject={rulerId="B",liegeId="A",independent=false}
+local function e(own,liege,g,ended)return P.Effective(subject,own,liege,g or {},ended or false)end
+check(P.Effective(root,nil,nil,{},false).war,"root war")
+check(P.Effective(root,nil,nil,{},false).diplomacy,"root diplomacy")
+check(not e(200,200).war,"equal denied")
+check(not e(199,200).diplomacy,"weaker denied")
+check(e(201,200).war and e(201,200).diplomacy and e(201,200).betrayal,"strict greater bypass")
+check(e(199,200,{War=true}).war and not e(199,200,{War=true}).diplomacy,"independent grants")
+check(e(199,200,{Diplomacy=true}).diplomacy,"grant regardless of strength")
+check(not e(999,1,{War=true,Diplomacy=true},true).war,"freeze war")
+check(not e(999,1,{},true).betrayal,"freeze betrayal")
+check(not P.Effective(nil,200,100,{},false).war,"missing ruler")
+check(A.Authority(1,1000,C)==200,"personal score")
+check(A.Authority(1,1000,C)==A.Authority(1,1000,C),"reservation does not change Total")
+check(A.Authority(1,900,C)==190,"casualties")
+check(A.Authority(2,1000,C)==300,"personal land")
+local rows={root,subject,{rulerId="C",liegeId="B",independent=false},{rulerId="X",liegeId="",independent=true},{rulerId="Y",liegeId="X",independent=false}}
+check(D.Contains(rows,"B","C"),"descendant domain")
+check(not D.Contains(rows,"B","A"),"no borrowed liege land")
+check(not D.Contains(rows,"B","Y"),"external excluded")
+check(#D.Members(rows,"B")==2,"own subtree count")
+check(#D.Members(rows,"A")==3,"root subtree count")
+local pact={{leftRulerId="B",rightRulerId="X",nap=true}}
+check(D.TreatyApplies(rows,pact,"B","X"),"subject own NAP")
+check(D.TreatyApplies(rows,pact,"C","Y"),"domain descendants protected")
+check(not D.TreatyApplies(rows,pact,"A","X"),"subject pact not parent-owned")
+check(D.TreatyApplies(rows,{{leftRulerId="A",rightRulerId="X",nap=true}},"B","Y"),"ancestor restrictions apply")
+check(not D.TreatyApplies(rows,{{leftRulerId="A",rightRulerId="X",alliance=true}},"B","Y"),"Alliance alone not NAP")
+local old=D.Signature(rows,"B");subject.liegeId=""
+check(D.Signature(rows,"B")~=old,"independence invalidates domain quote")
+check(D.Contains(rows,"B","C"),"retain descendants")
+check(not D.TreatyApplies(rows,{{leftRulerId="A",rightRulerId="X",nap=true}},"B","X"),"do not copy old liege NAP")
+check(D.TreatyApplies(rows,pact,"B","Y"),"retain own domain NAP")
+for _,total in {0,1,3,9,10,999,1000,1001}do
+ local p=math.floor(total*C.BetrayalTransferFraction)
+ check(p%1==0 and p>=0 and p<=total,"whole penalty")
+ check(total-p+50+p==total+50,"conserved existing troops")
+end
+for k,v in e(201,200)do check(typeof(v)~="number","no exact numerical authority projection")end
+local V=require("./View")
+local wars={{attackerRootId="B",defenderRootId="X"},{attackerRootId="A",defenderRootId="Y"},{attackerRootId="X",defenderRootId="Y"}}
+check(#V.FilterWarsForLocalRoot(wars,"A")==1,"ordinary root attention unchanged")
+check(#V.FilterWarsForLocalRoot(wars,"A","B")==2,"subject own war attention")
+check(#V.FilterWarsForLocalRoot(wars,"B","B")==1,"own/root no duplicate marker")
+print("POLITICAL_PERMISSION_POLICY_PASS",n)

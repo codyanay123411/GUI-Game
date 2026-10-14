@@ -1,5 +1,52 @@
 # Progress
 
+## 2026-10-13 — Accumulated work finalization
+
+Director authorized normal main commit/push. All95 production Luau sources compile; diff/credential/fixture/artifact checks passed, prior system evidence reused. Source/config/docs/screenshots/fixtures included; Studio assets and ignored snapshots/recovery remain local. Published replay, human acceptance and other backlog limits preserved. [Coverage/checks](FINALIZATION.md#2026-10-13--accumulated-implementation-finalization). No Roblox publication.
+
+
+## 2026-10-13 — Vassalage combat bonuses
+
+Implemented configurable immediate-liege subject and personal-land defense modifiers at mechanical resolution; own themed Military/Realm presentation.15 policy checks, focused Solo synthetic offense/defense/nested betrayal/boundary and compact/normal layout evidence: [report](OPENFRONT_PLAYABILITY_REVIEW.md#vassalage-combat-bonuses--2026-10-13). Troop ledgers/casualty counts/authority and prior work preserved. Not Director-accepted; human balance/readability and focused real-player delivery remain. No commit, push or publication.
+
+
+## 2026-10-13 — Liege permissions, autonomy and betrayal
+
+Implemented direct-subject grants, private strict-greater autonomy and quoted conserved betrayal; nested defender is former direct liege, not ancestor. Focused pure, three-client, native normal/compact, casualty/result/freeze and final same-turn regression evidence in [report](OPENFRONT_PLAYABILITY_REVIEW.md#liege-permissions-autonomy-and-betrayal--2026-10-13). Fixture setup corrections recorded; prior admin/GUI/recovery preserved. Implemented/agent-tested, not Director-accepted; POLITICS-UX/NET remain. No commit, push or publication.
+
+
+## 2026-10-13 — Fixed-stop recruitment
+
+Replaced numeric/Max recruitment UI with shared themed25/35/50/75/100 bar, whole affordable Gold preview and explicit correlated Recruit; server cost/funds/freeze validation retained.66 pure checks, compilation, native click/drag/recruit, duplicate-ID suppression, synthetic stale-funds rejection/retry, zero rounding, compact theme/layout and targeted freeze evidence: [report](GUI_UX_SPRINT.md#fixed-stop-affordable-recruitment--2026-10-13). Fixture timing/capability corrections and affected feedback repair recorded. Not Director-accepted; real network/touch checks remain unverified. Prior work/recovery preserved; no commit, push or publication.
+
+## 2026-10-13 — Requester-only Play Again
+
+Implemented Director-selected fresh reserved server route and compact themed result actions; requester-only server authority, duplicate protection, correlated failure/retry and final-map inspection preserved.39 pure assertions, four-source compilation, seeded Solo freeze/lifecycle and normal/compact themed UI checks passed. Synthetic transport states are not published teleport verification; **REPLAY-PROD NOT TESTABLE IN CURRENT ENVIRONMENT**, **REPLAY-UX DIRECTOR VERIFICATION REQUIRED**. [Evidence and next step](CONQUEST_VICTORY.md#requester-only-play-again--2026-10-13). Prior work/recovery and a new ignored local snapshot preserved. Not Director-accepted; no commit, push or publication.
+
+## 2026-10-13 — Political authority and council membership foundation
+
+Implemented approved personal-land/Total authority and up to five eligible direct-subject seats, immediate vacancies/invalidation, continuous10%/30s replacement and match-end membership preservation. Server-only scores/timers; player-scoped alphabetical membership; compact themed Realm section. No permissions, voting or communication changes. Focused policy, three-client synthetic setup, privacy, theme/layout, native scroll, disconnect and cutoff evidence: [report](OPENFRONT_PLAYABILITY_REVIEW.md#political-authority-and-council-foundation--2026-10-13-implementation). Agent verification is not Director acceptance. Next: human UI review and six-plus connected-ruler service scheduling scenario. Prior work/recovery preserved; no commit, push or publication.
+
+## 2026-10-13 — Rank Gold and fixed-stop commitments
+
+Implemented personal current-rank Gold bonuses with fractional carry and existing payout/freeze rules; replaced review/active numeric commitment with five-stop themed bars and acknowledged-edit Ready gating. Focused pure/Studio checks, synthetic scope and remaining UI/network limitations: [report](GUI_UX_SPRINT.md#rank-gold-bonuses-and-fixed-stop-commitments--2026-10-13). Not Director-accepted. Prior local work preserved; no commit, push or publication. Next: human readability/interaction review.
+
+## 2026-10-13 — Personal Prestige and map-scaled titles
+
+**IMPLEMENTED — AUTOMATICALLY CHECKED — STUDIO SOLO/LAYOUT AND THREE-CLIENT TESTED — NOT DIRECTOR-ACCEPTED.** Approved20/min personal conquerable earning with fractional transfer/lifecycle/cutoff accounting; once-resolved map defaults (.125/.3125/.625, ×50), validated explicit overrides, unchanged sequential cumulative subtree eligibility. Existing Titles/resource theme shows actual income/requirements/freeze. 217 pure assertions, eleven-source/six-fixture compilation,96 server and94 cumulative client assertions,140 layout checks and ordinary Duke/King/Emperor without grants passed. Prior admin/GUI/planning/recovery preserved. Final current saved-place decode confirms eleven-source correspondence and disabled archived fixtures; post-stop command output itself was unavailable. Next: Director human pacing/readability review. Evidence/pacing/limitations: [report](OPENFRONT_PLAYABILITY_REVIEW.md#prestige-earning-and-map-scaled-titles--2026-10-13). Human pacing, touch and published-account reconnect not accepted/tested. No commit, push or publication.
+
+## 2026-10-13 — Playable match and GUI consistency
+
+**IMPLEMENTED — AUTOMATICALLY COMPILED — STUDIO SOLO/LAYOUT AND THREE-CLIENT REGRESSION TESTED — NOT DIRECTOR-ACCEPTED.** Native ordinary Solo conquest/income/recruitment reached natural 12/16 Domination, with no admin/seed/forced outcome/timer override; final freeze/inspection worked. Shared component admission, real GothamSSm family, Messages roles, scrollable/measured Titles and captions unified active presentation; fixed compact caption/title clipping and stale frozen Economy countdown. Prestige earning remains absent/unresolved; no requirements bypassed. AGENTS links mandatory GUI rules to the concise existing settings/theme reference. Current evidence, surface coverage, local ignored snapshot, limitations and Director walkthrough: [GUI_UX_SPRINT.md](GUI_UX_SPRINT.md#playable-match--gui-consistency-milestone--2026-10-13). Prior admin/province/planning/recovery work preserved. Next: Director human multiplayer/visual/audio review; separately specify Prestige earning. Uncommitted/unpushed; no publication.
+
+## 2026-10-11 — Province decision clarity milestone
+
+**IMPLEMENTED — AUTOMATICALLY CHECKED — STUDIO SOLO/LAYOUT AND THREE-CLIENT TESTED — NOT DIRECTOR-ACCEPTED.** Added existing-rule legal target/blocked-selection cues, direct-owner/realm legend and root warfare labels, authoritative-snapshot realm Domination progress, honest reservation/lock/calculated-result wording, off-screen event locate and on-screen Recenter. Existing drawers reserve map space; radial pass-through remains intact. Gameplay authority, calculations/timers/freeze and hidden-state contracts unchanged. Evidence, source/Studio coverage, fixture corrections and remaining checks: [CONTEXTUAL_MAP_INTERACTION.md](CONTEXTUAL_MAP_INTERACTION.md#province-decision-clarity-milestone--2026-10-11). Prior admin/planning/recovery work preserved. Next step: Director desktop walkthrough/readability assessment; touch and real-account transport remain unverified. Uncommitted/unpushed; no publication.
+
+## 2026-10-11 — Strategy admin command audit
+
+**IMPLEMENTED — AUTOMATICALLY CHECKED — STUDIO SOLO TESTED — NOT DIRECTOR-ACCEPTED.** Audited 302 effective Kohl definitions; disabled 155 explicit character/world commands recoverably, retained moderation/settings/mixed-use tools, and added inspectrealm/checkledgers/seedbattle through AdminBridge. Permissions and match freeze unchanged. Final matrix: 1,080 server assertions, 155 client denials, four real unauthorized remote requests with zero Bridge calls; source parity and six-file compilation passed. Original sources/config and disabled fixtures preserved in ServerStorage recovery. Existing mute/unmute client RBXSystem notice error remains a documented vendor limitation; published accounts, persistence and multiple simultaneous clients were not verified. Details, inventory, replay and next steps: [ADMIN_PERMISSIONS.md](ADMIN_PERMISSIONS.md). Uncommitted/unpushed; no Roblox publication.
+
 ## 2026-10-11 — Workflow and coverage audit
 
 Documentation-only: consolidated operating rules/context routing in AGENTS.md, reduced Cursor rules to that entry point, recorded Git/Studio/snapshot/external coverage in Architecture and updated active policy links. Historical decisions/acceptance remain intact; older layout/tool claims are explicitly historical.

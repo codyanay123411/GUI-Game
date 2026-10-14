@@ -1,0 +1,76 @@
+-- Disposable three-client service regression. Ownership/Prestige setup is synthetic, NOT ordinary progression.
+local P,R=game:GetService("Players"),game:GetService("ReplicatedStorage")
+local S=game.ServerScriptService.Services
+local H,T,Title,M,W,V,Bridge=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.TitleProgressionService),require(S.MilitaryService),require(S.WarfareService),require(S.VictoryService),require(S.AdminBridge)
+local Json=game:GetService("HttpService")
+local control=Instance.new("Folder");control.Name="PrestigeVerification";control.Parent=R
+local ack=Instance.new("RemoteEvent");ack.Name="Ack";ack.Parent=control
+local replies={};local checks=0
+ack.OnServerEvent:Connect(function(p,phase,ok,count,message) if phase==control:GetAttribute("Phase") then replies[p.UserId]={ok,count,message};print("PRESTIGE_CLIENT",p.Name,phase,ok,count,message) end end)
+local function check(v,m) assert(v,m);checks+=1 end
+local untilAt=os.clock()+90
+repeat task.wait(.2) until #P:GetPlayers()==3 and #H.GetSnapshot().rulers==3 or os.clock()>untilAt
+check(#P:GetPlayers()==3,"three clients connected");task.wait(3)
+local players=P:GetPlayers();table.sort(players,function(a,b)return a.Name<b.Name end)
+local ids={};for i,p in players do ids[i]=H.GetRulerIdForUserId(p.UserId);p:SetAttribute("PrestigeTestIndex",i) end
+local function row(id) for _,r in Title.GetSnapshot().rows do if r.rulerId==id then return r end end error("missing row") end
+local fixed=T.GetTitleRequirements();local fixedJson=Json:JSONEncode(fixed)
+check(fixed[1].territoryCount==2 and fixed[1].prestige==100 and fixed[2].territoryCount==5 and fixed[2].prestige==250 and fixed[3].territoryCount==10 and fixed[3].prestige==500,"Vale exact")
+local function phase(name)
+ table.clear(replies);control:SetAttribute("Phase",name)
+ local deadline=os.clock()+15
+ repeat task.wait(.1) until (function() for _,p in P:GetPlayers() do if not replies[p.UserId] then return false end end return true end)() or os.clock()>deadline
+ for _,p in P:GetPlayers() do local r=replies[p.UserId];check(r and r[1],name.." "..p.Name.." "..tostring(r and r[3])) end
+ print("PRESTIGE_PHASE_PASS",name,checks)
+end
+for _,d in T.GetMapDefinition().territories do check(T.SetOwner(d.id,nil),"clear test ownership") end
+check(T.SetOwner("westmere",ids[1]));check(T.SetOwner("northvale",ids[2]));check(T.SetOwner("greyfen",ids[2]));check(T.SetOwner("highmarch",ids[3]))
+phase("Personal")
+local before=row(ids[1]);local t0=workspace:GetServerTimeNow();task.wait(2.35);local after=row(ids[1]);local t1=workspace:GetServerTimeNow()
+check(math.abs((after.prestige-before.prestige)-(t1-t0)/3)<.03,"one province real-time fractional accrual")
+local ok,request=H.OfferFealty(ids[2],ids[1]);check(ok,request);check(H.AcceptFealty(request,ids[1]))
+phase("Subject")
+local priorRoot,priorSubject=row(ids[1]),row(ids[2]);local transferAt=workspace:GetServerTimeNow();check(T.SetOwner("greyfen",ids[1]))
+local postRoot,postSubject=row(ids[1]),row(ids[2]);check(postRoot.prestige-priorRoot.prestige<.05 and postSubject.prestige-priorSubject.prestige<.05,"no instant transfer bonus")
+check(postRoot.prestigePerMinute==40 and postSubject.prestigePerMinute==20,"new owners earn normally")
+local baseRoot,baseSubject=row(ids[1]),row(ids[2]);local a=workspace:GetServerTimeNow();task.wait(1.7);local b=workspace:GetServerTimeNow()
+check(math.abs((row(ids[1]).prestige-baseRoot.prestige)-(b-a)*2/3)<.03,"transfer new rate")
+check(math.abs((row(ids[2]).prestige-baseSubject.prestige)-(b-a)/3)<.03,"previous owner rate")
+phase("Transferred")
+local earned=row(ids[2]).prestige;check(T.SetOwner("northvale",nil));task.wait(1.2);local zero=row(ids[2]);check(zero.prestige>=earned and zero.prestige-earned<.05 and zero.prestigePerMinute==0,"landless retains balance, earns zero")
+local mock=H.DebugCreateMockRuler("Prestige disposable",1);check(T.SetOwner("riverholt",mock));task.wait(.35);check(row(mock).prestige>0,"mock interval works");H.DebugRemoveRuler(mock);task.wait(.2)
+for _,r in Title.GetSnapshot().rows do check(r.rulerId~=mock,"removal row gone") end
+check(T.GetOwnerRulerId("riverholt")==nil,"removal unclaims")
+local prior=row(ids[1]);Title.Start();T.Start();H.Start();local clock0=workspace:GetServerTimeNow();phase("RejectAndReady");local clock1=workspace:GetServerTimeNow();local current=row(ids[1])
+check(current.currentRank==1,"unqualified establishment rejected")
+check(math.abs((current.prestige-prior.prestige)-(clock1-clock0)*2/3)<.08,"Start/Ready/mutation attempts do not duplicate earning")
+check(not Bridge.Execute(900000001,"SetPrestige",ids[1],99999),"unauthorized admin mutation rejected")
+check(not pcall(Title.DebugSetPrestige,ids[1],math.huge),"nonfinite debug rejected")
+-- Real ordinary conquest APIs from synthetic setup; normal result interval unchanged.
+local war,wid=W.DeclareWar(ids[1],"ashwood");check(war,wid);check(M.SetCommit(ids[1],wid,500));check(M.LockCommit(ids[1],wid));task.wait(5.7)
+check(T.GetOwnerRulerId("ashwood")==ids[1],"ordinary conquest ownership");check(row(ids[1]).prestigePerMinute==60,"conquest increases earning only after transfer")
+-- Synthetic threshold fixture verifies rank/gates/retention independently of natural-play evidence.
+local controlled={"westmere","northvale","greyfen","ashwood","riverholt","frostfield","sunbarrow","mossbank","ironlea","duskfen"}
+for _,id in controlled do check(T.SetOwner(id,ids[1])) end
+Title.DebugSetPrestige(ids[1],500)
+for rank=2,4 do
+ local p0=row(ids[1]).prestige;local established,message=Title.EstablishForPlayer(players[1]);check(established,message)
+ check(row(ids[1]).currentRank==rank,"sequential rank")
+ check(row(ids[1]).prestige>=p0,"Prestige not spent")
+end
+check(not Title.EstablishForPlayer(players[1]),"no higher rank")
+phase("Titles")
+check(T.GetTitleRequirements()==fixed and Json:JSONEncode(fixed)==fixedJson,"fixed after ownership/hierarchy/ranks")
+players[3]:Kick("Disposable Prestige disconnect verification")
+local deadline=os.clock()+10;repeat task.wait(.1) until #P:GetPlayers()==2 or os.clock()>deadline
+check(#P:GetPlayers()==2,"actual disconnect")
+check(T.GetOwnerRulerId("highmarch")==nil,"disconnect unclaims personal holding")
+for _,r in Title.GetSnapshot().rows do check(r.rulerId~=ids[3],"disconnect removes Prestige row") end
+check(Json:JSONEncode(T.GetTitleRequirements())==fixedJson,"fixed after player count change")
+check(T.SetOwner("goldmere",ids[1]));check(T.SetOwner("lowmarsh",ids[1]));check(V.GetSnapshot().ended,"natural evaluation of seeded final threshold")
+local frozen=row(ids[1]).prestige;local cutoff=require(S.MatchState).GetFinal().endedAt;task.wait(2.3)
+check(row(ids[1]).prestige==frozen and row(ids[1]).prestigePerMinute==0,"exact frozen value across scheduler")
+check(not Title.EstablishForPlayer(players[1]),"post-end establishment rejects")
+Title.DebugSetPrestige(ids[1],0);check(row(ids[1]).prestige==frozen,"post-end override frozen")
+phase("Ended")
+print("PRESTIGE_SERVER_PASS",checks,"cutoff",cutoff,"frozen",frozen)

@@ -1,0 +1,85 @@
+-- Runtime-only read-only observer for the ordinary-controls demonstration.
+-- Never sends a remote, changes a setting, or mutates gameplay/GUI state.
+local Players = game:GetService("Players")
+local R = game:GetService("ReplicatedStorage")
+local g = Players.LocalPlayer.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local C = Players.LocalPlayer.PlayerScripts.Controllers
+local State = require(C.MapContextState)
+local Theme = require(R.Shared.Util.PrototypeGuiTheme)
+local function emit(system, kind, data)
+	if kind == "BattleResult" then
+		print("ORDINARY_RESULT", data.targetTerritoryId, data.victory, data.committed, data.casualties, data.survivors)
+	elseif kind == "State" and system == "military" then
+		print("ORDINARY_LEDGER", State.military.total, State.military.available, State.military.committed)
+	elseif kind == "State" and system == "territory" then
+		print("ORDINARY_PROGRESS", g.StrategyTopbar:GetAttribute("DominationControlled"), g.StrategyTopbar:GetAttribute("DominationRequired"))
+	end
+end
+State.Changed.Event:Connect(emit)
+g:GetAttributeChangedSignal("MatchEnded"):Connect(function()
+	print("ORDINARY_END", g:GetAttribute("MatchEnded"), g.VictoryOverlay.Panel.Heading.Text)
+end)
+print("ORDINARY_OBSERVER_READY", Theme.Presentation.Font, g.AbsoluteSize, g.TitlePanel.ClassName)
+
+-- Compact read-only control summaries reduce repeated screenshots during native UI use.
+local UI = game:GetService("UserInputService")
+local Json = game:GetService("HttpService")
+local Map = require(C.TerritoryMapController)
+local function visible(item)
+	local current = item
+	while current and current ~= g do
+		if current:IsA("GuiObject") and not current.Visible then return false end
+		current = current.Parent
+	end
+	return true
+end
+local function controls()
+	local result = { selected = g.PresentationState.SelectedTerritoryId.Value, system = g:GetAttribute("SelectedSystem") }
+	local focus = UI:GetFocusedTextBox()
+	result.focus = focus and focus.Name
+	for _, item in g:GetDescendants() do
+		if (item:IsA("TextButton") or item:IsA("TextBox")) and visible(item) then
+			local center = item.AbsolutePosition + item.AbsoluteSize / 2
+			result[item.Name] = { x = math.round(center.X), y = math.round(center.Y), text = item.Text, active = item.Active }
+		end
+	end
+	local points = {}
+	for _, definition in require(R.Shared.Config.MapCatalog).GetDefault().territories do
+		local id = definition.id
+		local point = Map.Project(id)
+		if point then points[id] = { x = math.round(point.X), y = math.round(point.Y) } end
+	end
+	result.map = points
+	result.legal = {}
+	local definitions = require(R.Shared.Config.MapCatalog).GetDefault().territories
+	for _, definition in definitions do
+		local resolved = require(R.Shared.Util.ContextActionResolver).Resolve(State, definitions, definition.id, Players.LocalPlayer.UserId, g:GetAttribute("MatchEnded") == true, workspace:GetServerTimeNow())
+		if resolved and resolved.canDeclare then table.insert(result.legal, definition.id) end
+	end
+	result.title = g.TitlePanel.Body.Text
+	result.prestige = g:GetAttribute("PersonalPrestige")
+	result.rate = g:GetAttribute("PrestigePerMinute")
+	print("ORDINARY_" .. "UI", Json:JSONEncode(result))
+end
+UI.InputEnded:Connect(function() task.delay(.15, controls) end)
+g:GetAttributeChangedSignal("SelectedSystem"):Connect(function() task.delay(.3, controls) end)
+g.ContextWorkflowPanel:GetAttributeChangedSignal("ContextOpen"):Connect(function() task.delay(.3, controls) end)
+controls()
+
+local lastRank, lastBucket = nil, nil
+R.Remotes.TitleServerEvent.OnClientEvent:Connect(function(kind, payload)
+	if kind ~= "State" then return end
+	local data = Json:JSONDecode(payload)
+	for _, row in data.rows do
+		if row.userId == Players.LocalPlayer.UserId then
+			local bucket = math.floor(row.prestige / 25)
+			if row.currentRank ~= lastRank or bucket ~= lastBucket or row.matchEnded then
+				print("PRESTIGE_NATURAL_TITLE", Json:JSONEncode({time=workspace:GetServerTimeNow(), rank=row.currentRank, prestige=row.prestige, rate=row.prestigePerMinute, personal=row.personalHoldings, realm=row.realmControl, ended=row.matchEnded}))
+				lastRank, lastBucket = row.currentRank, bucket
+			end
+		end
+	end
+end)
+
+State.Changed.Event:Connect(function() task.delay(.25, controls) end)
+g:GetAttributeChangedSignal("PersonalPrestige"):Connect(function() task.delay(.25, controls) end)

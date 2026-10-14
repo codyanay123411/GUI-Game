@@ -1,0 +1,108 @@
+-- Temporary server verification only; archive disabled after Play.
+local deadline=os.clock()+45
+repeat task.wait(0.2) until shared._K_INTERFACE and shared._K_INTERFACE._strategyCommandPolicy or os.clock()>deadline
+local K=assert(shared._K_INTERFACE,'Kohl unavailable')
+task.wait(4)
+local S=game.ServerScriptService.Services
+local B=require(S.AdminBridge)
+local H=require(S.PoliticalHierarchyService)
+local M=require(S.MilitaryService)
+local T=require(S.TerritoryMapService)
+local P=require(game.ReplicatedStorage.Shared.Config.AdminCommandPolicy)
+local checks=0
+local function check(v,label) assert(v,label); checks+=1 end
+local rank=K.Auth.getRank
+local snap=H.GetSnapshot
+local inspect=M.GetInspect
+local owned=T.GetOwnedTerritoryIds
+local seed=M.DebugSetSeed
+local ended=require(S.MatchState).IsEnded
+local victory=require(S.VictoryService).GetSnapshot
+local ok,err=pcall(function()
+ K.Auth.getRank=function(id) if id==900000002 then return K.Data.roles.superadmin._rank elseif id==900000004 then return 0 end return rank(id) end
+ local count=0
+ for name in P.Disabled do
+  local d=K.Registry.commands[name]
+  check(d~=nil,'missing disabled '..name)
+  for _,id in {106676397,900000002,900000004} do check(K.Auth.hasCommand(id,d)==false,'disabled admission '..name) end
+  check(d.run({})==d.description,'disabled fallback '..name)
+  for _,alias in d.aliases or {} do check(K.Auth.hasCommand(106676397,alias)==false,'alias '..alias) end
+  count+=1
+ end
+ for _,name in {'adminhelp','inspectrealm','checkledgers','seedbattle'} do
+  check(typeof(K.Auth.hasCommand(900000002,name))=='number','authorized '..name)
+  check(K.Auth.hasCommand(900000004,name)==false,'unauthorized '..name)
+ end
+ for _,name in {'kick','ban','mute','logs','fov','clean','name','tools','spectate'} do
+  local d=K.Registry.commands[name]
+  check(d~=nil and not P.Disabled[d.name],'retained '..name)
+  check(K.Auth.hasCommand(106676397,d)==K._strategyCommandPolicy.originalAuth(106676397,d),'retained permission '..name)
+ end
+ for _,op in {'InspectRealm','CheckLedgers','SeedBattle'} do check(not B.Execute(900000004,op,'123'),'unauthorized bridge '..op) end
+ check(not B.Execute(900000002,'InspectRealm','no-such-ruler'),'invalid ruler')
+ check(not B.Execute(900000002,'InspectTerritory','no-such-territory'),'invalid land')
+ local rulers=H.GetSnapshot().rulers
+ check(#rulers>0,'initialized ruler')
+ local realmOK,realmMessage=B.Execute(900000002,'InspectRealm',rulers[1].rulerId)
+ check(realmOK,'real realm')
+ local root=rulers[1].rootRulerId; local members,lands=0,0
+ for _,r in rulers do if r.rootRulerId==root then members+=1; lands+=#T.GetOwnedTerritoryIds(r.rulerId) end end
+ check(realmMessage:find(string.format('Members: %d; all holdings: %d',members,lands),1,true),'accurate realm counts')
+ local pass,msg=B.Execute(900000002,'CheckLedgers'); check(pass,msg)
+ M.GetInspect=function(id) local d=inspect(id); if d then d.total+=1 end return d end
+ check(not B.Execute(900000002,'CheckLedgers'),'corruption detected'); M.GetInspect=inspect
+ M.GetInspect=function(id) local d=inspect(id); if d then d.wars={{reserved=-1},{reserved=1}} end return d end
+ check(not B.Execute(900000002,'CheckLedgers'),'negative balanced reservations detected'); M.GetInspect=inspect
+ T.GetOwnedTerritoryIds=function() return {} end
+ check(not B.Execute(900000002,'CheckLedgers'),'missing ownership index detected'); T.GetOwnedTerritoryIds=owned
+ local combat=require(game.ReplicatedStorage.Shared.Util.MilitaryCombat)
+ local a,b=combat.Resolve(200,180,Random.new(123)),combat.Resolve(200,180,Random.new(123))
+ for key,value in a do check(value==b[key],'seed reproducibility '..key) end
+ local calls=0
+ M.DebugSetSeed=function(v) calls+=1; check(v==123 or v==nil,'seed forwarded'); return true,'ok' end
+ for _,v in {'bad',-1,1.5,2147483648,math.huge,0/0,{}} do check(not B.Execute(900000002,'SeedBattle',v),'invalid seed') end
+ check(calls==0,'invalid seed no API calls')
+ check(B.Execute(900000002,'SeedBattle','123'),'seed accepted')
+ check(B.Execute(900000002,'SeedBattle','clear'),'seed cleared')
+ require(S.MatchState).IsEnded=function() return true end
+ require(S.VictoryService).GetSnapshot=function() return {ended=true} end
+ check(not B.Execute(900000002,'SeedBattle','123'),'frozen seed denied')
+ check(B.Execute(900000002,'InspectRealm',rulers[1].rulerId),'frozen inspection')
+ require(S.MatchState).IsEnded=ended; require(S.VictoryService).GetSnapshot=victory; M.DebugSetSeed=seed
+ check(B.Execute(900000002,'SeedBattle','123'),'real seed API')
+ check(B.Execute(900000002,'SeedBattle','clear'),'real seed clear')
+
+ local player=game.Players:GetPlayers()[1]; assert(player)
+ local ruler=H.GetRulerIdForUserId(player.UserId); assert(ruler)
+ local attempted=0; local fly=K.Registry.commands.fly; local flyRun=fly.run
+ fly.run=function(...) attempted+=1; return flyRun(...) end
+ for _,text in {';fly me',';kill me',';nograv me'} do K.Process.runCommands(K,player.UserId,text) end
+ task.wait(0.5); fly.run=flyRun; check(attempted==0,'disabled pipeline rejected')
+ for _,text in {';adminhelp',';inspectrealm '..ruler,';checkledgers',';seedbattle 17',';seedbattle clear',';version',';mute me',';unmute me',';fov me 70'} do check(K.Process.runCommands(K,player.UserId,text),'retained pipeline '..text) end
+ local G=require(S.GameSettingsService); local font=G.GetSnapshot().values.Font
+ check(G.Apply(player.UserId,'Set','Font',font),'owner settings retained')
+ check(not G.Apply(900000002,'Set','Font',font),'SuperAdmin settings still view-only')
+ check(not G.Apply(900000004,'Set','Font',font),'ordinary settings denied')
+ print('ADMIN_PIPELINE_PASS',attempted)
+ local names={} for _,d in K.Registry.commandsList do table.insert(names,d.name) end table.sort(names)
+ print('ADMIN_EFFECTIVE',#names,table.concat(names,','))
+ print('ADMIN_POLICY_SERVER_PASS',checks,count)
+do
+ local K=shared._K_INTERFACE; local S=game.ServerScriptService.Services; local C=require(S.AdminConfig); local B=require(S.AdminBridge); local p=game.Players:GetPlayers()[1]; assert(p)
+ local ranks=K.Auth.getRank; local execute=B.Execute; local ids=table.clone(C.GameTesterUserIds); local received,calls=0,0
+ local conn=K.Remote.Command._remote.OnServerEvent:Connect(function(from,channel,text) if from==p and channel==K.Remote.Command._id and typeof(text)=='string' and text:find('AUDIT_REJECT',1,true) then received+=1 end end)
+ local ok,err=pcall(function()
+  for i=#C.GameTesterUserIds,1,-1 do if C.GameTesterUserIds[i]==p.UserId then table.remove(C.GameTesterUserIds,i) end end
+  K.Auth.getRank=function(id) if id==p.UserId then return 0,'everyone' end return ranks(id) end
+  B.Execute=function(...) calls+=1; return execute(...) end
+  assert(not C.IsGameTester(p.UserId))
+  local marker=Instance.new('Folder'); marker.Name='AdminPolicyRemoteReady'; marker.Parent=game.ReplicatedStorage
+  local deadline=os.clock()+40; repeat task.wait(0.1) until received==4 or os.clock()>deadline
+  assert(received==4,'four real client requests received'); assert(calls==0,'unauthorized never reaches bridge')
+ end)
+ conn:Disconnect(); K.Auth.getRank=ranks; C.GameTesterUserIds=ids; B.Execute=execute; p:SetAttribute('_GameTesterAuthorized',C.IsGameTester(p.UserId)); assert(ok,err); print('ADMIN_POLICY_REMOTE_PASS',received,calls)
+end
+
+end)
+K.Auth.getRank=rank; H.GetSnapshot=snap; M.GetInspect=inspect; T.GetOwnedTerritoryIds=owned; M.DebugSetSeed=seed; require(S.MatchState).IsEnded=ended; require(S.VictoryService).GetSnapshot=victory
+assert(ok,err)

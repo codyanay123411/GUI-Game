@@ -1,0 +1,23 @@
+-- Seeded cutoff verification; no full-match progression or gameplay-rule override.
+local S=game.ServerScriptService.Services
+local H,T,C,M,Match=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.PoliticalCouncilService),require(S.MilitaryService),require(S.MatchState)
+local state=S.Parent.CouncilVerification;local root,sub=state:GetAttribute("Ruler1"),state:GetAttribute("Ruler2")
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+check(game.Players:FindFirstChild("Player3")==nil,"actual third client disconnected")
+check(#C.GetCouncilMembers(sub)==0,"disconnected direct subject removed")
+check(table.find(C.GetCouncilMembers(root),sub)~=nil,"remaining root member")
+C.Start();check(#C.GetCouncilMembers(root)==1,"repeated initialization")
+local p=game.Players:FindFirstChild("Player1");local before=table.concat(C.GetCouncilMembers(root),",")
+for _,d in T.GetMapDefinition().territories do
+ if Match.IsEnded()then break end
+ if T.GetOwnerRulerId(d.id)==nil then assert(T.SetOwner(d.id,root))end
+end
+check(Match.IsEnded(),"existing Domination cutoff")
+check(C.GetForPlayer(p).frozen,"frozen council projection")
+check(table.concat(C.GetCouncilMembers(root),",")==before,"cutoff membership preserved")
+check(not T.SetOwner("northvale",nil),"post-end ownership mutation rejected")
+check(not H.OfferFealty(sub,root),"post-end political mutation rejected")
+check(not M.DebugAddTroops(sub,3000),"post-end troop mutation rejected")
+task.wait(1.3);check(table.concat(C.GetCouncilMembers(root),",")==before,"timer loop frozen")
+state:SetAttribute("FrozenMembers",before);state:SetAttribute("FreezeChecks",n)
+print("COUNCIL_FREEZE_PASS",n,game:GetService("HttpService"):JSONEncode(C.GetForPlayer(p)))

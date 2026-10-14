@@ -1,0 +1,54 @@
+-- Synthetic transport checks; no TeleportService calls or Roblox departures.
+local Requests=require("./ReplayRequests")
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+local at,ended,available=0,false,true
+local connected={alice=true,bob=true};local queue,events,calls,logs={},{},{},{}
+local failCall=false;local duringCall
+local api=Requests.Create({description="Fresh reserved server for requester only",clock=function()return at end,
+ ended=function()return ended end,connected=function(p)return connected[p]==true end,
+ available=function()return available,"Studio cannot transfer players."end,
+ publish=function(p,s)table.insert(events,{p=p,status=s})end,
+ spawn=function(f)table.insert(queue,f)end,
+ teleport=function(p,id)table.insert(calls,{p=p,id=id});if duringCall then duringCall(p,id)end;if failCall then error("synthetic network failure")end end,
+ log=function(e)table.insert(logs,e)end})
+local function work()local f=table.remove(queue,1);assert(f);f()end
+check(not api.Request("alice"),"live match rejected");check(#calls==0 and #queue==0,"no premature transport")
+ended=true;available=false;check(not api.Request("alice"),"Studio unavailable");check(api.Status("alice").message:find("Studio"),"readable unavailability")
+available=true;check(not api.Request("alice"),"unavailable cooldown")
+at=2;check(api.Request("alice"),"ended request begins");check(api.Status("alice").pending,"pending before worker")
+check(not api.Request("alice"),"duplicate queued request");check(#queue==1,"one worker")
+check(not api.Status("bob").pending,"other player unaffected");local rev=api.Status("alice").revision
+api.Status("alice");check(api.Status("alice").revision==rev,"status read does not reset")
+work();check(#calls==1 and calls[1].p=="alice","requester-only transport")
+check(api.Status("alice").phase=="Transferring","accepted call not completion promise")
+check(not api.Request("alice"),"duplicate after initiation")
+check(not api.Fail("alice",999,"stale"),"unrelated failure ignored")
+check(api.Fail("alice",calls[1].id,"Try Play Again again."),"init failure releases")
+check(not api.Status("alice").pending,"retry available after confirmed failure")
+check(not api.Request("alice"),"failure cooldown")
+at=4;failCall=true;check(api.Request("alice"),"deliberate retry")
+work();check(api.Status("alice").phase=="Failed" and not api.Status("alice").pending,"pcall failure handled")
+check(#logs==1,"error logged server-side")
+check(api.Status("alice").message:find("still here",1,true),"does not imply reset/departure")
+at=6;failCall=false;check(api.Request("alice"),"second retry")
+check(not api.Fail("alice",calls[1].id,"late old failure"),"old failure cannot unlock new attempt")
+work();check(api.Status("alice").pending,"new attempt intact")
+-- A definitive asynchronous failure can occur while the API call is still yielding.
+check(api.Fail("alice",calls[3].id,"async failure"),"release current")
+at=8;duringCall=function(p,id)assert(api.Fail(p,id,"asynchronous failure"))end
+check(api.Request("alice"),"start async-failure case");work()
+check(api.Status("alice").phase=="Failed","late successful return cannot overwrite failure")
+-- Different actors are independent, not a shared match reset or cohort transfer.
+duringCall=nil;check(api.Request("bob"),"second actor can route")
+check(calls[#calls].p=="alice","not transported before worker")
+work();check(calls[#calls].p=="bob","only second actor in their call")
+-- Disconnect before queued work cancels without another call; old callbacks remain inert.
+at=10;check(api.Request("alice"),"queued before disconnect")
+local oldCount=#calls;connected.alice=false;api.Remove("alice");work();check(#calls==oldCount,"no disconnected teleport")
+check(not api.Request("alice"),"disconnected rejection")
+check(not api.Fail("alice",5,"late"),"removed attempt inert")
+connected.alice=true;check(api.Status("alice").phase=="Idle","reconnect fresh request state")
+check(api.Request("alice"),"reconnected request allowed");work()
+check(#calls==oldCount+1,"single new transport")
+check(ended,"source match remains ended")
+print("REPLAY_REQUEST_POLICY_PASS",n)

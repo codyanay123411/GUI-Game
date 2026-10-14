@@ -1,0 +1,62 @@
+-- Targeted three-client council integration. Synthetic ownership/ranks/troops, not a natural match.
+local S=game.ServerScriptService.Services
+local H,T,M,C,Match=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.MilitaryService),require(S.PoliticalCouncilService),require(S.MatchState)
+local P,Config=require(S.PoliticalCouncilPolicy),require(S.PoliticalAuthorityConfig)
+local Players=game:GetService("Players");local Json=game:GetService("HttpService")
+local ps=Players:GetPlayers();table.sort(ps,function(a,b)return a.Name<b.Name end);assert(#ps==3,"three clients required")
+local ids={};for i,p in ps do ids[i]=H.GetRulerIdForUserId(p.UserId);assert(ids[i])end
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+local function has(list,id)return table.find(list,id)~=nil end
+local function join(subject,liege)
+ check(H.OfferFealty(subject,liege),"offer")
+ local req;for _,r in H.GetSnapshot().requests do if r.fromRulerId==subject and r.toRulerId==liege then req=r.requestId end end
+ check(req~=nil,"request");check(H.AcceptFealty(req,liege),"accept")
+end
+for _,d in T.GetMapDefinition().territories do assert(T.SetOwner(d.id,nil))end
+assert(T.SetOwner("westmere",ids[1]));assert(T.SetOwner("northvale",ids[2]));assert(T.SetOwner("greyfen",ids[3]));assert(H.SetTitleRank(ids[1],4));task.wait(.3)
+check(C.GetAuthority(ids[1])==200,"root personal authority")
+join(ids[2],ids[1]);task.wait(.1)
+check(#C.GetCouncilMembers(ids[1])==1 and has(C.GetCouncilMembers(ids[1]),ids[2]),"immediate first vacancy")
+check(#C.GetForPlayer(ps[3]).councils==1,"unrelated privacy")
+join(ids[3],ids[1]);task.wait(.1)
+check(#C.GetCouncilMembers(ids[1])==2,"immediate second vacancy")
+check(C.GetAuthority(ids[1])==200,"no descendants")
+assert(M.Recruit(ids[2],3));check(C.GetAuthority(ids[2])==200.3,"ordinary recruitment authority")
+-- Commitment uses existing root gameplay; it must not alter authority.
+local W=require(S.WarfareService);local ok,war=W.DeclareWar(ids[1],"ashwood");check(ok,"neutral declaration")
+assert(M.SetCommit(ids[1],war,700));check(C.GetAuthority(ids[1])==200,"reserved troops counted")
+assert(M.LockCommit(ids[1],war));task.wait(.1)
+check(M.GetTotalTroops(ids[1])<1000,"mechanical casualties happened")
+check(C.GetAuthority(ids[1])==100+M.GetTotalTroops(ids[1])/10,"mechanical casualty authority")
+-- Loss/regain in the same turn must still remove and refill, with no stale timers.
+assert(T.SetOwner("northvale",nil));check(not has(C.GetCouncilMembers(ids[1]),ids[2]),"last-land immediate removal")
+assert(T.SetOwner("northvale",ids[2]));check(has(C.GetCouncilMembers(ids[1]),ids[2]),"immediate land-regain vacancy")
+join(ids[3],ids[2]);check(#C.GetCouncilMembers(ids[1])==1,"reparent immediate old removal")
+check(has(C.GetCouncilMembers(ids[2]),ids[3]),"reparent immediate new vacancy")
+local rootView=C.GetForPlayer(ps[1]);local subView=C.GetForPlayer(ps[2]);local grandView=C.GetForPlayer(ps[3])
+check(#rootView.councils==1,"root sees own only")
+check(#subView.councils==2,"direct subject sees own and liege")
+check(#grandView.councils==2 and grandView.councils[2].rulerId==ids[2],"grandchild excludes root council")
+local allowedState={councils=true,frozen=true,seatLimit=true};local allowedCouncil={rulerId=true,displayName=true,titleName=true,members=true};local allowedMember={rulerId=true,displayName=true,titleName=true}
+for _,v in {rootView,subView,grandView}do
+ for k in v do check(allowedState[k],"state allowlist")end
+ for _,c in v.councils do for k in c do check(allowedCouncil[k],"council allowlist")end
+ for _,m in c.members do for k in m do check(allowedMember[k],"member allowlist")end end end
+end
+local mock=H.DebugCreateMockRuler("Disconnected synthetic subject",1);assert(T.SetOwner("highmarch",mock));task.wait(.2);join(mock,ids[1])
+check(not has(C.GetCouncilMembers(ids[1]),mock),"mock without connected player excluded")
+H.DebugRemoveRuler(mock);task.wait(.2)
+-- Real elapsed-time policy test for a size unavailable to three connected players.
+local st=P.New();local rows={};for i=1,5 do table.insert(rows,{id="synthetic"..i,authority=100})end
+local at=workspace:GetServerTimeNow();P.Evaluate(st,rows,at,Config)
+table.insert(rows,{id="synthetic6",authority=110});at=workspace:GetServerTimeNow();P.Evaluate(st,rows,at,Config)
+check(not has(st.members,"synthetic6"),"synthetic challenger waits")
+task.spawn(function()
+ task.wait(30.2);P.Evaluate(st,rows,workspace:GetServerTimeNow(),Config)
+ assert(has(st.members,"synthetic6"),"real-duration synthetic replacement")
+ print("COUNCIL_REAL_DURATION_SYNTHETIC_PASS")
+end)
+local state=Instance.new("Folder");state.Name="CouncilVerification";state.Parent=game.ServerScriptService
+for i,id in ids do state:SetAttribute("Ruler"..i,id);state:SetAttribute("User"..i,ps[i].UserId)end
+state:SetAttribute("Checks",n)
+print("COUNCIL_INTEGRATION_PASS",n,Json:JSONEncode({players={ps[1].Name,ps[2].Name,ps[3].Name},views={rootView,subView,grandView},syntheticTimer=true}))

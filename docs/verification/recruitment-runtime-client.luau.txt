@@ -1,0 +1,60 @@
+-- One disposable Solo observer. Native mouse clicks/drag supply bar and Recruit input.
+local p=game.Players.LocalPlayer;local g=p.PlayerGui.HierarchyPrototypeGui
+local C=p.PlayerScripts.Controllers;local State=require(C.MapContextState)
+local Context=require(C.MapContextController)
+local Json=game:GetService("HttpService")
+local Input=game:GetService("UserInputService")
+local m=g.MilitaryWorkflowPanel.Content;local b=m.RecruitmentBar
+local n=0;local function check(v,msg)assert(v,msg);n+=1 end
+local allowed={25,35,50,75,100}
+local function emit()
+ local pos,size=b.Track.AbsolutePosition,b.Track.AbsoluteSize
+ local stops={};for i,v in allowed do table.insert(stops,{percent=v,x=pos.X+size.X*(i-1)/4,y=pos.Y+2})end
+ print("RECRUIT_UI",Json:JSONEncode({size={g.AbsoluteSize.X,g.AbsoluteSize.Y},percent=b:GetAttribute("SelectedPercent"),
+ enabled=b:GetAttribute("EditingEnabled"),cost=m.CostLabel.Text,button=m.RecruitButton.Active,visible=g.MilitaryWorkflowPanel.Visible,
+ stops=stops,recruit={m.RecruitButton.AbsolutePosition.X,m.RecruitButton.AbsolutePosition.Y,m.RecruitButton.AbsoluteSize.X,m.RecruitButton.AbsoluteSize.Y},
+ selected=g.PresentationState.SelectedTerritoryId.Value,camera=tostring(workspace.CurrentCamera.CFrame)}))
+end
+local function layout(tag)
+ for _,x in {b.Preview,m.CostLabel,m.RecruitButton}do
+  check(x.TextBounds.X<=x.AbsoluteSize.X+2 and x.TextBounds.Y<=x.AbsoluteSize.Y+2,"text fits "..x.Name)
+ end
+ check(m.CostLabel.AbsolutePosition.Y>=b.AbsolutePosition.Y+b.AbsoluteSize.Y,"cost below bar")
+ check(m.RecruitButton.AbsolutePosition.Y>=m.CostLabel.AbsolutePosition.Y+m.CostLabel.AbsoluteSize.Y,"action below cost")
+ check(m.CanvasSize.Y.Offset>=m.RecruitButton.Position.Y.Offset+m.RecruitButton.Size.Y.Offset,"action scroll reachable")
+ check(not m.RecruitBox.Visible and not m.RecruitBox.Active and not m.RecruitBox.TextEditable,"numeric entry retired")
+ check(not m.MaxRecruitButton.Visible and not m.MaxRecruitButton.Active,"duplicate Max retired")
+ check(table.find(allowed,b:GetAttribute("SelectedPercent")),"only allowed stop")
+ check(b.Preview:GetAttribute("ThemeRole")=="Caption","theme caption")
+ check(b:GetAttribute("BlocksMapInput"),"bar blocks map")
+ print("RECRUIT_LAYOUT_PASS",tag,g.AbsoluteSize,n)
+end
+b:GetAttributeChangedSignal("SelectedPercent"):Connect(function()
+ check(table.find(allowed,b:GetAttribute("SelectedPercent")),"native input snaps")
+ task.defer(emit)
+end)
+Input.InputEnded:Connect(function()task.delay(.2,emit)end)
+m.RecruitButton:GetPropertyChangedSignal("Text"):Connect(function()
+ if m.RecruitButton.Text~="Recruiting..."then return end
+ task.defer(function()
+  if m.RecruitButton.Text~="Recruiting..."then return end
+  check(not m.RecruitButton.Active,"submission disables action")
+  check(not b:GetAttribute("EditingEnabled"),"submission freezes bar")
+  print("RECRUIT_PENDING_PASS",n)
+ end)
+end)
+game.ReplicatedStorage.Remotes.MilitaryServerEvent.OnClientEvent:Connect(function(kind,data)
+ if kind=="RecruitResult"then print("RECRUIT_RECEIPT",data);task.delay(.1,emit)
+ elseif kind=="VerifyRecruit"then task.wait(.3);local ok,err=pcall(layout,data);if not ok then warn("RECRUIT_LAYOUT_FAIL",data,err,n)end;emit()end
+end)
+local owned
+for _,t in State.territory.territories do
+ for _,r in State.hierarchy.rulers do if t.ownerRulerId==r.rulerId and r.userId==p.UserId then owned=t.territoryId end end
+end
+assert(owned,"own province")
+require(C.TerritoryMapController).Select(owned, "silent")
+task.wait(.1) -- SelectionChanged delivery precedes contextual resolution.
+Context.OpenWorkflow("Military")
+task.wait(.3)
+check(b:GetAttribute("SelectedPercent")==25,"default preview")
+layout("open");emit()

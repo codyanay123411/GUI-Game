@@ -1,0 +1,25 @@
+-- Run in a real client VM after changed presentation admission/reopening.
+local player=game.Players.LocalPlayer;local gui=player.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local controllers=player.PlayerScripts.Controllers
+require(controllers.PoliticalPermissionsController).Start()
+require(controllers.StrategyPresentationController).OpenSystem("Realm")
+task.wait(.8)
+local section=gui.Main.PermissionsSection;local n=0
+local function check(v,m)assert(v,m);n+=1 end
+check(section.BackgroundTransparency==1 and not section.Active,"noninteractive section background")
+check(gui.Main.TreeHeader.LayoutOrder==7 and gui.Main.TreeScroll.LayoutOrder==8,"one existing Realm ordering")
+local count=0;for _,child in gui.Main:GetChildren()do if child.Name=="PermissionsSection"then count+=1 end end
+check(count==1,"repeated Start one implementation")
+for _,item in section:GetChildren()do
+ if item:IsA("TextLabel")or item:IsA("TextButton")then
+  check(item.TextBounds.Y<=item.AbsoluteSize.Y+2,"measured text height:"..item.Name)
+  check(item.AbsoluteSize.X<=gui.Main.AbsoluteSize.X,"compact content width:"..item.Name)
+  check(item.FontFace.Family=="rbxasset://fonts/families/Arial.json","current configured font:"..item.Name)
+  if item:IsA("TextButton")then check(item:GetAttribute("BlocksMapInput")==true,"interactive buttons only")end
+ end
+end
+local state=require(controllers.MapContextState)
+local own;for _,r in state.hierarchy.rulers do if r.userId==player.UserId then own=r end end
+local wars={{warId="synthetic-own",attackerRootId=own.rulerId,defenderRootId="external",targetTerritoryId="riverholt"}}
+check(#require(game.ReplicatedStorage.Shared.Util.PlayerRelevantView).FilterWarsForLocalRoot(wars,own.rootRulerId,own.rulerId)==1,"own actor attention projection")
+print("POLITICS_FINAL_LAYOUT_CLIENT_PASS",n,gui.AbsoluteSize)

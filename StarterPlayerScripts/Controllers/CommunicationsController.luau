@@ -113,12 +113,9 @@ function Controller.Start()
 		local item = Instance.new("TextButton")
 		item.Size = UDim2.new(1, -8, 0, 24)
 		item.Position = UDim2.fromOffset(0, y)
-		item.BackgroundColor3 = Theme.Colors.row
-		item.BorderSizePixel = 0
-		item.TextColor3 = Theme.Colors.textPrimary
-		item.Font = Enum.Font.Gotham
-		item.TextSize = 14
 		item.Text = text
+		Theme.applySecondaryButton(item, true)
+		item.TextWrapped = true
 		item.Parent = parent
 		item.Activated:Connect(callback)
 	end

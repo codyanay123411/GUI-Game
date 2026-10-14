@@ -1,0 +1,15 @@
+-- Read-only observer on each actual Local Server client; no mutation or troop inspection.
+local Players=game:GetService("Players");local R=game.ReplicatedStorage;local J=game:GetService("HttpService")
+local p=Players.LocalPlayer;local g=p.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local C=p.PlayerScripts.Controllers;require(C.StrategyPresentationController).OpenSystem("Realm")
+local latest
+R.Remotes.CouncilServerEvent.OnClientEvent:Connect(function(k,data)
+ if k~="State"then return end;latest=J:JSONDecode(data)
+ print("COUNCIL_CLIENT_STATE",p.Name,data)
+end)
+R.Remotes.CouncilClientEvent:FireServer("Ready","unrequested-council")
+task.wait(.3)
+local b=g.Main.CouncilBody
+assert(b.Text:find("Seats grant no permissions",1,true))
+assert(not b.Text:find("Authority",1,true));assert(not b.Text:find("Troops",1,true))
+print("COUNCIL_CLIENT_UI_PASS",p.Name,b.Text)

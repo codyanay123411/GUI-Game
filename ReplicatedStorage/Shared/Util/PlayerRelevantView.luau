@@ -32,13 +32,14 @@ function PlayerRelevantView.WarInvolvesRoot(war: any, localRootId: string): bool
 	return war.attackerRootId == localRootId or war.defenderRootId == localRootId
 end
 
-function PlayerRelevantView.FilterWarsForLocalRoot(wars: { any }, localRootId: string?): { any }
+function PlayerRelevantView.FilterWarsForLocalRoot(wars: { any }, localRootId: string?, personalActorId: string?): { any }
 	local out = {}
 	if typeof(localRootId) ~= "string" or localRootId == "" or typeof(wars) ~= "table" then
 		return out
 	end
 	for _, war in wars do
-		if PlayerRelevantView.WarInvolvesRoot(war, localRootId) then
+		if PlayerRelevantView.WarInvolvesRoot(war, localRootId)
+			or (personalActorId and PlayerRelevantView.WarInvolvesRoot(war, personalActorId)) then
 			table.insert(out, war)
 		end
 	end

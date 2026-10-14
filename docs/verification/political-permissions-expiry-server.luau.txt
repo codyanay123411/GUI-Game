@@ -1,0 +1,12 @@
+-- Synthetic final-source Solo subject setup for actual review expiration UI.
+local S=game.ServerScriptService.Services;local H,B,P=require(S.PoliticalHierarchyService),require(S.AdminBridge),require(S.BetrayalService)
+local player=game.Players:GetPlayers()[1]or game.Players.PlayerAdded:Wait();local id
+repeat task.wait(.1);id=H.GetRulerIdForUserId(player.UserId)until id
+task.wait(2)
+local T=require(S.TerritoryMapService)
+for _,land in T.GetOwnedTerritoryIds(id)do assert(B.Execute(nil,"SetOwner",land,"unclaimed"))end
+assert(B.Execute(nil,"SetOwner","westmere",id))
+local liege=H.DebugCreateMockRuler("Synthetic direct liege",4);task.wait(.2)
+assert(B.Execute(nil,"SetOwner","northvale",liege));assert(B.Execute(nil,"SetTroops",liege,1000));assert(B.Execute(nil,"SetTroops",id,1101))
+assert(H.SetTitleRank(id,3));local ok,req=H.OfferFealty(id,liege);assert(ok);assert(H.AcceptFealty(req,liege))
+print("POLITICS_EXPIRY_SETUP_PASS")

@@ -1,0 +1,46 @@
+-- Disposable Solo client observer; synthetic status cases do not test Roblox teleport.
+local p=game.Players.LocalPlayer
+local g=p.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local panel=g.VictoryOverlay.Panel
+local push=game.ReplicatedStorage.Remotes.VictoryServerEvent
+local intent=game.ReplicatedStorage.Remotes.VictoryClientEvent
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+local function layout(tag)
+ local content=panel.ResultContent
+ for _,label in {panel.Heading,panel.Winner,content.Body,content.ReplayFeedback}do
+  check(label.TextBounds.Y<=label.AbsoluteSize.Y+2,"text height "..label.Name)
+  check(label.TextBounds.X<=label.AbsoluteSize.X+2,"text width "..label.Name)
+ end
+ for _,b in {panel.Continue,panel.PlayAgainButton}do
+  check(b.TextBounds.X<=b.AbsoluteSize.X+2 and b.TextBounds.Y<=b.AbsoluteSize.Y+2,"button text fits "..b.Name)
+  check(b.AbsolutePosition.Y>=content.AbsolutePosition.Y+content.AbsoluteSize.Y,"footer below scroll")
+  check(b.AbsolutePosition.Y+b.AbsoluteSize.Y<=panel.AbsolutePosition.Y+panel.AbsoluteSize.Y,"footer in panel")
+ end
+ check(panel.AbsolutePosition.X>=0 and panel.AbsolutePosition.Y>=0,"panel in viewport")
+ check(panel.AbsolutePosition.X+panel.AbsoluteSize.X<=g.AbsoluteSize.X+1,"panel width")
+ check(panel.AbsolutePosition.Y+panel.AbsoluteSize.Y<=g.AbsoluteSize.Y+1,"panel height")
+ check(content.CanvasSize.Y.Offset>=content.ReplayFeedback.Position.Y.Offset+content.ReplayFeedback.Size.Y.Offset,"feedback scroll reachable")
+ check(content.ReplayFeedback:GetAttribute("ThemeRole")=="Caption","feedback theme")
+ check(panel.PlayAgainButton:GetAttribute("ThemeRole")~=nil,"button theme")
+ print("REPLAY_LAYOUT_PASS",tag,g.AbsoluteSize,n,content.CanvasSize.Y.Offset)
+end
+push.OnClientEvent:Connect(function(kind,payload)
+ if kind=="ReplayStatus"then
+  local s=game:GetService("HttpService"):JSONDecode(payload)
+  print("REPLAY_CLIENT_STATUS",s.phase,s.revision,s.pending)
+ elseif kind=="VerifyReplay"then
+  task.wait(.3)
+  local ok,err=pcall(function()
+   if payload=="pending"or payload=="stale"then check(not panel.PlayAgainButton.Active,"pending button disabled")
+   elseif payload=="failure"then check(panel.PlayAgainButton.Active,"failure permits retry")end
+   layout(payload)
+  end)
+  if not ok then warn("REPLAY_CLIENT_FAIL",payload,err,n)end
+ end
+end)
+check(not g:GetAttribute("MatchEnded"),"live startup")
+check(not panel.PlayAgainButton.Active,"pre-end button unavailable")
+intent:FireServer("PlayAgain")
+task.wait(.5)
+check(not g:GetAttribute("MatchEnded"),"premature request cannot end/reset match")
+print("REPLAY_CLIENT_READY",n)

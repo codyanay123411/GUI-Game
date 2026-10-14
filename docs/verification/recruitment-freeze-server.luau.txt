@@ -1,0 +1,10 @@
+-- Targeted seeded normal Domination cutoff, not a full-match rerun.
+local S=game.ServerScriptService.Services
+local H,T,M,Match=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.MilitaryService),require(S.MatchState)
+local p=game.Players:GetPlayers()[1];local id=H.GetRulerIdForUserId(p.UserId)
+for _,d in T.GetMapDefinition().territories do if Match.IsEnded()then break end;assert(T.SetOwner(d.id,id))end
+assert(Match.IsEnded())
+local before=M.GetInspect(id).total
+local ok,reason=M.Recruit(id,3)
+assert(not ok and reason=="Match ended." and M.GetInspect(id).total==before)
+print("RECRUIT_FREEZE_SERVER_PASS",true)

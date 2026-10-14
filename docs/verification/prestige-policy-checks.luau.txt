@@ -1,0 +1,73 @@
+-- Pure fixture: exact interval arithmetic and requirement validation; not a natural playtest.
+local Requirements, Accrual
+if game then
+	Requirements = require(game.ReplicatedStorage.Shared.Util.TitleRequirements)
+	Accrual = require(game.ReplicatedStorage.Shared.Util.PrestigeAccrual)
+else
+	Requirements = require("./TitleRequirementsCLI")
+	Accrual = require("../../ReplicatedStorage/Shared/Util/PrestigeAccrual")
+end
+local count = 0
+local function check(ok, name) assert(ok, name); count += 1 end
+local function near(a, b) check(math.abs(a-b) < 1e-8, tostring(a).." expected "..tostring(b)) end
+local function map(n)
+	local defs = {}
+	for i=1,n do table.insert(defs,{id=tostring(i)}) end
+	return {mapId="fixture_"..n, territories=defs}
+end
+for _,case in {{4,1,2,3},{8,1,3,5},{15,2,5,10},{16,2,5,10},{17,3,6,11},{32,4,10,20},{33,5,11,21},{64,8,20,40},{100,13,32,63}} do
+	local resolved=Requirements.Resolve(map(case[1]))
+	for i=1,3 do check(resolved[i].territoryCount==case[i+1],"derived land");check(resolved[i].prestige==case[i+1]*50,"derived Prestige") end
+	check(not pcall(function() resolved[1].prestige=0 end),"resolved row immutable")
+	check(not pcall(function() resolved[1]=nil end),"resolved set immutable")
+end
+local decorative=map(17);decorative.territories[17].conquerable=false
+check(Requirements.Resolve(decorative)[1].territoryCount==2,"definitions exclude nonconquerable")
+local tiny=map(3)
+check(not pcall(Requirements.Resolve,tiny),"collapsed rounding rejects tiny map")
+tiny.titleRequirements={{rank=2,territoryCount=1,prestige=50},{rank=3,territoryCount=2,prestige=100},{rank=4,territoryCount=3,prestige=150}}
+check(Requirements.Resolve(tiny)[3].territoryCount==3,"explicit tiny valid overrides")
+local partial=map(16);partial.titleRequirements={{rank=2,territoryCount=3,prestige=125}}
+check(Requirements.Resolve(partial)[1].prestige==125 and Requirements.Resolve(partial)[2].territoryCount==5,"partial overrides")
+for _,bad in {0,1,2,3} do check(not pcall(Requirements.Resolve,map(bad)),"default tiny rejects") end
+for _,value in {0,-1,1.5,math.huge,0/0} do
+	local invalid=map(16);invalid.titleRequirements={{rank=2,territoryCount=value,prestige=100}}
+	check(not pcall(Requirements.Resolve,invalid),"invalid land")
+end
+for _,value in {0,-1,math.huge,0/0} do
+	local invalid=map(16);invalid.titleRequirements={{rank=2,territoryCount=2,prestige=value}}
+	check(not pcall(Requirements.Resolve,invalid),"invalid Prestige threshold")
+end
+for _,rows in {
+	{{rank=9,territoryCount=2,prestige=100}},
+	{{rank=2,territoryCount=2,prestige=100},{rank=2,territoryCount=3,prestige=150}},
+	{{rank=2,territoryCount=5,prestige=100}},
+	{{rank=4,territoryCount=17,prestige=500}},
+	{{rank=3,territoryCount=5,prestige=100}},
+} do local invalid=map(16);invalid.titleRequirements=rows;check(not pcall(Requirements.Resolve,invalid),"invalid overrides") end
+local duplicate=map(16);duplicate.territories[2].id="1";check(not pcall(Requirements.Resolve,duplicate),"duplicate province")
+check(not pcall(Requirements.Resolve,{}),"missing definitions")
+check(not pcall(Requirements.Resolve,3),"malformed map")
+local original=map(16);local fixed=Requirements.Resolve(original);table.remove(original.territories);original.players=99;original.owner="fixture"
+check(fixed[1].territoryCount==2 and fixed[3].prestige==500,"resolved requirements remain fixed")
+
+local ledger=Accrual.new(20)
+ledger:AddRuler("liege",100,1);ledger:AddRuler("subject",100,2);ledger:AddRuler("zero",100,0)
+near(ledger:Get("liege",100),0);near(ledger:Get("subject",100.3),.2);near(ledger:Get("zero",150),0)
+near(ledger:Get("subject",100.3),.2);near(ledger:Get("subject",100.1),.2)
+ledger:AddRuler("subject",101,999);near(ledger:Get("subject",101),2/3)
+-- A transfer at 101.5: previous owner receives only their old interval.
+ledger:SetHoldings("subject",1,101.5);ledger:SetHoldings("liege",2,101.5)
+near(ledger:Get("subject",102),7/6);near(ledger:Get("liege",102),5/6)
+ledger:SetHoldings("subject",0,102);near(ledger:Get("subject",202),7/6)
+ledger:SetHoldings("subject",3,202);near(ledger:Get("subject",202),7/6);near(ledger:Get("subject",202.5),5/3)
+ledger:Remove("subject",203);ledger:AddRuler("subject",203,1);near(ledger:Get("subject",203),0)
+near(ledger:Get("subject",203.25),1/12)
+-- Same-time repeated update/request does not grant anything.
+for i=1,100 do ledger:SetHoldings("subject",1,203.25);near(ledger:Get("subject",203.25),1/12) end
+ledger:Freeze(203.75);local final=ledger:Get("subject",1000);near(final,.25)
+ledger:Freeze(1001);ledger:SetHoldings("subject",50,1001);ledger:Remove("subject",1001);near(ledger:Get("subject",1002),final)
+local debug=Accrual.new(20);debug:AddRuler("r",0,1);debug:SetValue("r",100,3);near(debug:Get("r",3),100);near(debug:Get("r",6),101)
+check(not pcall(debug.SetValue,debug,"r",math.huge,6),"infinite override rejects")
+check(not pcall(debug.SetValue,debug,"r",-1,6),"negative override rejects")
+print("PRESTIGE_POLICY_PASS",count)

@@ -5,6 +5,9 @@
 ]]
 
 local MilitaryConfig = {
+	SubjectCombatBase = 0.09,
+	SubjectCombatPerLiegeSubject = 0.01,
+	PersonalDefensePerSubject = 0.02,
 	StartingTroops = 1000,
 	TroopsPerGold = 3,
 	CommitWindowSeconds = 40,

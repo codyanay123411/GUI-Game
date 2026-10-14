@@ -2,8 +2,8 @@
 
 --[[
 	Player-relevant Military / Armies V0.1 HUD.
-	Recruit / RecruitMax / SetCommit / LockCommit intents only.
-	Commitment field auto-submits parsed integers; Lock uses server-accepted intent.
+	Recruit / SetCommit / LockCommit intents only.
+	Five-stop local commitment preview; integer intents and acknowledged edits only.
 ]]
 
 local Players = game:GetService("Players")
@@ -15,6 +15,9 @@ local PrototypeGuiTheme = require(ReplicatedStorage:WaitForChild("Shared"):WaitF
 local MilitaryConfig = require(ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Config"):WaitForChild("MilitaryConfig"))
 
 local player = Players.LocalPlayer
+local CommitmentPolicy = require(ReplicatedStorage.Shared.Util.CommitmentPolicy)
+local CommitmentBar = require(script.Parent.CommitmentBar)
+local RecruitmentPolicy = require(ReplicatedStorage.Shared.Util.RecruitmentPolicy)
 local MilitaryController = {}
 
 local started = false
@@ -38,17 +41,6 @@ end
 local function formatCountdown(endsAt: number): string
 	local remaining = math.max(0, math.ceil(endsAt - workspace:GetServerTimeNow()))
 	return string.format("%ds", remaining)
-end
-
-local function parseWholeNonNegative(text: string): number?
-	if text == "" then
-		return nil
-	end
-	local n = tonumber(text)
-	if typeof(n) ~= "number" or n ~= n or n ~= math.floor(n) or n < 0 then
-		return nil
-	end
-	return n
 end
 
 function MilitaryController.Start()
@@ -77,8 +69,18 @@ function MilitaryController.Start()
 	local costLabel = panel:WaitForChild("CostLabel") :: TextLabel
 	local recruitButton = panel:WaitForChild("RecruitButton") :: TextButton
 	local maxRecruitButton = panel:WaitForChild("MaxRecruitButton") :: TextButton
+	recruitBox.Visible = false; recruitBox.Active = false; recruitBox.TextEditable = false
+	maxRecruitButton.Visible = false; maxRecruitButton.Active = false
+	local recruitBar: any
+	local recruitPercent = 25
+	local spendableGold: number? = nil
+	local recruitSequence = 0
+	local recruitFlight: any = nil
+	local recruitStatus = ""
 	local commitBody = panel:WaitForChild("CommitBody") :: TextLabel
-	local commitBox = panel:WaitForChild("CommitBox") :: TextBox
+	local retiredCommitBox = panel:WaitForChild("CommitBox") :: TextBox
+	retiredCommitBox.Visible = false; retiredCommitBox.Active = false; retiredCommitBox.TextEditable = false
+	local bar: any
 	local lockButton = panel:WaitForChild("LockButton") :: TextButton
 	local mapStage = gui:WaitForChild("MapStage") :: Frame
 	local battleBanner = mapStage:WaitForChild("BattleBanner") :: TextLabel
@@ -89,22 +91,22 @@ function MilitaryController.Start()
 	local intent = remotes:WaitForChild("MilitaryClientEvent") :: RemoteEvent
 	local push = remotes:WaitForChild("MilitaryServerEvent") :: RemoteEvent
 
+	local combatBonuses: any = nil
+	local VassalCombat = require(ReplicatedStorage.Shared.Util.VassalCombat)
 	local total = 0
 	local available = 0
 	local committed = 0
-	local troopsPerGold = 3
 	local wars = {}
 	local hasState = false
 	local noticeToken = 0
-	local lastSentByWar: { [string]: number } = {}
+	local edits: { [string]: any } = {}
+	local render: () -> ()
 	local fieldStatus = ""
-	local debounceToken = 0
 	local boundSessionWarId: string? = nil
 	local lastBattleByTerritory: { [string]: any } = {}
 	local lastBattleTokenByTerritory: { [string]: number } = {}
 
-	commitBox.PlaceholderText = "Troops to commit"
-	lockButton.Text = "Ready"
+	lockButton.Text = "Ready · Lock accepted troops"
 
 	local function showNotice(message: string)
 		noticeToken += 1
@@ -118,26 +120,29 @@ function MilitaryController.Start()
 		end)
 	end
 
-	local function recruitAmount(): number?
-		local n = tonumber(recruitBox.Text)
-		if n == nil then
-			return nil
-		end
-		return n
-	end
-
 	local function updateCost()
-		local n = recruitAmount()
-		if n == nil then
-			costLabel.Text = "Gold cost: —"
-			return
+		local cost, amount = RecruitmentPolicy.Preview(spendableGold or 0, recruitPercent)
+		local ended = gui:GetAttribute("MatchEnded") == true
+		local canEdit = hasState and spendableGold ~= nil and not ended and recruitFlight == nil
+		recruitBar.Set(recruitPercent, string.format("%d%% affordable recruitment", recruitPercent), canEdit)
+		local lines = { string.format("Preview: %d Troops / %d Gold", amount, cost) }
+		if ended then table.insert(lines, "Recruitment frozen - Match ended.")
+		elseif recruitFlight then table.insert(lines, string.format("Submitting %d Troops for %d Gold...", recruitFlight.amount, recruitFlight.cost))
+		elseif not hasState or spendableGold == nil then table.insert(lines, "Waiting for your Gold and troop state.")
+		elseif math.floor(spendableGold) < 1 then table.insert(lines, "Insufficient Gold - At least 1 Gold is needed.")
+		elseif cost == 0 then table.insert(lines, "This stop rounds to zero. Choose a higher stop or wait for Gold.")
 		end
-		if n > 0 and n == math.floor(n) and n % troopsPerGold == 0 then
-			costLabel.Text = string.format("Gold cost: %d", n / troopsPerGold)
-		else
-			costLabel.Text = "Gold cost: invalid"
-		end
+		if recruitStatus ~= "" then table.insert(lines, recruitStatus) end
+		costLabel.Text = table.concat(lines, "\n")
+		recruitButton.Text = if recruitFlight then "Recruiting..." else "Recruit"
+		recruitButton.Active = canEdit and cost >= 1
+		PrototypeGuiTheme.applyPrimaryButton(recruitButton, recruitButton.Active)
 	end
+	recruitBar = CommitmentBar.Create(panel, "RecruitmentBar", recruitButton.ZIndex, function(percent: number, _final: boolean)
+		recruitPercent = percent
+		recruitStatus = ""
+		updateCost()
+	end, RecruitmentPolicy.Stops)
 
 	local function isLiveWar(war: any): boolean
 		return war ~= nil and (war.phase == "commit" or war.phase == "present")
@@ -187,12 +192,8 @@ function MilitaryController.Start()
 	end
 
 	local function resetCommitInput()
-		debounceToken += 1
 		fieldStatus = ""
-		if commitBox.Text ~= "" then
-			commitBox.Text = ""
-		end
-		commitBox.PlaceholderText = "Troops to commit"
+		boundSessionWarId = nil
 	end
 
 	local function lastBattleDuration(): number
@@ -279,124 +280,102 @@ function MilitaryController.Start()
 		end)
 	end
 
+	local function editFor(warId: string): any
+		if not edits[warId] then edits[warId] = CommitmentPolicy.New() end
+		return edits[warId]
+	end
 	local function syncCommitInputToSession()
 		local session = displayedWar()
-		local sessionId = if session and typeof(session.warId) == "string" then session.warId else nil
-		if sessionId == nil then
-			if boundSessionWarId ~= nil or commitBox.Text ~= "" then
-				resetCommitInput()
-			end
-			boundSessionWarId = nil
-			return
-		end
-		if boundSessionWarId == sessionId then
-			return
-		end
-		debounceToken += 1
-		fieldStatus = ""
-		commitBox.PlaceholderText = "Troops to commit"
-		boundSessionWarId = sessionId
-		local intended = tonumber(session.intended)
-		if typeof(intended) == "number" then
-			lastSentByWar[sessionId] = intended
-			local shown = tostring(intended)
-			if commitBox.Text ~= shown then
-				commitBox.Text = shown
-			end
-		elseif commitBox.Text ~= "" then
-			commitBox.Text = ""
-		end
+		local id = if session then session.warId else nil
+		if boundSessionWarId ~= id then fieldStatus = ""; boundSessionWarId = id end
 	end
-
 	local function maxCommitFor(war: any): number
-		local intended = tonumber(war.intended) or 0
-		return available + intended
+		return CommitmentPolicy.Pool(available, tonumber(war.intended))
 	end
-
-	local function trySendCommit(force: boolean): boolean
-		local war = activeCommitWar()
-		if not war or typeof(war.warId) ~= "string" then
-			return false
-		end
-		if war.phase ~= "commit" or war.locked == true then
-			return false
-		end
-		local parsed = parseWholeNonNegative(commitBox.Text)
-		if parsed == nil then
-			local text = commitBox.Text
-			if text == "" then
-				fieldStatus = ""
-			else
-				fieldStatus = "Invalid amount (not a whole number >= 0)"
-			end
-			return false
-		end
-		if parsed > maxCommitFor(war) then
-			fieldStatus = "Invalid: over Available"
-			if lastSentByWar[war.warId] == parsed and not force then
-				return false
-			end
-			lastSentByWar[war.warId] = parsed
-			intent:FireServer("SetCommit", war.warId, parsed)
-			return false
-		end
-		if lastSentByWar[war.warId] == parsed and not force then
-			fieldStatus = ""
-			return true
-		end
-		fieldStatus = ""
-		lastSentByWar[war.warId] = parsed
-		intent:FireServer("SetCommit", war.warId, parsed)
-		return true
+	local function byWarId(id: string): any?
+		for _, war in wars do if war.warId == id then return war end end
+		return nil
 	end
-
-	local function scheduleCommitSend()
-		debounceToken += 1
-		local token = debounceToken
-		task.delay(COMMIT_DEBOUNCE_SEC, function()
-			if token == debounceToken then
-				trySendCommit(false)
+	local function trySendCommit(warId: string): boolean
+		local war = byWarId(warId)
+		if not war or war.phase ~= "commit" or war.locked or gui:GetAttribute("MatchEnded") then return false end
+		local edit = editFor(warId)
+		local flight = CommitmentPolicy.Begin(edit)
+		if not flight then return false end
+		intent:FireServer("SetCommit", warId, flight.amount)
+		task.delay(8, function()
+			if edit.flight == flight then
+				edit.flight = nil; edit.rejected = true
+				if boundSessionWarId == warId then fieldStatus = "Acceptance unavailable. Choose a stop to retry." end
+				render()
 			end
 		end)
+		return true
 	end
-	-- Contextual declaration handoff uses the same field and submission path as this HUD.
-	function MilitaryController.PrepareCommit(warId: string, amount: number): boolean
+	local function scheduleCommitSend(warId: string, final: boolean)
+		local edit = editFor(warId)
+		edit.token = (edit.token or 0) + 1
+		local token = edit.token
+		if final then trySendCommit(warId); return end
+		task.delay(COMMIT_DEBOUNCE_SEC, function()
+			if token == edit.token then trySendCommit(warId) end
+		end)
+	end
+	bar = CommitmentBar.Create(panel, "CommitmentBar", 87, function(percent, final)
+		local war = activeCommitWar()
+		if not war or war.phase ~= "commit" or war.locked or gui:GetAttribute("MatchEnded") then return end
+		local edit = editFor(war.warId)
+		local amount = CommitmentPolicy.Amount(maxCommitFor(war), percent)
+		if edit.percent ~= percent or edit.amount ~= amount or edit.rejected then
+			CommitmentPolicy.Choose(edit, percent, amount)
+			fieldStatus = ""
+		end
+		scheduleCommitSend(war.warId, final)
+		render()
+	end)
+	-- Confirm's deliberately chosen integer amount uses the same submission/receipt path.
+	function MilitaryController.PrepareCommit(warId: string, amount: number, percent: number): boolean
 		local war = activeCommitWar()
 		if not war or war.warId ~= warId or war.phase ~= "commit" or war.locked then return false end
-		if amount ~= amount or amount < 0 or amount % 1 ~= 0 or amount > maxCommitFor(war) then return false end
-		commitBox.Text = tostring(amount)
-		debounceToken += 1
-		return trySendCommit(true)
+		if not CommitmentPolicy.IsStop(percent) or amount ~= amount or amount < 0 or amount % 1 ~= 0 then return false end
+		CommitmentPolicy.Choose(editFor(warId), percent, amount)
+		return trySendCommit(warId)
 	end
 
-	local function render()
+	render = function()
 		gui:SetAttribute("MilitaryAvailable", if hasState then available else nil)
 		gui:SetAttribute("MilitaryCommitted", if hasState then committed else nil)
 		local recruiting = gui:GetAttribute("MilitaryContextMode") == "Recruit"
 		(panel.Header :: TextLabel).Text = (if recruiting then "Recruit" else "Military") .. " - " .. (territoryNames[selectedValue.Value] or selectedValue.Value)
-		for _, item in { recruitBox, recruitButton, maxRecruitButton, costLabel } do item.Visible = recruiting end
+		for _, item in { recruitBar.Root, recruitButton, costLabel } do item.Visible = recruiting end
+		updateCost()
+		gui:SetAttribute("MilitaryPresenting", false)
 		if not hasState then
 			stats.Text = "Total: —\nAvailable: —\nCommitted: —"
 			commitBody.Text = "No active war commitment."
-			commitBox.Visible = true
-			lockButton.Visible = true
+			bar.Root.Visible = false
+			lockButton.Visible = false
 			battleBanner.Visible = false
-			PrototypeGuiTheme.applyPrimaryButton(recruitButton, true)
-			PrototypeGuiTheme.applyPrimaryButton(maxRecruitButton, true)
 			PrototypeGuiTheme.applyPrimaryButton(lockButton, false)
 			lockButton.Active = false
 			return
 		end
-		stats.Text = string.format("Total: %d\nAvailable: %d\nCommitted: %d", total, available, committed)
+		local presenting = false
+		for _, active in wars do if active.phase == "present" then presenting = true end end
+		gui:SetAttribute("MilitaryPresenting", presenting)
+		stats.Text = string.format("Total: %d\nAvailable: %d\n%s: %d", total, available,
+			if presenting then "Held (incl. survivors)" else "Reserved across wars", committed)
+		if combatBonuses then stats.Text ..= "\n" .. VassalCombat.Describe(combatBonuses) end
+		for _, active in wars do
+			if active.phase == "present" and active.ownResolvedStrengthMultiplier then
+				stats.Text ..= string.format("\nYour resolved modifier (%s): x%g", active.targetDisplayName, active.ownResolvedStrengthMultiplier)
+			end
+		end
 		updateCost()
-		PrototypeGuiTheme.applyPrimaryButton(recruitButton, true)
-		PrototypeGuiTheme.applyPrimaryButton(maxRecruitButton, true)
-		recruitButton.Active = true
-		maxRecruitButton.Active = true
 
 		local function showLastBattleUi(result: any)
 			syncCommitInputToSession()
-			commitBox.Visible = false
+			bar.Root.Visible = false
 			lockButton.Visible = false
 			lockButton.Active = false
 			PrototypeGuiTheme.applyPrimaryButton(lockButton, false)
@@ -406,7 +385,7 @@ function MilitaryController.Start()
 
 		local function showIdleCommitment(message: string)
 			syncCommitInputToSession()
-			commitBox.Visible = false
+			bar.Root.Visible = false
 			lockButton.Visible = false
 			lockButton.Active = false
 			PrototypeGuiTheme.applyPrimaryButton(lockButton, false)
@@ -423,7 +402,7 @@ function MilitaryController.Start()
 					discardTerritoryLastBattle(targetId)
 				end
 			end
-			commitBox.Visible = true
+			bar.Root.Visible = true
 			lockButton.Visible = true
 		else
 			local selected = selectedValue.Value
@@ -451,10 +430,21 @@ function MilitaryController.Start()
 			string.format("%s — %s", war.role or "?", war.targetDisplayName or war.targetTerritoryId),
 		}
 		if war.targetKind == "Unclaimed" then table.insert(lines, "Unclaimed militia: " .. tostring(war.neutralDefenders) .. " defenders") end
-		if typeof(war.intended) == "number" then
-			table.insert(lines, "Accepted commitment: " .. tostring(war.intended))
-		else
-			table.insert(lines, "Accepted commitment: none")
+		if war.phase == "commit" then
+			table.insert(lines, (if war.locked then "Locked force: " else "Server-accepted reservation: ") .. tostring(war.intended or "none"))
+			if not war.locked then
+				local edit = editFor(war.warId)
+				if edit.percent then
+					local preview = CommitmentPolicy.Amount(maxCommitFor(war), edit.percent)
+					table.insert(lines, string.format("Preview: %d%% · %d troops from pool %d", edit.percent, preview, maxCommitFor(war)))
+					if preview == 0 then table.insert(lines, "Small pool: selection rounds down to zero. Zero attackers cancel; zero defenders field no troops.") end
+					if edit.flight or edit.revision ~= edit.settledRevision then
+						table.insert(lines, "Latest edit pending acceptance; Ready unavailable.")
+					elseif edit.rejected then table.insert(lines, "Latest edit rejected. Choose a stop to retry; Ready unavailable.")
+					elseif preview ~= war.intended then table.insert(lines, "Forces changed: preview only. Choose again to update; Ready locks the accepted amount.") end
+				else table.insert(lines, "Accepted amount shown exactly. Choose a stop to replace it; no automatic change.") end
+				table.insert(lines, "Ready locks your accepted force; no changes afterward.")
+			end
 		end
 		if fieldStatus ~= "" and war.phase == "commit" and war.locked ~= true then
 			table.insert(lines, fieldStatus)
@@ -471,12 +461,13 @@ function MilitaryController.Start()
 				table.insert(lines, war.opponentState or "Opponent preparing forces")
 			end
 		elseif war.phase == "present" then
-			table.insert(lines, "Battle in progress")
+			table.insert(lines, "Combat calculated · Result presentation")
+			table.insert(lines, "Troop totals already reflect casualties. Survivors remain held until completion; province transfer is pending.")
 			if typeof(war.attackerCommitted) == "number" and typeof(war.defenderCommitted) == "number" then
 				table.insert(lines, string.format("Fielded: attacker %d / defender %d", war.attackerCommitted, war.defenderCommitted))
 			end
 			if typeof(war.presentationEndsAt) == "number" then
-				table.insert(lines, "Resolving in " .. formatCountdown(war.presentationEndsAt))
+				table.insert(lines, "Result completes in " .. formatCountdown(war.presentationEndsAt))
 			end
 		end
 		if war.result then
@@ -493,51 +484,58 @@ function MilitaryController.Start()
 		end
 		commitBody.Text = table.concat(lines, "\n")
 
-		local canLock = war.phase == "commit" and war.locked ~= true and typeof(war.intended) == "number"
+		local canEdit = war.phase == "commit" and war.locked ~= true and gui:GetAttribute("MatchEnded") ~= true
+		local edit = editFor(war.warId)
+		local canLock = canEdit and CommitmentPolicy.CanReady(edit, war.intended)
+		bar.Root.Visible = war.phase == "commit"
+		bar.Set(if canEdit then edit.percent else nil, if war.locked then "Locked: " .. tostring(war.intended or 0) .. " troops" elseif not canEdit then "Editing frozen" elseif edit.percent then string.format("%d%% · %d troops · Preview", edit.percent, CommitmentPolicy.Amount(maxCommitFor(war), edit.percent)) else "Choose a stop to edit accepted troops", canEdit)
+		lockButton.Visible = war.phase == "commit"
 		lockButton.Active = canLock
 		PrototypeGuiTheme.applyPrimaryButton(lockButton, canLock)
 
 		local showBattle = war.phase == "present"
 		battleBanner.Visible = showBattle and not shell.Visible
 		if showBattle then
-			battleBanner.Text = "Battle in progress — " .. (war.targetDisplayName or "contested territory")
+			battleBanner.Text = "Combat calculated · Result pending — " .. (war.targetDisplayName or "contested territory")
 		end
 	end
 
-	gui:GetAttributeChangedSignal("MilitaryContextMode"):Connect(render)
-	shell:GetPropertyChangedSignal("Visible"):Connect(render)
-	recruitBox:GetPropertyChangedSignal("Text"):Connect(updateCost)
+	gui:GetAttributeChangedSignal("MatchEnded"):Connect(render)
+	local function recruitmentOpened()
+		if shell.Visible and gui:GetAttribute("MilitaryContextMode") == "Recruit" and not recruitFlight then
+			recruitPercent = 25
+			recruitStatus = ""
+		end
+		render()
+	end
+	gui:GetAttributeChangedSignal("MilitaryContextMode"):Connect(recruitmentOpened)
+	shell:GetPropertyChangedSignal("Visible"):Connect(recruitmentOpened)
 
 	recruitButton.MouseButton1Click:Connect(function()
-		local n = recruitAmount()
-		intent:FireServer("Recruit", n)
+		if recruitFlight or not recruitButton.Active or gui:GetAttribute("MatchEnded") or spendableGold == nil then return end
+		local cost, amount = RecruitmentPolicy.Preview(spendableGold, recruitPercent)
+		if cost < 1 then return end
+		recruitSequence += 1
+		recruitFlight = { id = recruitSequence, amount = amount, cost = cost }
+		recruitStatus = ""
+		updateCost()
+		intent:FireServer("Recruit", amount, recruitSequence)
 	end)
-
-	maxRecruitButton.MouseButton1Click:Connect(function()
-		intent:FireServer("RecruitMax")
+	local economyIntent = remotes:WaitForChild("EconomyClientEvent") :: RemoteEvent
+	local economyPush = remotes:WaitForChild("EconomyServerEvent") :: RemoteEvent
+	economyPush.OnClientEvent:Connect(function(kind: any, payload: any)
+		if kind ~= "State" then return end
+		local state = decodeState(payload)
+		if not state or typeof(state.gold) ~= "number" then return end
+		spendableGold = state.gold
+		updateCost()
 	end)
-
-	commitBox:GetPropertyChangedSignal("Text"):Connect(function()
-		local war = activeCommitWar()
-		if not war or war.phase ~= "commit" or war.locked == true then
-			return
-		end
-		scheduleCommitSend()
-	end)
+	economyIntent:FireServer("Ready")
 
 	lockButton.MouseButton1Click:Connect(function()
 		local war = activeCommitWar()
-		if not war or typeof(war.warId) ~= "string" then
-			return
-		end
-		if not lockButton.Active then
-			return
-		end
-		debounceToken += 1
-		local parsed = parseWholeNonNegative(commitBox.Text)
-		if parsed ~= nil and parsed <= maxCommitFor(war) then
-			trySendCommit(true)
-		end
+		if not war or war.phase ~= "commit" or war.locked or gui:GetAttribute("MatchEnded") then return end
+		if not CommitmentPolicy.CanReady(editFor(war.warId), war.intended) then return end
 		intent:FireServer("LockCommit", war.warId)
 	end)
 
@@ -547,6 +545,15 @@ function MilitaryController.Start()
 	end)
 
 	push.OnClientEvent:Connect(function(kind: any, payload: any)
+		if kind == "RecruitResult" then
+			local receipt = decodeState(payload)
+			if not receipt or not recruitFlight or receipt.requestId ~= recruitFlight.id then return end
+			recruitFlight = nil
+			recruitStatus = receipt.message or "Recruitment response received."
+			if receipt.accepted ~= true then economyIntent:FireServer("Ready") end
+			updateCost()
+			return
+		end
 		if kind == "BattleResult" then
 			local result = decodeState(payload)
 			if result and typeof(result.title) == "string" then
@@ -561,9 +568,24 @@ function MilitaryController.Start()
 			end
 			return
 		end
+		if kind == "CommitResult" then
+			local receipt = decodeState(payload)
+			if receipt and typeof(receipt.warId) == "string" and typeof(receipt.amount) == "number" then
+				local edit = edits[receipt.warId]
+				if edit and CommitmentPolicy.Acknowledge(edit, receipt.amount, receipt.accepted == true) then
+					if boundSessionWarId == receipt.warId and edit.revision == edit.settledRevision then
+						fieldStatus = if receipt.accepted == true then "" else receipt.message or "Edit rejected."
+					end
+					trySendCommit(receipt.warId)
+					render()
+				end
+			end
+			return
+		end
 		if kind == "Notice" and typeof(payload) == "string" then
 			showNotice(payload)
-			if string.find(payload, "Not enough", 1, true) or string.find(payload, "Commitment", 1, true) then
+			local current = activeCommitWar()
+			if current and editFor(current.warId).rejected and (string.find(payload, "Not enough", 1, true) or string.find(payload, "Commitment", 1, true)) then
 				if string.find(payload, "Not enough", 1, true) then
 					fieldStatus = "Invalid: over Available"
 				elseif string.find(payload, "whole number", 1, true) or string.find(payload, "negative", 1, true) then
@@ -579,20 +601,14 @@ function MilitaryController.Start()
 		if not state then
 			return
 		end
+		combatBonuses = state.combatBonuses
 		total = tonumber(state.total) or 0
 		available = tonumber(state.available) or 0
 		committed = tonumber(state.committed) or 0
-		troopsPerGold = tonumber(state.troopsPerGold) or 3
 		wars = state.wars or {}
 		hasState = true
 		syncCommitInputToSession()
-		for _, war in wars do
-			if typeof(war.warId) == "string" and typeof(war.intended) == "number" then
-				if lastSentByWar[war.warId] == nil then
-					lastSentByWar[war.warId] = war.intended
-				end
-			end
-		end
+
 		render()
 	end)
 

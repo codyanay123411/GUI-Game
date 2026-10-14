@@ -1,0 +1,11 @@
+-- Fresh final Solo client: empty membership, alignment, idempotence and theme.
+local p=game.Players.LocalPlayer;local g=p.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local C=p.PlayerScripts.Controllers;require(C.PoliticalCouncilController).Start();require(C.PoliticalCouncilController).Start()
+require(C.StrategyPresentationController).OpenSystem("Realm");task.wait(.4)
+local b=g.Main.CouncilBody
+assert(b.Text:find("No eligible members seated.",1,true))
+assert(b.TextXAlignment==Enum.TextXAlignment.Left and b.TextYAlignment==Enum.TextYAlignment.Top)
+assert(g.Main.CouncilHeader.TextXAlignment==Enum.TextXAlignment.Left)
+local count=0;for _,x in g.Main:GetChildren()do if x.Name=="CouncilBody"then count+=1 end end
+assert(count==1);assert(b.TextBounds.Y<=b.AbsoluteSize.Y+2);assert(b:GetAttribute("ThemeRole")=="Body")
+print("COUNCIL_FINAL_FRESH_PASS",p.Name,g.AbsoluteSize)

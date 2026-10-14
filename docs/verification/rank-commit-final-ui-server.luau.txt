@@ -1,0 +1,11 @@
+-- Minimal second-session setup; no repeated income/full-match suite.
+local S=game.ServerScriptService.Services
+local H,T,M,W=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.MilitaryService),require(S.WarfareService)
+local id=H.GetRulerIdForUserId(game.Players:GetPlayers()[1].UserId)
+for _,d in T.GetMapDefinition().territories do assert(T.SetOwner(d.id,nil))end
+assert(T.SetOwner("westmere",id));assert(H.SetTitleRank(id,2))
+local enemy=H.DebugCreateMockRuler("Final bar attacker",4);assert(T.SetOwner("northvale",enemy));task.wait(.25)
+assert(M.DebugSetTroops(id,1001))
+local ok,a=W.DeclareWar(id,"ashwood");assert(ok,a);assert(M.SetCommit(id,a,300))
+local ok,b=W.DeclareWar(enemy,"westmere");assert(ok,b);assert(M.SetCommit(id,b,137));M.DebugAdvance(-1200)
+print("RANK_COMMIT_FINAL_UI_SETUP",b)

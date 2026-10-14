@@ -52,6 +52,14 @@ local clientIntent: RemoteEvent
 local serverPush: RemoteEvent
 local debugSnapshot: StringValue?
 
+local prestigeCreated: ((string, number) -> ())? = nil
+local prestigeRemoving: ((string, number) -> ())? = nil
+-- Synchronous lifecycle accounting; public Bindable notifications may be deferred.
+function PoliticalHierarchyService.SetPrestigeLifecycleAccounting(created: (string, number) -> (), removing: (string, number) -> ())
+	assert(prestigeCreated == nil and prestigeRemoving == nil, "Prestige lifecycle accounting already installed")
+	prestigeCreated, prestigeRemoving = created, removing
+end
+
 local rulerCreatedBindable = Instance.new("BindableEvent")
 local rulerRemovingBindable = Instance.new("BindableEvent")
 local stateChangedBindable = Instance.new("BindableEvent")
@@ -167,6 +175,27 @@ local function buildSnapshot()
 	}
 end
 
+local councilRefresh: (() -> ())? = nil
+local permissionsRefresh: (() -> ())? = nil
+local diplomacyRefresh: (() -> ())? = nil
+local warfareRefresh: (() -> ())? = nil
+function PoliticalHierarchyService.SetDiplomacyRefresh(callback: () -> ())
+	assert(diplomacyRefresh == nil, "Diplomacy refresh already installed")
+	diplomacyRefresh = callback
+end
+function PoliticalHierarchyService.SetWarfareRefresh(callback: () -> ())
+	assert(warfareRefresh == nil, "Warfare refresh already installed")
+	warfareRefresh = callback
+end
+function PoliticalHierarchyService.SetPermissionsRefresh(callback: () -> ())
+	assert(permissionsRefresh == nil, "Permissions refresh already installed")
+	permissionsRefresh = callback
+end
+function PoliticalHierarchyService.SetCouncilRefresh(callback: () -> ())
+	assert(councilRefresh == nil, "Council refresh already installed")
+	councilRefresh = callback
+end
+
 local function pushState(toPlayer: Player?)
 	local payload = buildSnapshot()
 	local encoded = HttpService:JSONEncode(payload)
@@ -181,6 +210,10 @@ local function pushState(toPlayer: Player?)
 		print("[Hierarchy] push State all clients rulers=", n, "requests=", #payload.requests)
 		serverPush:FireAllClients("State", encoded)
 	end
+	if councilRefresh then councilRefresh() end
+	if permissionsRefresh then permissionsRefresh() end
+	if diplomacyRefresh then diplomacyRefresh() end
+	if warfareRefresh then warfareRefresh() end
 	stateChangedBindable:Fire()
 	require(script.Parent.VictoryService).Evaluate()
 end
@@ -248,6 +281,7 @@ local function removeRulerInternal(rulerId: string)
 	if not ruler then
 		return
 	end
+	if prestigeRemoving then prestigeRemoving(ruler.rulerId, workspace:GetServerTimeNow()) end
 	rulerRemovingBindable:Fire(ruler.rulerId)
 	detachFromLiege(ruler)
 	for vassalId in ruler.vassalIds do
@@ -290,6 +324,7 @@ local function createRuler(props: {
 		rulerIdByUserId[ruler.userId] = ruler.rulerId
 	end
 	print("[Hierarchy] ruler created", ruler.displayName, "userId=", tostring(ruler.userId), "id=", ruler.rulerId)
+	if prestigeCreated then prestigeCreated(ruler.rulerId, workspace:GetServerTimeNow()) end
 	rulerCreatedBindable:Fire(ruler.rulerId, ruler.userId)
 	return ruler
 end
@@ -415,6 +450,24 @@ end
 
 function PoliticalHierarchyService.GetSnapshot()
 	return buildSnapshot()
+end
+
+-- Staged server-only betrayal integration. The coordinator preflights/rolls back
+-- before publishing; ordinary fealty, disconnect and title operations are unchanged.
+function PoliticalHierarchyService.StageBetrayalDetach(id: string, expectedLiege: string): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
+	local ruler = rulersById[id]
+	if not ruler or ruler.liegeId ~= expectedLiege then return false, "Direct liege changed." end
+	detachFromLiege(ruler)
+	return true, ""
+end
+function PoliticalHierarchyService.RestoreBetrayalDetach(id: string, expectedLiege: string)
+	local ruler, liege = rulersById[id], rulersById[expectedLiege]
+	assert(ruler and liege and ruler.liegeId == nil, "Invalid staged betrayal rollback")
+	attachVassal(liege, ruler)
+end
+function PoliticalHierarchyService.PublishBetrayal()
+	pushState()
 end
 
 function PoliticalHierarchyService.GetRulerIdForUserId(userId: number): string?

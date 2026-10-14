@@ -1,0 +1,30 @@
+local P=require("./Policy")
+local C=require("./Combat")
+local n=0
+local function check(v,m)assert(v,m);n+=1 end
+local function near(a,b)return math.abs(a-b)<1e-9 end
+local rows={{rulerId="A",liegeId="",vassalIds={"B"}}, {rulerId="B",liegeId="A",vassalIds={"C"}}, {rulerId="C",liegeId="B",vassalIds={}}}
+check(near(P.Bonuses("B",rows).subjectBonus,.10),"one subject")
+rows[1].vassalIds={"B","D","E","F","G"}
+check(near(P.Bonuses("B",rows).subjectBonus,.14),"five subjects")
+rows[1].vassalIds={"B","D","E","F","G","H","I","J","K","L"}
+check(near(P.Bonuses("B",rows).subjectBonus,.19),"ten subjects no cap")
+check(P.Bonuses("A",rows).subjectBonus==0,"root no child-derived subject bonus")
+check(near(P.Bonuses("C",rows).subjectBonus,.10),"immediate liege only")
+local b=P.Bonuses("B",rows)
+check(near(P.Multiplier(b,false,true),1.19),"offense excludes defense")
+check(near(P.Multiplier(b,true,false),1.19),"subject-owned target excludes defense")
+check(near(P.Multiplier(b,true,true),1.19*1.02),"multiplicative personal defense")
+rows[2].liegeId="";rows[1].vassalIds={}
+check(P.Bonuses("B",rows).subjectBonus==0 and P.Bonuses("A",rows).personalDefenseBonus==0,"detach removes bonuses")
+local rng={NextNumber=function()return .5 end}
+local r=C.Resolve(100,100,rng,1.19,1.02)
+check(near(r.attackerEffective,119) and near(r.defenderEffective,104.55),"effective strength only")
+check(r.attackerCommitted==100 and r.defenderCommitted==100,"actual commitments")
+check(r.attackerSurvivors+r.attackerCasualties==100 and r.defenderSurvivors+r.defenderCasualties==100,"actual casualty conservation")
+check(r.attackerCasualties==math.floor(100*r.winnerCasualtyPct),"casualties use actual soldiers")
+local base=C.Resolve(100,100,rng)
+check(near(base.attackerEffective,100) and near(base.defenderEffective,102.5),"legacy default")
+local u=C.Resolve(100,0,rng,2,3)
+check(u.unopposed and u.attackerSurvivors==100 and u.attackerCasualties==0,"unopposed unchanged")
+print("VASSAL_COMBAT_POLICY_PASS",n)

@@ -1,0 +1,72 @@
+{
+  "environment": "Studio Solo; seeded normal Domination; synthetic transport states only; no TeleportService transfer",
+  "receipts": [
+    "15:42:31.773 REPLAY_CLIENT_STATUS Unavailable 1 false - Client - ReplayVerificationClient:30",
+    "15:42:32.240 REPLAY_CLIENT_READY 3 - Client - ReplayVerificationClient:46",
+    "15:42:43.158 REPLAY_CLIENT_STATUS Unavailable 2 false - Client - ReplayVerificationClient:30",
+    "15:42:43.158 \u00e2\u2013\u00b6 REPLAY_CLIENT_STATUS Failed 3 false (x2) - Client - ReplayVerificationClient:30",
+    "15:42:43.639 REPLAY_SERVER_PASS 6 - Server - ReplayVerificationServer:23",
+    "15:42:43.989 REPLAY_LAYOUT_PASS ended 1279, 662 23 178 - Client - ReplayVerificationClient:25",
+    "15:42:57.756 REPLAY_CLIENT_STATUS Unavailable 4 false - Client - ReplayVerificationClient:30",
+    "15:43:44.687 REPLAY_CLIENT_STATUS Preparing 1001 true - Client - ReplayVerificationClient:30",
+    "15:43:44.688 \u00e2\u2013\u00b6 REPLAY_CLIENT_STATUS Transferring 1002 true (x2) - Client - ReplayVerificationClient:30",
+    "15:43:45.005 REPLAY_LAYOUT_PASS pending 1279, 662 44 190 - Client - ReplayVerificationClient:25",
+    "15:43:45.270 REPLAY_SYNTHETIC_PENDING_SENT - Server - ReplaySyntheticUI:24",
+    "15:43:45.304 REPLAY_CLIENT_STATUS nil 4 false - Client - ReplayVerificationClient:30",
+    "15:43:45.621 REPLAY_LAYOUT_PASS stale 1279, 662 65 190 - Client - ReplayVerificationClient:25",
+    "15:44:17.552 REPLAY_SYNTHETIC_FAILURE_SENT - Server - ReplaySyntheticUI:17",
+    "15:44:17.586 REPLAY_CLIENT_STATUS Failed 1003 false - Client - ReplayVerificationClient:30",
+    "15:44:17.903 REPLAY_LAYOUT_PASS failure 1279, 662 86 178 - Client - ReplayVerificationClient:25",
+    "15:44:18.302 REPLAY_LAYOUT_PASS GothamSSm 1279, 662 106 178 - Client - ReplayVerificationClient:25",
+    "15:44:19.137 REPLAY_LAYOUT_PASS SourceSansPro 1279, 662 126 178 - Client - ReplayVerificationClient:25",
+    "15:44:19.936 REPLAY_LAYOUT_PASS Roboto 1279, 662 146 178 - Client - ReplayVerificationClient:25",
+    "15:44:20.786 REPLAY_LAYOUT_PASS Arial 1279, 662 166 178 - Client - ReplayVerificationClient:25",
+    "15:44:21.352 REPLAY_LAYOUT_VARIANTS_SENT - Server - ReplayLayoutVerification:14",
+    "15:44:21.686 REPLAY_LAYOUT_PASS scale1.1 1279, 662 186 208 - Client - ReplayVerificationClient:25",
+    "15:44:51.501 REPLAY_LAYOUT_PASS GothamSSm 639, 422 206 208 - Client - ReplayVerificationClient:25",
+    "15:44:52.301 REPLAY_LAYOUT_PASS SourceSansPro 639, 422 226 208 - Client - ReplayVerificationClient:25",
+    "15:44:53.135 REPLAY_LAYOUT_PASS Roboto 639, 422 246 208 - Client - ReplayVerificationClient:25",
+    "15:44:53.952 REPLAY_LAYOUT_PASS Arial 639, 422 266 208 - Client - ReplayVerificationClient:25",
+    "15:44:54.551 REPLAY_LAYOUT_VARIANTS_SENT - Server - ReplayCompactVerification:14",
+    "15:44:54.901 REPLAY_LAYOUT_PASS scale1.1 639, 422 286 208 - Client - ReplayVerificationClient:25"
+  ],
+  "nativeClicks": [
+    "Play Again \u00e2\u2020\u2019 Studio unavailable; stayed in ended match",
+    "Inspect final map \u00e2\u2020\u2019 closed result",
+    "Match result \u00e2\u2020\u2019 reopened retained result",
+    "Pending synthetic Play Again disabled; inspect and reopen retained pending state"
+  ],
+  "limitations": [
+    "No real Roblox transfer/new reserved startup; Studio TeleportService unsupported",
+    "No real multi-client departure test; actor independence covered in pure policy fixture"
+  ],
+  "automaticChecks": {
+    "policyAssertions": 39,
+    "productionSyntaxFiles": 4,
+    "fixtureSyntaxFiles": 5,
+    "diffCheck": "PASS",
+    "taskBaselinePreservation": "PASS; two existing production files and eight intended documentation files only"
+  },
+  "studioCorrespondence": {
+    "sourceFiles": [
+      "ServerScriptService/Services/ReplayRequests.luau",
+      "ServerScriptService/Services/MatchReplayService.luau",
+      "ServerScriptService/Services/VictoryService.luau",
+      "StarterPlayerScripts/Controllers/VictoryController.luau"
+    ],
+    "result": "REPLAY_FINAL_SOURCE_PASS 4; recovery originals2; disposable runtime fixtures absent"
+  },
+  "snapshot": {
+    "path": "docs\\verification\\replay-final-2026-10-13.rbxl",
+    "bytes": 809808,
+    "sha256": "32f89306d56644bae8ba6270ccb07b6c3d0d2ea3d4a9c5f3c257611f666d8194",
+    "gitIgnored": true,
+    "mode": "Edit"
+  },
+  "sourceSha256": {
+    "ServerScriptService/Services/ReplayRequests.luau": "1f948717a02770fd02df5be40180c4ae873c82f501f3d105b0fe57d1916eee6d",
+    "ServerScriptService/Services/MatchReplayService.luau": "01d12eeb7a74242f9d4865dd070f0ac1674d0afb4f0a6770e14884748af263b1",
+    "ServerScriptService/Services/VictoryService.luau": "fd6e487558f09c6de1ddc1010b09b5d6c820375d3333850b703c3768e53350c1",
+    "StarterPlayerScripts/Controllers/VictoryController.luau": "b6d0ea7ef5bab2d010e8a78b541040b4a9a7b754ccc5ca3cf360ccead1c10c2d"
+  }
+}

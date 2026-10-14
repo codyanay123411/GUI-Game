@@ -22,6 +22,7 @@ local EconomyService = {}
 
 local started = false
 local goldByRuler: { [string]: number } = {}
+local remainderByRuler: { [string]: number } = {}
 local nextPayoutAt = 0
 local payoutLoopRunning = false
 
@@ -53,6 +54,7 @@ end
 local function ensureGold(rulerId: string)
 	if goldByRuler[rulerId] == nil then
 		goldByRuler[rulerId] = EconomyConfig.StartingGold
+		remainderByRuler[rulerId] = 0
 	end
 end
 
@@ -64,7 +66,7 @@ function EconomyService.GetBalance(rulerId: string): number
 	return 0
 end
 
-function EconomyService.GetIncomeGoldPerMinute(rulerId: string): number
+local function baseIncome(rulerId: string): number
 	if goldByRuler[rulerId] == nil then
 		return 0
 	end
@@ -79,10 +81,21 @@ function EconomyService.GetIncomeGoldPerMinute(rulerId: string): number
 	return total
 end
 
+local function rankFor(rulerId: string): number
+	local ruler = findRuler(rulerId)
+	return if ruler then ruler.titleRank else 1
+end
+
+function EconomyService.GetIncomeGoldPerMinute(rulerId: string): number
+	return EconomyPayout.IncomeWithRank(baseIncome(rulerId), rankFor(rulerId))
+end
+
 local function playerSnapshot(rulerId: string)
 	return {
 		gold = EconomyService.GetBalance(rulerId),
 		incomeGoldPerMinute = EconomyService.GetIncomeGoldPerMinute(rulerId),
+		baseIncomeGoldPerMinute = baseIncome(rulerId),
+		rankBonusPercent = EconomyPayout.RankBonusPercent(rankFor(rulerId)),
 		payoutIntervalSeconds = EconomyConfig.PayoutIntervalSeconds,
 		nextPayoutAt = nextPayoutAt,
 	}
@@ -93,6 +106,8 @@ local function inspectSnapshot(rulerId: string)
 		rulerId = rulerId,
 		gold = EconomyService.GetBalance(rulerId),
 		incomeGoldPerMinute = EconomyService.GetIncomeGoldPerMinute(rulerId),
+		baseIncomeGoldPerMinute = baseIncome(rulerId),
+		rankBonusPercent = EconomyPayout.RankBonusPercent(rankFor(rulerId)),
 		ownedTerritoryCount = #Territory.GetOwnedTerritoryIds(rulerId),
 	}
 end
@@ -211,7 +226,9 @@ local function payoutTick()
 		end
 	end
 	for rulerId, amount in credit do
-		goldByRuler[rulerId] += amount
+		local paid, remainder = EconomyPayout.CreditWithRank(amount, rankFor(rulerId), remainderByRuler[rulerId] or 0)
+		goldByRuler[rulerId] += paid
+		remainderByRuler[rulerId] = remainder
 	end
 end
 
@@ -318,6 +335,7 @@ function EconomyService.Start()
 	end)
 	Hierarchy.RulerRemoving:Connect(function(rulerId: string)
 		goldByRuler[rulerId] = nil
+		remainderByRuler[rulerId] = nil
 		pushAllPlayers()
 	end)
 	Hierarchy.StateChanged:Connect(function()

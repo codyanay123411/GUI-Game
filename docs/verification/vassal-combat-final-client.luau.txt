@@ -1,0 +1,18 @@
+-- Actual Solo client observes actor-scoped final-source State and result interval.
+local p=game.Players.LocalPlayer;local C=p:WaitForChild("PlayerScripts"):WaitForChild("Controllers")
+local State=require(C.MapContextState)
+local limit=os.clock()+25;local mine
+repeat
+	task.wait(.1)
+	for _,war in State.military.wars or {}do if war.phase=="present"then mine=war end end
+until mine or os.clock()>limit
+assert(mine,"result state timed out")
+assert(math.abs(mine.ownResolvedStrengthMultiplier-1.1)<1e-8,"own applied multiplier")
+assert(mine.attackerEffective==nil and mine.defenderEffective==nil and mine.battle==nil and mine.defenderStrengthMultiplier==nil,"no enemy effective-strength projection")
+require(C.TerritoryMapController).Select("northvale","silent");task.wait(.2)
+require(C.MapContextController).OpenWorkflow("Battle");task.wait(.4)
+local gui=p.PlayerGui.HierarchyPrototypeGui
+local stats=gui.MilitaryWorkflowPanel.Content.Stats
+assert(stats.Text:find("Your resolved modifier %(Northvale%): x1.1"),stats.Text)
+assert(stats.TextBounds.Y<=stats.AbsoluteSize.Y+2,"resolved text measured")
+print("VASSAL_COMBAT_FINAL_CLIENT_PASS",4,stats.Text)

@@ -1,0 +1,22 @@
+-- Pure preview arithmetic using current MilitaryConfig; no Roblox mutations.
+local Policy=require("./RecruitmentPolicy")
+local Config=require("./MilitaryConfig")
+local Commitment=require("./CommitmentPolicy")
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+check(table.concat(Policy.Stops,",")=="25,35,50,75,100","exact recruitment stops")
+check(table.concat(Commitment.Stops,",")=="10,25,35,50,75","commitment unchanged")
+for _,case in {{0,25,0},{.99,100,0},{1,25,0},{1,100,1},{3.99,25,0},{4.99,25,1},
+ {10.9,35,3},{10.9,50,5},{10.9,75,7},{10.9,100,10},{150.99,25,37},{150.99,35,52},
+ {150.99,50,75},{150.99,75,112},{150.99,100,150},{-1,100,0},{math.huge,100,0},{0/0,100,0}}do
+ local cost,troops=Policy.Preview(case[1],case[2])
+ check(cost==case[3],"rounded Gold cost")
+ check(troops==cost*Config.TroopsPerGold,"configured conversion")
+end
+for _,percent in {0,10,26,99}do check(not pcall(Policy.Preview,150,percent),"invalid stop rejected")end
+-- Same equally spaced snapping expression used by the shared bar; native drag is separate.
+for _,x in {-1,0,.124,.125,.25,.375,.5,.625,.75,.875,1,2}do
+ local index=math.clamp(math.floor(math.clamp(x,0,1)*4+.5)+1,1,5)
+ check(table.find(Policy.Stops,Policy.Stops[index])~=nil,"snap gives allowed recruitment stop")
+ check(Commitment.Stops[index]==Commitment.Snap(x),"commitment snap behavior retained")
+end
+print("RECRUITMENT_POLICY_PASS",n)

@@ -3,7 +3,7 @@
 --[[
 	Warfare / Conquest V0.1.
 
-	Server-authoritative external wars between independent roots.
+	Server-authoritative wars by independent or permitted/autonomous actors.
 	One enemy-controlled territory per war. Military / Armies V0.1 owns
 	Troops and battle; this service owns lifecycle, contest/cooldown, and
 	Attacker/Defender outcome application. Privileged DebugResolveWar remains.
@@ -21,6 +21,8 @@ local WarfareAdjacency = require(ReplicatedStorage.Shared.Util.WarfareAdjacency)
 
 local MatchState = require(script.Parent.MatchState)
 local Neutral = require(script.Parent.NeutralDefenseService)
+local Domain = require(ReplicatedStorage.Shared.Util.PoliticalDomain)
+local Permissions = require(script.Parent.PoliticalPermissionsService)
 local WarfareService = {}
 
 type War = {
@@ -32,6 +34,8 @@ type War = {
 	targetKind: string,
 	targetRevision: number,
 	neutralDefenders: number?,
+	actorDomain: string,
+	defenderDomain: string,
 }
 
 local started = false
@@ -90,7 +94,7 @@ end
 
 local function greaterRealmRulerIds(rootId: string): { string }
 	local root = findRuler(rootId)
-	if not isIndependentRoot(root) then
+	if not root then
 		return {}
 	end
 	local byId: { [string]: any } = {}
@@ -193,6 +197,8 @@ local function buildSnapshot()
 			table.insert(wars, {
 				warId = war.warId,
 				attackerRootId = war.attackerRootId,
+				attackerDomainId = war.attackerRootId,
+				defenderDomainId = war.defenderRootId,
 				defenderRootId = war.defenderRootId,
 				targetTerritoryId = war.targetTerritoryId,
 				status = war.status,
@@ -250,23 +256,22 @@ local function targetStillOriginalDefender(war: War): boolean
 	if war.targetKind == "Unclaimed" then
 		return Territory.GetOwnerRulerId(war.targetTerritoryId) == nil and Territory.GetOwnershipRevision(war.targetTerritoryId) == war.targetRevision
 	end
-	local currentRoot = ownerRootId(war.targetTerritoryId)
-	return currentRoot == war.defenderRootId
+	return Domain.Contains(Hierarchy.GetSnapshot().rulers, war.defenderRootId, Territory.GetOwnerRulerId(war.targetTerritoryId) or "")
+		and war.defenderDomain == Domain.Signature(Hierarchy.GetSnapshot().rulers, war.defenderRootId)
 end
 
 function WarfareService.GetSnapshot()
 	return buildSnapshot()
 end
 
-function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: string): (boolean, string)
+function WarfareService.CheckDeclaration(attackerRootId: string, targetTerritoryId: string, betrayalLiege: string?): (boolean, any)
 	if MatchState.IsEnded() then return false, "Match ended." end
 	if typeof(targetTerritoryId) ~= "string" or targetTerritoryId == "" then
 		return false, "Cannot declare war: invalid target."
 	end
 	local attacker = findRuler(attackerRootId)
-	if not isIndependentRoot(attacker) then
-		return false, "Subjects cannot independently declare external war."
-	end
+	local admitted, reason = Permissions.Can(attackerRootId, "War")
+	if not admitted then return false, reason end
 	local mapDef = Territory.GetMapDefinition()
 	local exists = false
 	for _, t in mapDef.territories do
@@ -280,18 +285,19 @@ function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: st
 	end
 	local ownerId = Territory.GetOwnerRulerId(targetTerritoryId)
 	local neutral = if not ownerId then Neutral.Get(targetTerritoryId) else nil
-	if isOwnedByRealm(targetTerritoryId, attackerRootId) then
+	if isOwnedByRealm(targetTerritoryId, attackerRootId) or (not betrayalLiege and ownerId and ownerRootId(targetTerritoryId) == attacker.rootRulerId) then
 		return false, "Cannot declare war: target belongs to your realm."
 	end
-	local defenderRoot = ownerRootId(targetTerritoryId) or ""
+	local defenderRoot = betrayalLiege or ownerRootId(targetTerritoryId) or ""
+	if betrayalLiege and (not ownerId or not Domain.Contains(Hierarchy.GetSnapshot().rulers, betrayalLiege, ownerId)) then return false, "Target is outside the direct liege's domain." end
 	local defender = findRuler(defenderRoot)
-	if not neutral and not isIndependentRoot(defender) then
-		return false, "Cannot declare war: defender is not an independent realm."
+	if not neutral and not defender then
+		return false, "Cannot declare war: defender is no longer available."
 	end
 	if not isGreaterRealmAdjacent(attackerRootId, targetTerritoryId) then
 		return false, "Cannot declare war: target not adjacent."
 	end
-	if not neutral and Diplomacy.HasNonAggressionPact(attackerRootId, defenderRoot) then
+	if not neutral and Diplomacy.HasNonAggressionPact(attackerRootId, ownerId) then
 		return false, "Cannot declare war: Non-Aggression Pact active."
 	end
 	if activeWarOnTerritory(targetTerritoryId) then
@@ -305,6 +311,14 @@ function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: st
 			return false, "Cannot declare war: a matching war is already active."
 		end
 	end
+	return true, { defenderId = defenderRoot, neutral = neutral }
+end
+
+function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: string, betrayalLiege: string?): (boolean, string)
+	local valid, details = WarfareService.CheckDeclaration(attackerRootId, targetTerritoryId, betrayalLiege)
+	if not valid then return false, details end
+	local defenderRoot, neutral = details.defenderId, details.neutral
+
 	local warId = HttpService:GenerateGUID(false)
 	local created: War = {
 		warId = warId,
@@ -315,6 +329,8 @@ function WarfareService.DeclareWar(attackerRootId: string, targetTerritoryId: st
 		targetKind = if neutral then "Unclaimed" else "Player",
 		targetRevision = Territory.GetOwnershipRevision(targetTerritoryId),
 		neutralDefenders = if neutral then neutral.current else nil,
+		actorDomain = Domain.Signature(Hierarchy.GetSnapshot().rulers, attackerRootId),
+		defenderDomain = if defenderRoot ~= "" then Domain.Signature(Hierarchy.GetSnapshot().rulers, defenderRoot) else "",
 	}
 	warsById[warId] = created
 	militaryModule().OnWarCreated(created)
@@ -346,7 +362,7 @@ function WarfareService.ApplyMilitaryOutcome(warId: string, outcome: string): (b
 	if outcome ~= "Attacker" and outcome ~= "Defender" then
 		return false, "Unknown resolution."
 	end
-	if war.targetKind == "Unclaimed" and (not targetStillOriginalDefender(war) or not isIndependentRoot(findRuler(war.attackerRootId))) then
+	if war.targetKind == "Unclaimed" and (not targetStillOriginalDefender(war) or not WarfareService.IsActorCurrent(war.warId)) then
 		endWar(war, "stale neutral conquest")
 		pushState()
 		return false, "Conquest stale; no transfer."
@@ -380,6 +396,26 @@ function WarfareService.ApplyMilitaryOutcome(warId: string, outcome: string): (b
 	noticeRulerId(attackerId, "War ended: attacker victory. You now hold " .. targetId .. ".")
 	noticeRulerId(defenderId, "War ended: attacker victory. " .. targetId .. " was lost.")
 	return true, "Attacker victory."
+end
+
+function WarfareService.IsActorCurrent(warId: string): boolean
+	local war = warsById[warId]
+	return war ~= nil and findRuler(war.attackerRootId) ~= nil
+		and war.actorDomain == Domain.Signature(Hierarchy.GetSnapshot().rulers, war.attackerRootId)
+end
+
+function WarfareService.HasBetrayalConflict(subjectId: string, liegeId: string): boolean
+	local rows = Hierarchy.GetSnapshot().rulers
+	for _, war in warsById do
+		if war.status == "Active" then
+			local owner = Territory.GetOwnerRulerId(war.targetTerritoryId)
+			if war.attackerRootId == liegeId or war.defenderRootId == liegeId
+				or Domain.Contains(rows, subjectId, war.attackerRootId) or Domain.Contains(rows, subjectId, war.defenderRootId)
+				or Domain.Contains(rows, war.attackerRootId, subjectId) or Domain.Contains(rows, war.defenderRootId, subjectId)
+				or (owner and Domain.Contains(rows, subjectId, owner)) then return true end
+		end
+	end
+	return false
 end
 
 function WarfareService.IsTargetCurrent(warId: string): boolean
@@ -422,10 +458,10 @@ function WarfareService.DebugResolveWar(warId: string, outcome: string): (boolea
 		return true, "Defender victory."
 	end
 	local attacker = findRuler(war.attackerRootId)
-	if not isIndependentRoot(attacker) then
-		endWar(war, "attacker no longer independent")
+	if not WarfareService.IsActorCurrent(war.warId) then
+		endWar(war, "attacker political domain changed")
 		pushState()
-		return false, "War terminated: attacker is no longer independent."
+		return false, "War terminated: attacker political domain changed."
 	end
 	if not targetStillOriginalDefender(war) then
 		endWar(war, "stale target")
@@ -497,14 +533,19 @@ local function invalidateStaleWars()
 end
 
 local function syncIndependence()
-	for _, ruler in Hierarchy.GetSnapshot().rulers do
-		if ruler.independent ~= true then
-			cancelInvolving(ruler.rulerId, "no longer independent")
+	if MatchState.IsEnded() then return end
+	for _, war in warsById do
+		if war.status == "Active" and (not WarfareService.IsActorCurrent(war.warId) or not targetStillOriginalDefender(war)) then
+			if not militaryModule().IsMechanicallyResolved(war.warId) then
+				militaryModule().UnwindPreResolution(war.warId)
+				endWar(war, "political domain changed")
+			end
 		end
 	end
+	pushState()
 end
 
-local function onClientIntent(player: Player, action: any, a: any)
+local function onClientIntent(player: Player, action: any, a: any, b: any)
 	if typeof(action) ~= "string" then
 		noticePlayer(player, "Invalid request.")
 		return
@@ -517,6 +558,16 @@ local function onClientIntent(player: Player, action: any, a: any)
 	local fromId = Hierarchy.GetRulerIdForUserId(player.UserId)
 	if not fromId then
 		noticePlayer(player, "No ruler record.")
+		return
+	end
+	if action == "PrepareBetrayal" or action == "Betray" then
+		if typeof(a) ~= "string" or (action == "Betray" and typeof(b) ~= "string") then noticePlayer(player, "Invalid betrayal request."); return end
+		local Betrayal = require(script.Parent.BetrayalService)
+		local ok, result
+		if action == "PrepareBetrayal" then ok, result = Betrayal.Prepare(fromId, a) else ok, result = Betrayal.Commit(fromId, a, b) end
+		serverPush:FireClient(player, if action == "PrepareBetrayal" then "BetrayalReview" else "BetrayalResult", HttpService:JSONEncode({
+			accepted = ok, target = a, review = if ok then result else nil, message = if ok then "" else result,
+		}))
 		return
 	end
 	if action == "DeclareWar" then
@@ -581,9 +632,10 @@ function WarfareService.Start()
 
 	_G.__WarfareV01 = WarfareService
 
-	Hierarchy.StateChanged:Connect(syncIndependence)
+	Hierarchy.SetWarfareRefresh(syncIndependence)
 	Hierarchy.RulerRemoving:Connect(function(rulerId: string)
 		cancelInvolving(rulerId, "left the match")
+		require(script.Parent.BetrayalService).Remove(rulerId)
 	end)
 	Territory.OwnershipChanged:Connect(invalidateStaleWars)
 

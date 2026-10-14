@@ -61,12 +61,20 @@ function EconomyController.Start()
 
 	local gold = 0
 	local income = 0
+	local baseIncome = 0
+	local rankBonus = 0
 	local nextPayoutAt = 0
 	local hasState = false
 
 	local function render(remainingOverride: number?)
+		gui:SetAttribute("PersonalGoldIncome", if hasState then income else nil)
+		gui:SetAttribute("GoldRankBonusPercent", if hasState then rankBonus else nil)
 		if not hasState then
 			body.Text = "Gold: —\nIncome: —\nNext payout: —"
+			return
+		end
+		if gui:GetAttribute("MatchEnded") == true then
+			body.Text = string.format("Gold: %d\nIncome: frozen · Match ended\nNo further payouts.", gold)
 			return
 		end
 		local remaining = remainingOverride
@@ -74,13 +82,16 @@ function EconomyController.Start()
 			remaining = nextPayoutAt - workspace:GetServerTimeNow()
 		end
 		body.Text = string.format(
-			"Gold: %d\nIncome: +%d Gold/min\nNext payout: %s",
+			"Gold: %d\nIncome: +%g Gold/min\nPersonal base: %g/min · Rank +%g%%\nSubject income excluded.\nFractional bonuses carry forward.\nNext payout: %s",
 			gold,
 			income,
+			baseIncome,
+			rankBonus,
 			formatCountdown(remaining)
 		)
 	end
 
+	gui:GetAttributeChangedSignal("MatchEnded"):Connect(function() render() end)
 	push.OnClientEvent:Connect(function(kind: any, payload: any)
 		if kind == "State" then
 			local state = decodeState(payload)
@@ -89,6 +100,8 @@ function EconomyController.Start()
 			end
 			gold = tonumber(state.gold) or 0
 			income = tonumber(state.incomeGoldPerMinute) or 0
+			baseIncome = tonumber(state.baseIncomeGoldPerMinute) or 0
+			rankBonus = tonumber(state.rankBonusPercent) or 0
 			nextPayoutAt = tonumber(state.nextPayoutAt) or 0
 			hasState = true
 			render()

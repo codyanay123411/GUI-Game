@@ -1,0 +1,99 @@
+-- Disposable LocalScript for the three-client fixture. Uses real client requests.
+local P=game:GetService("Players");local R=game:GetService("ReplicatedStorage");local p=P.LocalPlayer
+local g=p.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local C=p.PlayerScripts:WaitForChild("Controllers")
+local State=require(C.MapContextState);local Map=require(C.TerritoryMapController);local Context=require(C.MapContextController);local Strategy=require(C.StrategyPresentationController)
+local Resolver=require(R.Shared.Util.ContextActionResolver);local definitions=require(R.Shared.Config.MapCatalog).GetDefault().territories
+local control=R:WaitForChild("GuiMatchVerification");local ack=control:WaitForChild("Ack")
+repeat task.wait(.1) until g:GetAttribute("MapContextEnabled") and p:GetAttribute("ProvinceTestIndex")
+local index=p:GetAttribute("ProvinceTestIndex");local count=0
+local function check(v,name) assert(v,name);count+=1 end
+local function resolve(id) return Resolver.Resolve(State,definitions,id,p.UserId,g:GetAttribute("MatchEnded")==true,workspace:GetServerTimeNow()) end
+local function contains(text,part) return string.find(text,part,1,true)~=nil end
+local function phase()
+	local name=control:GetAttribute("Phase");if not name then return end
+	local ok,err=pcall(function()
+		task.wait(.6)
+		if name=="Baseline" then
+			check(#State.hierarchy.rulers==3,"Three real player snapshots")
+			Map.Select("ironlea");task.wait(.1);check(contains(g.MapStage.ProvinceDecision.Text,"No border") or index~=1,"Selection reason without drawer")
+			check(g.MapStage.RecenterMap:GetAttribute("BlocksMapInput"),"Recenter button blocks its own bounds")
+			check(not g.MapStage.OwnershipLegend.Active and not g.MapStage.ProvinceDecision.Active,"Captions do not block map")
+			check(not g.ContextRadialPanel.Active,"Radial pass through preserved")
+			if index==1 then check(resolve("riverholt").canDeclare,"Corner target legal");check(g.StrategyTopbar:GetAttribute("DominationControlled")==1,"Initial progress") end
+		elseif name=="FealtyOffer" or name=="TreatyOffer" then
+            if index==1 then
+                local overlay=g:FindFirstChild(if name=="FealtyOffer" then "VassalageOfferOverlay" else "DiplomacyOfferOverlay")
+                check(overlay and overlay.Visible,"Incoming offer visible")
+                local accept=overlay:FindFirstChild("AcceptButton",true)
+                local decline=overlay:FindFirstChild("DeclineButton",true)
+                check(accept and accept:GetAttribute("ThemeRole")=="Primary","Generated accept styled")
+                check(decline and decline:GetAttribute("ThemeRole")=="Danger","Generated decline styled")
+            end
+        elseif name=="Hierarchy" then
+			if index==1 or index==3 then check(g.StrategyTopbar:GetAttribute("DominationControlled")==2,"Root/subject realm count") end
+			Map.Select("northvale");task.wait(.1)
+			check(contains(g.MapStage.ProvinceDecision.Text,"Warfare controlled by root"),"Direct owner/root warfare label")
+			if index==3 then check(not resolve("greyfen").canDeclare,"Subject external declaration blocked") end
+		elseif name=="NAP" then
+			if index==1 then check(resolve("highmarch").warReason=="Non-Aggression Pact blocks war","NAP blocks") end
+		elseif name=="Commit" then
+			if index<=2 then
+				Map.Focus("brightfen");task.wait(.1)
+				local Attention=require(C.MapAttentionController)
+				local marker=g.MapAttentionLayer:FindFirstChild("Attention_northvale")
+				check(marker and marker.Visible and marker:GetAttribute("Offscreen"),"Off-screen war remains reachable at viewport edge")
+				check(Attention.Locate("northvale"),"Relevant war located")
+				check(not Attention.Locate("missing"),"Missing event safe")
+				task.wait(.3)
+				check(g:GetAttribute("SelectedSystem")=="Military","Marker opens existing battle workflow")
+				check(contains(g.MilitaryWorkflowPanel.Content.CommitBody.Text,"Server-accepted reservation: none"),"No invented reservation")
+				check(not contains(g.MilitaryWorkflowPanel.Content.CommitBody.Text,"Fielded:"),"Enemy count hidden before lock")
+				R.Remotes.MilitaryClientEvent:FireServer("SetCommit",control:GetAttribute("WarId"),if index==1 then 500 else 600)
+			else check(#State.military.wars==0,"Subject not commitment actor") end
+		elseif name=="Reserved" and index<=2 then
+			check(contains(g.MilitaryWorkflowPanel.Content.CommitBody.Text,"Server-accepted reservation: "..(if index==1 then 500 else 600)),"Accepted amount from server")
+			check(State.military.committed==(if index==1 then 500 else 600),"Reserved ledger exact")
+		elseif name=="LockOne" and index==1 then
+			R.Remotes.MilitaryClientEvent:FireServer("LockCommit",control:GetAttribute("WarId"));task.wait(.4)
+			check(contains(g.MilitaryWorkflowPanel.Content.CommitBody.Text,"Locked force: 500"),"Locked own force")
+			check(not contains(g.MilitaryWorkflowPanel.Content.CommitBody.Text,"Fielded:"),"No opponent reveal with one lock")
+		elseif name=="LockBoth" and index==2 then
+			R.Remotes.MilitaryClientEvent:FireServer("LockCommit",control:GetAttribute("WarId"))
+		elseif name=="Present" and index<=2 then
+			local text=g.MilitaryWorkflowPanel.Content.CommitBody.Text
+			check(contains(text,"Combat calculated · Result presentation"),"Honest result phase")
+			check(not contains(text,"Battle in progress") and not contains(text,"Resolving in"),"No undecided cosmetic combat")
+			check(contains(text,"Fielded: attacker 600 / defender 500"),"Only permitted dual-lock fielded counts")
+			check(State.military.total==State.military.available+State.military.committed,"Current ledger coherent")
+			check(not g.MilitaryWorkflowPanel.Content.CommitBox.Visible,"No editable post-lock input")
+		elseif name=="Result" and index<=2 then
+			check(contains(g.MilitaryWorkflowPanel.Content.CommitBody.Text,"Your casualties:"),"Authorized result summary")
+			check(State.military.committed==0,"Survivors released after result")
+			local Attention=require(C.MapAttentionController);check(Attention.Locate("northvale"),"Result opens province info");task.wait(.2);check(not Attention.Locate("northvale"),"Acknowledged stale event safe")
+			check(not Attention.Locate("missing"),"Missing result target safe")
+		elseif name=="Cooldown" and index==1 then
+			check(resolve("northvale").warReason=="Post-war cooldown" or resolve("northvale").warReason=="Target belongs to your realm","Cooldown or own realm priority")
+		elseif name=="CooldownExpired" then
+			check(resolve("northvale").warReason~="Post-war cooldown","Expiry refreshed")
+		elseif name=="Ended" then
+			check(g:GetAttribute("MatchEnded"),"Authoritative end")
+			check(not resolve("highmarch").canDeclare,"Competitive cue freeze")
+			g.VictoryOverlay.Visible=false;Map.Select("highmarch");task.wait(.1)
+			check(contains(g.MapStage.ProvinceDecision.Text,"Match ended"),"Final map inspect reason")
+			check(not g.ContextRadialPanel:FindFirstChild("War") and not g.ContextRadialPanel:FindFirstChild("Military"),"No competitive radial actions")
+			check(Map.Focus("highmarch"),"Final camera inspection")
+			Strategy.OpenSystem("Economy");task.wait(.2)
+            check(contains(g.EconomyPanel.Body.Text,"Income: frozen"),"Economy freeze wording")
+            check(not contains(g.EconomyPanel.Body.Text,"Next payout"),"No stale payout countdown")
+            local Overview=require(C.RealmOverviewController);Overview.SetOpen(true);task.wait(.2)
+            check(g.RealmOverviewOverlay.Visible,"Final players inspection");Overview.SetOpen(false)
+            Strategy.OpenSystem("Messages");task.wait(.2)
+            local settings=require(C.GameSettingsController).GetSnapshot()
+            check(not settings.canConfigure,"Synthetic clients cannot configure creator settings")
+            Strategy.OpenSystem("Map")
+        end
+	end)
+	ack:FireServer(name,ok,count,tostring(err or ""))
+end
+control:GetAttributeChangedSignal("Phase"):Connect(phase);phase()

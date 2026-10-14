@@ -1,0 +1,61 @@
+-- Disposable focused fixture; synthetic ownership/ranks/forces, no natural progression claim.
+local S=game.ServerScriptService.Services
+local H,T,E,M,W=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.EconomyService),require(S.MilitaryService),require(S.WarfareService)
+local p=game.Players:GetPlayers()[1];local id=H.GetRulerIdForUserId(p.UserId);local n=0
+local function check(v,m)assert(v,m);n+=1 end
+local function near(a,b)check(math.abs(a-b)<.000001,"income arithmetic")end
+for _,r in H.GetSnapshot().rulers do if r.displayName=="Income subject" then H.DebugRemoveRuler(r.rulerId) end end
+for _,d in T.GetMapDefinition().territories do check(T.SetOwner(d.id,nil))end
+check(T.SetOwner("westmere",id));local subject=H.DebugCreateMockRuler("Income subject",3)
+check(T.SetOwner("northvale",subject));check(T.SetOwner("greyfen",subject))
+check(H.SetTitleRank(id,4));local ok,req=H.OfferFealty(subject,id);check(ok,req);check(H.AcceptFealty(req,id));task.wait(.25) -- Let existing deferred ruler lifecycle initialize mock Gold.
+for rank=1,4 do check(H.SetTitleRank(id,rank));near(E.GetIncomeGoldPerMinute(id),({10,10.05,10.1,10.2})[rank])end
+near(E.GetIncomeGoldPerMinute(subject),20.2)
+local before=E.GetBalance(id);check(E.AddGold(id,100));check(E.GetBalance(id)==before+100,"grant not bonused")
+check(E.TrySpend(id,10));check(E.GetBalance(id)==before+90,"spend unchanged")
+print("RANK_COMMIT_ECONOMY_RANK_PASS",n,E.GetInspect(id).rankBonusPercent,E.GetIncomeGoldPerMinute(id))
+H.DebugRemoveRuler(subject)
+local owned={"westmere","northvale","greyfen","highmarch","ashwood","riverholt","frostfield","sunbarrow","mossbank","ironlea"}
+for _,tid in owned do check(T.SetOwner(tid,id))end
+near(E.GetIncomeGoldPerMinute(id),102)
+local mock=H.DebugCreateMockRuler("Bar attacker",4);check(T.SetOwner("duskfen",mock));check(M.DebugSetTroops(id,1001))
+local ctl=Instance.new("Folder");ctl.Name="RankCommitVerification";ctl.Parent=game.ServerScriptService
+local wars={}
+local function clearWars()for _,war in W.GetSnapshot().wars do W.CancelWar(war.warId,"focused fixture reset")end;table.clear(wars);task.wait(.25)end
+local function active()
+ clearWars();check(M.DebugSetTroops(id,1001))
+ local ok,a=W.DeclareWar(id,"goldmere");check(ok,a);check(M.SetCommit(id,a,300));wars.other=a
+ local ok,b=W.DeclareWar(mock,"ironlea");check(ok,b);check(M.SetCommit(id,b,137));wars.active=b
+ M.DebugAdvance(-600) -- Explicit fixture-only extension for native UI; production deadlines unchanged.
+ print("RANK_COMMIT_ACTIVE_READY",b,701,137)
+end
+ctl:GetAttributeChangedSignal("Phase"):Connect(function()
+ local phase=ctl:GetAttribute("Phase")
+ if phase=="Active" then active()
+ elseif phase=="Review" then clearWars();check(M.DebugSetTroops(id,1001));print("RANK_COMMIT_REVIEW_READY")
+ elseif phase=="Zero" then clearWars();check(M.DebugSetTroops(id,1));print("RANK_COMMIT_ZERO_READY")
+ elseif phase=="Changed" then check(M.DebugAddTroops(id,200));print("RANK_COMMIT_FORCES_CHANGED")
+ elseif phase=="Freeze" then
+  clearWars();check(T.SetOwner("ravenreach",id));check(T.SetOwner("lowmarsh",id))
+  local final=E.GetBalance(id);check(require(S.MatchState).IsEnded());task.wait(6.3)
+  check(E.GetBalance(id)==final,"no post-end payout");check(not E.AddGold(id,1));check(not M.SetCommit(id,wars.active or "old",1))
+  print("RANK_COMMIT_FREEZE_PASS",n,final)
+ end
+end)
+game.ReplicatedStorage.Remotes.MilitaryClientEvent.OnServerEvent:Connect(function(player,action,warId,amount)
+ if player~=p then return end
+ if action=="SetCommit" then task.defer(function()local x=M.GetEngagementInspect(warId);print("RANK_COMMIT_INTENT",warId,amount,x and x.defender.intended,x and x.attacker.intended)end)end
+end)
+game.ReplicatedStorage.Remotes.WarfareClientEvent.OnServerEvent:Connect(function(player,action)
+ if player==p and action=="DeclareWar" then task.defer(function()M.DebugAdvance(-600)end)end
+end)
+-- Observe five actual six-second payouts; five Emperor ten-province ticks carry one extra Gold.
+task.spawn(function()
+ local previous=E.GetBalance(id);local sum=0;local ticks=0;local deadline=os.clock()+36
+ repeat task.wait(.1);local current=E.GetBalance(id)
+ if current~=previous then local delta=current-previous;check(delta==10 or delta==11,"whole carried payout");sum+=delta;ticks+=1;previous=current end
+ until ticks==5 or os.clock()>deadline
+ check(ticks==5 and sum==51,"five real payouts preserve fractional bonus")
+ print("RANK_COMMIT_CARRY_PASS",ticks,sum,n)
+end)
+print("RANK_COMMIT_FIXTURE_READY",id,n)

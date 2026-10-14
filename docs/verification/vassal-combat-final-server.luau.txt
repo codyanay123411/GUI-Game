@@ -1,0 +1,15 @@
+-- Narrow final-source regression, synthetic setup; no full-match run.
+local S=game.ServerScriptService.Services
+local H,M,W,P=require(S.PoliticalHierarchyService),require(S.MilitaryService),require(S.WarfareService),require(S.PoliticalPermissionsService)
+local Bridge=require(S.AdminBridge);local Players=game.Players
+local p=Players:GetPlayers()[1]or Players.PlayerAdded:Wait();local b
+repeat task.wait(.1);b=H.GetRulerIdForUserId(p.UserId)until b
+task.wait(2)
+local a=H.DebugCreateMockRuler("Final synthetic liege",4);local d=H.DebugCreateMockRuler("Final synthetic child",1)
+assert(H.SetTitleRank(b,3))
+for province,id in {westmere=b,ashwood=a,mossbank=d}do assert(Bridge.Execute(nil,"SetOwner",province,id))end
+local function join(child,parent)local ok,req=H.OfferFealty(child,parent);assert(ok,req);assert(H.AcceptFealty(req,parent))end
+join(b,a);join(d,b);assert(P.Set(a,b,"War",true,P.GetEdgeRevision(b)))
+assert(Bridge.Execute(nil,"SetTroops",b,2000));assert(Bridge.Execute(nil,"SetNeutralDefense","northvale",100))
+local ok,id=W.DeclareWar(b,"northvale");assert(ok,id);assert(M.SetCommit(b,id,400));assert(M.LockCommit(b,id))
+print("VASSAL_COMBAT_FINAL_SERVER_PASS",M.GetEngagementInspect(id).battle.attackerCommitted)

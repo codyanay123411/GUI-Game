@@ -37,7 +37,24 @@ Kohl's ADMIN/APPEARANCE controls, Theme/Font/Font Mono/Font Size/Corner Radius/P
 
 Sliders and numeric entry share validated values. Fonts preserve authored weight/style; typography and spacing retain information hierarchy. UI Scale adjusts safe typography/navigation/drawer/row density instead of scaling the full viewport and breaking anchored layout. Rounded circles retain their scale-based corners. Animation settings affect short button hover transitions. Province-label visibility still obeys existing camera eligibility. Runtime-created descendants receive current tokens; source templates retain authored base styles to prevent double scaling.
 
-## Authority, replication and persistence
+## GUI component contract
+
+Current game visual language: slate panels/wells, warm primary text, muted supporting text, gold actions, red destructive actions, and restrained borders/corners. `ReplicatedStorage/Shared/Util/PrototypeGuiTheme.luau` is the token/component authority; layout remains with existing controllers. Inspect the live game before changing its UI. Reuse helpers rather than copying colors or building another GUI framework.
+
+| Component | Existing helper / pattern | Responsibility |
+| --- | --- | --- |
+| Panel / urgent offer | `applyPanel(panel, urgent?)` | Slate surface; gold urgency border when purposeful. Keep scrim/modal and input flags owned by controller. |
+| Action / destructive action | `applyPrimaryButton(button, enabled)` / `applyDangerButton(button)` | Gold/red versus disabled tokens, wrapped text; caller owns Active/validation. |
+| Navigation / Back / Help / close | `applySecondaryButton(button, enabled)` | Well/text tokens; selection/relationship rows keep their semantic controller colors. |
+| Input | `applyInput(textBox)` | Well, readable text/placeholder, border/corner; caller owns TextEditable and validation. |
+| Scroll / text | `applyScroll(scroll)` / `applyText(label, Heading/Body/Caption)` | Shared scrollbar and text hierarchy; caller owns measured content/canvas geometry. |
+| Dynamic admission | `StyleControl(instance)` through Strategy/GameSettings descendant hooks | Inputs, scrollbars and tagged/named buttons follow the same component style before settings capture base values. Templates stay unscaled; clones receive current presentation. |
+
+Use `ThemeRole` for component semantics, not authorization. Preserve useful state colors, map political/selection/eligibility colors, nonblocking decoration, circular corners and modal scrims. Gold urgent offers, victory emphasis, red errors/hostile relations, map label contrast and compact captions are purposeful exceptions; document new exceptions here. Native Roblox chrome and vendor Kohl controls retain their own infrastructure; project Kohl theme/settings adapter is their integration boundary, not a vendor fork.
+
+Verify changed surfaces beside established screens at normal/compact desktop sizes, including dynamic rows, reopened workflows, empty/disabled/error states and current supported settings. Measure/reflow long text and make controls scroll reachable. Do not hardcode applied font/density values back into base settings or scale templates twice. GothamSSm means `rbxasset://fonts/families/GothamSSm.json`; do not silently substitute a different default family. Static style/compilation checks supplement runtime/visual evidence.
+
+## Authority, replication and persistence (service contract)
 
 GameSettingsService owns cloned defaults, authoritative runtime values and monotonic revisions. GameSettingsRequestEvent accepts Ready, Set and category Reset; the server uses the actual Player.UserId and rechecks AdminConfig.CanConfigureGame for every mutation. Unknown keys/actions, wrong types, NaN/infinity, invalid fonts and out-of-range values are rejected. Requests are throttled per player, with cleanup on leave. The controller coalesces drag updates and serializes resets; a reset cancels unsent edits for that category.
 
@@ -83,3 +100,19 @@ Temporary verification scripts and captured output/screenshots are preserved und
 - Responsive min/max/default checks: VGA 640×480, HD720 1280×720 and custom wide 1920×720. Actual usable ScreenGui dimensions exclude Roblox topbar inset; output records those exact dimensions. Each profile checks navigation text/bounds, drawers/buttons, long Communications canvas, generated Realm Overview row text, long Victory text and real adminhelp result canvas.
 
 Existing disabled Studio API/HTTP warnings prevent backend verification of Kohl saved preferences. The unrelated Model To Pixel plugin reports MainTextShadow on session stop. Neither warning was addressed by changing security settings or vendor code. Subjective font/audio feel, a real published ordinary account and live group-creator resolution remain Director/playtest verification; no agent test is Director acceptance.
+
+## 2026-10-13 component follow-up
+
+Shared helper/descendant admission now covers authored and generated ordinary game controls without changing permissions. Final owner runtime checks exercised all four fonts, 0.9/1.1 font/UI density and 0.8 opacity at VGA/HD720, then reset defaults; native GAME UI/GAME AUDIO categories were inspected. Synthetic multiplayer clients retained `canConfigure=false`. Measured Titles/map captions fixed observed clipping. Full current scope/evidence and semantic exceptions are recorded in [GUI_UX_SPRINT.md](GUI_UX_SPRINT.md#playable-match--gui-consistency-milestone--2026-10-13); older settings verification retains its date/scope. Director visual/audio approval and published-account limitations remain.
+
+### Commitment bar admission — 2026-10-13
+
+The dynamically created CommitmentBar uses existing Caption text roles, theme stroke/gold/disabled colors and settings admission in existing drawers. One active Frame blocks map input; its five labels are not independent preset buttons. Retired numeric commitment controls are hidden/inactive; recruitment input remains unchanged. [Verification](GUI_UX_SPRINT.md#rank-gold-bonuses-and-fixed-stop-commitments--2026-10-13).
+
+### Political council section — 2026-10-13
+
+Dynamic CouncilHeader/Body inside Realm use shared Caption/Body roles with left-aligned text. StrategyPresentation measures council/current-ruler height and width within scrollbar margins; existing outer Realm scrolling handles five-seat own/direct-liege councils on compact desktops. No new screen, color exception, numerical authority display or interactive permission control. Theme/layout evidence is in AI/OPENFRONT_PLAYABILITY_REVIEW.md's political foundation section.
+
+### Recruitment bar admission — 2026-10-13
+
+Military's recruitment surface reuses CommitmentBar with its own25/35/50/75/100 stops; default commitment choices are unchanged. Caption, measured existing CostLabel, primary Recruit and outer scroll follow existing theme/settings/input guards. Numeric/Max instances remain hidden and disabled for recovery. No separate progression or recruitment panel. [Evidence](GUI_UX_SPRINT.md#fixed-stop-affordable-recruitment--2026-10-13).

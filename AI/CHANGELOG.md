@@ -1,5 +1,52 @@
 # Changelog
 
+## 2026-10-13 — Finalize accumulated GUI, progression and politics work
+
+Preserve implemented GUI/loop/theme/admin improvements, personal Prestige/scaled titles, rank Gold, fixed-stop commitment/recruitment, council/authority, grants/autonomy/domain diplomacy/betrayal, Play Again route and combat bonuses with documentation/evidence. [Finalization boundaries](FINALIZATION.md#2026-10-13--accumulated-implementation-finalization); no new acceptance or published routing claim.
+
+
+## 2026-10-13 — Vassalage combat strength
+
+Added approved configurable subject and direct-personal-defense effective strength, multiplicative at resolution, with own bonuses in existing Military/Realm. Existing real troop/reservation/casualty contracts retained. [Checks/limits](OPENFRONT_PLAYABILITY_REVIEW.md#vassalage-combat-bonuses--2026-10-13).
+
+
+## 2026-10-13 — Personal-domain permissions and betrayal
+
+Added direct-subject War/Diplomacy grants, strict-greater autonomy and reviewed betrayal with conserved30% transfer to former direct liege. Preserved server validation/private armies/chat/admin scope; synchronous hierarchy invalidation and compact themed Realm/review feedback. [Evidence/limits](OPENFRONT_PLAYABILITY_REVIEW.md#liege-permissions-autonomy-and-betrayal--2026-10-13).
+
+
+## 2026-10-13 — Affordable recruitment bar
+
+Added25/35/50/75/100 snapping recruitment preview using current Gold and configured troop conversion; retired duplicate numeric/Max UI, retained explicit Recruit and added correlated duplicate-safe receipts on existing remotes. Compact layout, rejection refresh and match freeze retained. [Focused evidence/limits](GUI_UX_SPRINT.md#fixed-stop-affordable-recruitment--2026-10-13).
+
+## 2026-10-13 — Result inspection and Play Again
+
+Added requester-only fresh reserved-server request through existing Victory intents, server flight/failure/retry coordination and themed scrollable result feedback with Inspect final map / Play Again controls. Preserved shared final state and competitive freeze. Focused synthetic/Studio checks pass; published teleport and fresh-server startup remain unverified. [Scope/evidence](CONQUEST_VICTORY.md#requester-only-play-again--2026-10-13).
+
+## 2026-10-13 — Political council foundation
+
+Added server-owned personal authority and direct-subject council membership, replacement timers, filtered Realm presentation and frozen final inspection. Existing chat audiences, service validation and competitive mechanics remain unchanged. [Evidence and limitations](OPENFRONT_PLAYABILITY_REVIEW.md#political-authority-and-council-foundation--2026-10-13-implementation).
+
+## 2026-10-13 — Rank income and commitment controls
+
+Added non-stacking personal Gold rank bonuses and fractional payout carry. Existing Economy/Titles explain authoritative income. Review and Military use five-stop commitment bars, separate accepted reservations, pending/rejected Ready gating, and lock/end disabling. [Evidence and limitations](GUI_UX_SPRINT.md#rank-gold-bonuses-and-fixed-stop-commitments--2026-10-13).
+
+## 2026-10-13 — Earn personal Prestige and derive map title gates
+
+Implemented approved20 Prestige/min/personal conquerable province, exact fractional ownership/lifecycle settlement and match-end freeze; default once-initialized map-scaled rank gates with validated optional overrides. Vale retains2/100,5/250,10/500. Existing Titles/resource UI now explains actual personal income and resolved eligibility. Preserved cumulative manual progression, subtree land/rank retention and admin permissions. Pure, compiler, three-client, native ordinary three-title and desktop layout evidence recorded in [report](OPENFRONT_PLAYABILITY_REVIEW.md#prestige-earning-and-map-scaled-titles--2026-10-13); current saved-place eleven-source correspondence confirmed; fractional-override visual runtime remains unverified. Settings remain initial playtest values, not Director-accepted balance. No commit/push/publication.
+
+## 2026-10-13 — Match-loop demonstration and shared GUI components
+
+Verified a natural ordinary-control Solo Domination match; kept it separate from seeded three-client regression evidence. Unified authored/generated inputs, buttons, scrollbars and panel hierarchy with existing theme/settings helpers; corrected GothamSSm family, measured/scrollable Titles and map caption clipping, neutral Conquest heading and post-end Economy feedback. Added explicit Prestige prototype-limit copy and mandatory linked GUI contract. No server/gameplay mechanics, new progression, Director acceptance, commit/push or publication. Details/screens/checks: [GUI_UX_SPRINT.md](GUI_UX_SPRINT.md#playable-match--gui-consistency-milestone--2026-10-13).
+
+## 2026-10-11 — Make province decisions legible through results
+
+Added predicted legal target cues and immediate unavailable reasons, owner/realm/root authority labels, configured realm victory progress, explicit entered/reserved/locked/calculated/result feedback, and existing-event locate/Recenter. Context drawers leave map captions visible; actual buttons remain interactive while radial empty space passes map input. Policy, compiler, Solo, compact/normal layout and three-client evidence recorded in CONTEXTUAL_MAP_INTERACTION.md. Combat/server contracts unchanged; Director usability/acceptance and touch remain unverified. Prior admin cleanup/planning/recovery preserved; no commit, push or publication.
+
+## 2026-10-11 — Streamline strategy admin commands
+
+Added recoverable explicit Kohl command policy without vendor edits or role changes; disabled 155 physical/avatar/world-only commands and aliases. Added realm/holding inspection, troop/ownership ledger diagnostics and reproducible battle seed setup through existing server authority; invalid territory inspection now rejects unknown IDs. Help documents overrides and lifecycle restrictions. Targeted Solo server/client/remote checks passed; retained mute notification vendor limitation recorded. No commit, push or publication. See ADMIN_PERMISSIONS.md.
+
 ## 2026-10-11 — Consolidate workflow and document game coverage
 
 Made AGENTS.md the workflow authority and Cursor rules its entry point. Added task-specific context routing, bounded development/review loop and concise evidence records; retained approval and verification/acceptance boundaries. Architecture now distinguishes tracked source, live Studio, ignored snapshots and external dependencies, with command availability/limitations. Active references updated; historical acceptance and obsolete layout evidence retained with clear scope. Documentation-only audit; subsequent Git finalization is separately authorized. No sync/export or Roblox publication.

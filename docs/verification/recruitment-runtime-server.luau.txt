@@ -1,0 +1,28 @@
+-- Disposable targeted Solo checks; prepared Gold via existing authorized AdminBridge.
+local S=game.ServerScriptService.Services
+local H,E,M=require(S.PoliticalHierarchyService),require(S.EconomyService),require(S.MilitaryService)
+local Bridge=require(S.AdminBridge)
+local p=game.Players:GetPlayers()[1];local id=H.GetRulerIdForUserId(p.UserId);assert(id)
+local ctl=Instance.new("Folder");ctl.Name="RecruitmentVerification";ctl.Parent=game.ServerScriptService
+local count=0;local function check(v,msg)assert(v,msg);count+=1 end
+check(M.GetInspect(id).total==1000,"opening and bar interaction did not recruit")
+local seen={};local total=M.GetInspect(id).total
+game.ReplicatedStorage.Remotes.MilitaryClientEvent.OnServerEvent:Connect(function(actor,action,amount,requestId)
+ if actor~=p or action~="Recruit"then return end
+ task.defer(function()
+  local actual=M.GetInspect(id).total
+  if seen[requestId]then check(actual==total,"duplicate did not recruit again")
+  elseif actual>total then check(actual-total==amount,"accepted exact integer preview");seen[requestId]=true end
+  total=actual
+  ctl:SetAttribute("LastRequestId",requestId);ctl:SetAttribute("LastAmount",amount)
+  print("RECRUIT_SERVER_RECEIPT",requestId,actual,E.GetBalance(id),count)
+ end)
+end)
+local set=Instance.new("BindableFunction");set.Name="SetGold";set.Parent=ctl
+set.OnInvoke=function(gold)
+ assert(Bridge.Execute(p.UserId,"SetGold",p.Name,gold));task.wait(.15)
+ game.ReplicatedStorage.Remotes.MilitaryServerEvent:FireClient(p,"VerifyRecruit","gold"..gold)
+ return true
+end
+assert(set:Invoke(150))
+print("RECRUIT_SERVER_READY",count)

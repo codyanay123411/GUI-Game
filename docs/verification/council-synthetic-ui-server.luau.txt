@@ -1,0 +1,9 @@
+local p=game.Players:FindFirstChild("Player2");assert(p)
+local sample={councils={},frozen=false,seatLimit=5}
+for _,owner in {"Synthetic own ruler","Synthetic direct liege"}do
+ local c={rulerId=owner,displayName=owner,titleName="King",members={}}
+ for i=1,5 do table.insert(c.members,{rulerId=owner..i,displayName="Sample member "..i,titleName="Duke"})end
+ table.insert(sample.councils,c)
+end
+game.ReplicatedStorage.Remotes.CouncilServerEvent:FireClient(p,"State",game:GetService("HttpService"):JSONEncode(sample))
+print("COUNCIL_SYNTHETIC_UI_SAMPLE_SENT")

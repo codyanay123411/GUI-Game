@@ -1,0 +1,3005 @@
+{
+  "kind": "Edit-mode installed vendor source inventory; runtime effective set separately verified",
+  "autoUpdate": true,
+  "placeId": 77421850892463,
+  "placeVersion": 145,
+  "commands": [
+    {
+      "name": "announce",
+      "group": "Administration",
+      "aliases": [],
+      "description": "Shows a message to everyone in the game, saves and shows to new users until it has been cleared.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "unannounce",
+      "group": "Administration",
+      "aliases": [
+        "clearannounce"
+      ],
+      "description": "Removes the pinned announcement.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "role",
+      "group": "Administration",
+      "aliases": [
+        "rank"
+      ],
+      "description": "Assigns a role(s) to one or more user(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "temprole",
+      "group": "Administration",
+      "aliases": [
+        "temprank"
+      ],
+      "description": "Assigns a temporary role(s) to one or more user(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "unrole",
+      "group": "Administration",
+      "aliases": [
+        "removerole",
+        "unrank",
+        "removerank"
+      ],
+      "description": "Removes one or more role(s) from one or more member(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "removemember",
+      "group": "Administration",
+      "aliases": [
+        "removepermissions",
+        "removeroles"
+      ],
+      "description": "Removes all roles and permissions from one or more member(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "gear",
+      "group": "Administration",
+      "aliases": [],
+      "description": "Gives one or more player(s) a gear.",
+      "status": "disabled",
+      "reason": "Spawns physical tools/models or edits terrain; no strategy-state API."
+    },
+    {
+      "name": "insert",
+      "group": "Administration",
+      "aliases": [
+        "ins"
+      ],
+      "description": "Inserts a model at the player's position.",
+      "status": "disabled",
+      "reason": "Spawns physical tools/models or edits terrain; no strategy-state API."
+    },
+    {
+      "name": "place",
+      "group": "Administration",
+      "aliases": [
+        "pl"
+      ],
+      "description": "Teleports one or more player(s) to a place.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "serverlock",
+      "group": "Administration",
+      "aliases": [
+        "slock"
+      ],
+      "description": "Locks the server preventing new players from joining.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "unserverlock",
+      "group": "Administration",
+      "aliases": [
+        "unslock"
+      ],
+      "description": "Unlocks the server allowing new players to join again.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "clearlogs",
+      "group": "Creator",
+      "aliases": [
+        "clrlogs"
+      ],
+      "description": "Removes all Kohl's Admin server logs.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "hidelogs",
+      "group": "Creator",
+      "aliases": [
+        "unhidelogs"
+      ],
+      "description": "Hides the Kohl's Admin logs of one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "script",
+      "group": "Creator",
+      "aliases": [
+        "s",
+        "loadstring"
+      ],
+      "description": "Runs a script.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "localscript",
+      "group": "Creator",
+      "aliases": [
+        "ls"
+      ],
+      "description": "Runs a script locally for one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "fix",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Reverts the environment to the original state.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "ambient",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the color of Lighting.Ambient.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "outdoorambient",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the color of Lighting.OutdoorAmbient.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "atmosphere",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the values of a Ligthing.Atmosphere.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "fogcolor",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the color of Lighting.FogColor.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "fogstart",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the value of Lighting.FogStart.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "fogend",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the value of Lighting.FogEnd.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "brightness",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the value of Lighting.Brightness.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "colorshift",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the colors of Lighting.ColorShift_Bottom and Lighting.ColorShift_Top.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "diffusescale",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the value of Lighting.EnvironmentDiffuseScale.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "specularscale",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the value of Lighting.EnvironmentSpecularScale.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "exposure",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the value of Lighting.ExposureCompensation.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "time",
+      "group": "Environment",
+      "aliases": [
+        "clocktime"
+      ],
+      "description": "Changes the value of Lighting.ClockTime.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "latitude",
+      "group": "Environment",
+      "aliases": [
+        "geographiclatitude"
+      ],
+      "description": "Changes the value of Lighting.GeographicLatitude.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "shadows",
+      "group": "Environment",
+      "aliases": [
+        "globalshadows"
+      ],
+      "description": "Changes the value of Lighting.GlobalShadows.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "skybox",
+      "group": "Environment",
+      "aliases": [
+        "sky",
+        "unskybox",
+        "unsky"
+      ],
+      "description": "Changes the skybox.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "airdensity",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the air density used in aerodynamic forces model.",
+      "status": "disabled",
+      "reason": "World physics/terrain water; not map simulation."
+    },
+    {
+      "name": "gravity",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the world's gravity.",
+      "status": "disabled",
+      "reason": "World physics/terrain water; not map simulation."
+    },
+    {
+      "name": "winddir",
+      "group": "Environment",
+      "aliases": [
+        "winddirection"
+      ],
+      "description": "Orients the wind direction along your camera.",
+      "status": "disabled",
+      "reason": "World physics/terrain water; not map simulation."
+    },
+    {
+      "name": "windspeed",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the global wind speed.",
+      "status": "disabled",
+      "reason": "World physics/terrain water; not map simulation."
+    },
+    {
+      "name": "watercolor",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the color of Terrain water.",
+      "status": "disabled",
+      "reason": "World physics/terrain water; not map simulation."
+    },
+    {
+      "name": "waterreflectance",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the reflectance of Terrain water.",
+      "status": "disabled",
+      "reason": "World physics/terrain water; not map simulation."
+    },
+    {
+      "name": "watertransparency",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the transparency of Terrain water.",
+      "status": "disabled",
+      "reason": "World physics/terrain water; not map simulation."
+    },
+    {
+      "name": "watersize",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the wave size of Terrain water.",
+      "status": "disabled",
+      "reason": "World physics/terrain water; not map simulation."
+    },
+    {
+      "name": "waterspeed",
+      "group": "Environment",
+      "aliases": [],
+      "description": "Changes the wave speed of Terrain water.",
+      "status": "disabled",
+      "reason": "World physics/terrain water; not map simulation."
+    },
+    {
+      "name": "clean",
+      "group": "General",
+      "aliases": [
+        "clear",
+        "clr"
+      ],
+      "description": "Cleans up miscellaneous admin objects like cloned characters, looped commands, and scripts.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "hint",
+      "group": "General",
+      "aliases": [
+        "h"
+      ],
+      "description": "Sends a hint to everyone in the server.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "privatehint",
+      "group": "General",
+      "aliases": [
+        "phint",
+        "ph"
+      ],
+      "description": "Sends a private hint to one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "message",
+      "group": "General",
+      "aliases": [
+        "m",
+        "msg"
+      ],
+      "description": "Sends a message to everyone in the server.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "fullmessage",
+      "group": "General",
+      "aliases": [
+        "fm",
+        "fmsg"
+      ],
+      "description": "Sends a full screen message to everyone in the server.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "notify",
+      "group": "General",
+      "aliases": [
+        "n"
+      ],
+      "description": "Sends a notification to one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "privatemessage",
+      "group": "General",
+      "aliases": [
+        "pm",
+        "pmsg"
+      ],
+      "description": "Sends a message to one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "countdown",
+      "group": "General",
+      "aliases": [
+        "cd"
+      ],
+      "description": "Starts a countdown.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "title",
+      "group": "General",
+      "aliases": [
+        "tag",
+        "untag",
+        "untitle"
+      ],
+      "description": "Changes the title of one or more player(s).",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "vote",
+      "group": "General",
+      "aliases": [
+        "makevote",
+        "startvote",
+        "poll"
+      ],
+      "description": "Starts a vote for one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "link",
+      "group": "General",
+      "aliases": [
+        "connect",
+        "track"
+      ],
+      "description": "Links one or more player(s) to your character.",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "unlink",
+      "group": "General",
+      "aliases": [
+        "unconnect",
+        "untrack"
+      ],
+      "description": "Removes a link from one or more player(s).",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "watch",
+      "group": "General",
+      "aliases": [
+        "camera",
+        "follow"
+      ],
+      "description": "Watches a player with your camera.",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "spectate",
+      "group": "General",
+      "aliases": [
+        "spy",
+        "view"
+      ],
+      "description": "Spectate a player's camera view.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "unspectate",
+      "group": "General",
+      "aliases": [
+        "unspy",
+        "unwatch",
+        "uncamera",
+        "unfollow",
+        "unview"
+      ],
+      "description": "Stop spectating.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "fly",
+      "group": "General",
+      "aliases": [],
+      "description": "Enables flight for one or more player(s).",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "unfly",
+      "group": "General",
+      "aliases": [],
+      "description": "Disables flight for one or more player(s).",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "noclip",
+      "group": "General",
+      "aliases": [],
+      "description": "Enables noclip for one or more player(s).",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "clip",
+      "group": "General",
+      "aliases": [
+        "unnoclip"
+      ],
+      "description": "Disables noclip for one or more player(s).",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "notrip",
+      "group": "General",
+      "aliases": [
+        "unnotrip"
+      ],
+      "description": "Prevents one or more player(s) from tripping.",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "xray",
+      "group": "General",
+      "aliases": [
+        "wallhack",
+        "walls",
+        "unxray",
+        "unwallhack",
+        "unwalls"
+      ],
+      "description": "Show players through walls.",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "whois",
+      "group": "General",
+      "aliases": [
+        "userinfo"
+      ],
+      "description": "Displays detailed information about a player.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "grouprank",
+      "group": "General",
+      "aliases": [
+        "grouprole"
+      ],
+      "description": "Gets a player's rank and role in a group.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "playercount",
+      "group": "General",
+      "aliases": [
+        "plrcount",
+        "countplayers",
+        "countplrs"
+      ],
+      "description": "Counts the number of players in-game.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "tts",
+      "group": "General",
+      "aliases": [
+        "speak"
+      ],
+      "description": "Plays text to speech audio.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "play",
+      "group": "General",
+      "aliases": [
+        "music",
+        "sound",
+        "audio"
+      ],
+      "description": "Plays a sound.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "pause",
+      "group": "General",
+      "aliases": [],
+      "description": "Pauses the current sound.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "resume",
+      "group": "General",
+      "aliases": [],
+      "description": "Resumes the current sound.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "stop",
+      "group": "General",
+      "aliases": [
+        "stopmusic"
+      ],
+      "description": "Stops the currently playing sound.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "pitch",
+      "group": "General",
+      "aliases": [],
+      "description": "Changes the pitch of the currently playing sound.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "volume",
+      "group": "General",
+      "aliases": [],
+      "description": "Changes the volume of the currently playing sound.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "badge",
+      "group": "SuperAdmin",
+      "aliases": [
+        "awardbadge",
+        "givebadge"
+      ],
+      "description": "Awards a badge to one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "btools",
+      "group": "SuperAdmin",
+      "aliases": [
+        "build",
+        "f3x"
+      ],
+      "description": "Gives Building Tools by F3X to one or more player(s).",
+      "status": "disabled",
+      "reason": "Spawns physical tools/models or edits terrain; no strategy-state API."
+    },
+    {
+      "name": "chat",
+      "group": "SuperAdmin",
+      "aliases": [
+        "forcechat"
+      ],
+      "description": "Forces one or more player(s) to chat.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "clearterrain",
+      "group": "SuperAdmin",
+      "aliases": [
+        "cterrain",
+        "clrterrain",
+        "removeterrain"
+      ],
+      "description": "Removes all terrain.",
+      "status": "disabled",
+      "reason": "Spawns physical tools/models or edits terrain; no strategy-state API."
+    },
+    {
+      "name": "explorer",
+      "group": "SuperAdmin",
+      "aliases": [],
+      "description": "Shows the explorer.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "incognito",
+      "group": "SuperAdmin",
+      "aliases": [],
+      "description": "Hides one or more player(s) from lower rank players. (Persists until rejoin)",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "incognitolist",
+      "group": "SuperAdmin",
+      "aliases": [],
+      "description": "Views all incognito players in the server.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "reserve",
+      "group": "SuperAdmin",
+      "aliases": [
+        "privateserver"
+      ],
+      "description": "Reserves a private server.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "unreserve",
+      "group": "SuperAdmin",
+      "aliases": [
+        "delreserve",
+        "removereserve",
+        "removeprivateserver"
+      ],
+      "description": "Removes a reserved server.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "shutdown",
+      "group": "SuperAdmin",
+      "aliases": [
+        "stopserver"
+      ],
+      "description": "Shuts down the server.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "global",
+      "group": "SuperAdmin",
+      "aliases": [
+        "gcmd"
+      ],
+      "description": "Runs a command string globally in all servers.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "version",
+      "group": "Utility",
+      "aliases": [],
+      "description": "Displays the version of Kohl's Admin in this game.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "prefix",
+      "group": "Utility",
+      "aliases": [
+        "hotkeys"
+      ],
+      "description": "Displays the prefix and hotkeys.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "cmdbar2",
+      "group": "Utility",
+      "aliases": [
+        "cmdbarfloating",
+        "cmdbarwindow"
+      ],
+      "description": "Shows a floating command bar window.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "about",
+      "group": "Utility",
+      "aliases": [
+        "credit",
+        "credits",
+        "info"
+      ],
+      "description": "Shows the about tab in a separate window.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "commands",
+      "group": "Utility",
+      "aliases": [
+        "cmds"
+      ],
+      "description": "Shows the commands in a separate window.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "commandbar",
+      "group": "Utility",
+      "aliases": [
+        "cmdbar"
+      ],
+      "description": "Shows the command bar.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "dashboard",
+      "group": "Utility",
+      "aliases": [],
+      "description": "Shows the admin dashboard.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "donate",
+      "group": "Utility",
+      "aliases": [
+        "market",
+        "support"
+      ],
+      "description": "Shows the market tab in a separate window.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "log",
+      "group": "Utility",
+      "aliases": [
+        "logs",
+        "debuglogs",
+        "errorlogs",
+        "chatlogs",
+        "commandlogs",
+        "joinlogs",
+        "damagelogs",
+        "killlogs",
+        "purchaselogs",
+        "clogs",
+        "cmdlogs",
+        "dmglogs",
+        "buylogs"
+      ],
+      "description": "Shows the logs in a separate window.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "settings",
+      "group": "Utility",
+      "aliases": [
+        "set"
+      ],
+      "description": "Shows the settings in a separate window.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "emote",
+      "group": "Utility",
+      "aliases": [
+        "animation",
+        "anim",
+        "stopemote",
+        "stopanim"
+      ],
+      "description": "Plays an animation on one or more player(s).",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "emotes",
+      "group": "Utility",
+      "aliases": [],
+      "description": "Shows the emotes list.",
+      "status": "disabled",
+      "reason": "Character labels, movement, animation or world-only viewing; not political titles/map control."
+    },
+    {
+      "name": "age",
+      "group": "Utility",
+      "aliases": [
+        "accountage"
+      ],
+      "description": "Displays the account age of a player.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "serverage",
+      "group": "Utility",
+      "aliases": [
+        "uptime"
+      ],
+      "description": "Displays the age of the server.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "gameid",
+      "group": "Utility",
+      "aliases": [],
+      "description": "Displays the current GameId.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "jobid",
+      "group": "Utility",
+      "aliases": [],
+      "description": "Displays the current JobId.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "placeid",
+      "group": "Utility",
+      "aliases": [],
+      "description": "Displays the current PlaceId.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "showfps",
+      "group": "Utility",
+      "aliases": [
+        "getfps",
+        "checkfps",
+        "playerfps"
+      ],
+      "description": "Displays the frames per second of a player.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "ping",
+      "group": "Utility",
+      "aliases": [
+        "getping",
+        "checkping",
+        "latency"
+      ],
+      "description": "Displays the ping of a player.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "wait",
+      "group": "Utility",
+      "aliases": [
+        "delay"
+      ],
+      "description": "Delays command execution for a period of time.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "rejoin",
+      "group": "Utility",
+      "aliases": [
+        "rj"
+      ],
+      "description": "Rejoins the server.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "viewas",
+      "group": "Utility",
+      "aliases": [
+        "unviewas"
+      ],
+      "description": "Views the admin system as one or more role(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "disco",
+      "group": "Fun",
+      "aliases": [
+        "🪩",
+        "un🪩",
+        "undisco"
+      ],
+      "description": "It's time to party! 🎉",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "creeper",
+      "group": "Fun",
+      "aliases": [],
+      "description": "Turns one or more player(s) into a creeper? Aww, man...",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "uncreeper",
+      "group": "Fun",
+      "aliases": [],
+      "description": "Reverts one or more player(s) from a creeper",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "dog",
+      "group": "Fun",
+      "aliases": [
+        "🐶",
+        "🐎",
+        "horse"
+      ],
+      "description": "Turns one or more player(s) into dog",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "undog",
+      "group": "Fun",
+      "aliases": [
+        "un🐶",
+        "un🐎",
+        "unhorse"
+      ],
+      "description": "Reverts one or more player(s) from dog",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "char",
+      "group": "Fun",
+      "aliases": [
+        "character"
+      ],
+      "description": "Changes the character of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "unchar",
+      "group": "Fun",
+      "aliases": [
+        "uncharacter"
+      ],
+      "description": "Restores the character of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "clone",
+      "group": "Fun",
+      "aliases": [],
+      "description": "Clones the character of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "control",
+      "group": "Fun",
+      "aliases": [
+        "takeover"
+      ],
+      "description": "Controls the character of a player.",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "jumpscare",
+      "group": "Fun",
+      "aliases": [
+        "js"
+      ],
+      "description": "Jumpscares a player with an image and sound.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "glitch",
+      "group": "Fun",
+      "aliases": [
+        "unglitch",
+        "vibrate",
+        "unvibrate"
+      ],
+      "description": "Makes one or more player(s) start glitching.",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "seizure",
+      "group": "Fun",
+      "aliases": [
+        "seize"
+      ],
+      "description": "Makes one or more player(s) start seizing.",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "unseizure",
+      "group": "Fun",
+      "aliases": [
+        "unseize"
+      ],
+      "description": "Saves one or more player(s) from seizing.",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "infect",
+      "group": "Fun",
+      "aliases": [
+        "zombie"
+      ],
+      "description": "Infects of one or more player(s), starting a zombie outbreak!",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "explode",
+      "group": "Fun",
+      "aliases": [
+        "boom",
+        "💥"
+      ],
+      "description": "Explodes one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "nuke",
+      "group": "Fun",
+      "aliases": [],
+      "description": "Nuke one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "smite",
+      "group": "Fun",
+      "aliases": [],
+      "description": "Smites one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "confuse",
+      "group": "Fun",
+      "aliases": [
+        "reverse",
+        "unconfuse",
+        "unreverse"
+      ],
+      "description": "Inverts the controls of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "fling",
+      "group": "Fun",
+      "aliases": [],
+      "description": "Flings one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "loopfling",
+      "group": "Fun",
+      "aliases": [
+        "unloopfling"
+      ],
+      "description": "Flings one or more player(s) repeatedly.",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "poison",
+      "group": "Fun",
+      "aliases": [],
+      "description": "Damages one or more player(s) over time.",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "spin",
+      "group": "Fun",
+      "aliases": [],
+      "description": "Spins one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "unspin",
+      "group": "Fun",
+      "aliases": [],
+      "description": "Stops spinning one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "setgravity",
+      "group": "Fun",
+      "aliases": [
+        "setgrav",
+        "grav",
+        "nograv",
+        "ungravity",
+        "ungrav",
+        "resetgravity",
+        "resetgrav"
+      ],
+      "description": "Sets the gravity of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "skydive",
+      "group": "Fun",
+      "aliases": [
+        "freefall"
+      ],
+      "description": "Sends one or more player(s) into the sky.",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "trip",
+      "group": "Fun",
+      "aliases": [],
+      "description": "Trips one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "rocket",
+      "group": "Fun",
+      "aliases": [
+        "🚀"
+      ],
+      "description": "Attaches a rocket to one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "size",
+      "group": "Fun",
+      "aliases": [
+        "resize",
+        "scale",
+        "unsize",
+        "unresize",
+        "unscale"
+      ],
+      "description": "Resizes one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "slim",
+      "group": "Fun",
+      "aliases": [
+        "unslim"
+      ],
+      "description": "Makes one or more player(s) slim.",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "noobify",
+      "group": "Fun",
+      "aliases": [
+        "noob"
+      ],
+      "description": "Turn one or more player(s) into a noob",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "slippery",
+      "group": "Fun",
+      "aliases": [
+        "iceskate",
+        "icewalk",
+        "slide"
+      ],
+      "description": "Makes one or more player(s) slide when they walk",
+      "status": "disabled",
+      "reason": "Physical character transformation, movement or damage."
+    },
+    {
+      "name": "normal",
+      "group": "VIP",
+      "aliases": [
+        "uninfect"
+      ],
+      "description": "Returns one or more player(s) to their normal appearance.",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "fire",
+      "group": "VIP",
+      "aliases": [
+        "🔥"
+      ],
+      "description": "Adds fire to one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "unfire",
+      "group": "VIP",
+      "aliases": [
+        "un🔥"
+      ],
+      "description": "Removes fire from one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "smoke",
+      "group": "VIP",
+      "aliases": [
+        "💨"
+      ],
+      "description": "Adds smoke to one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "unsmoke",
+      "group": "VIP",
+      "aliases": [
+        "un💨"
+      ],
+      "description": "Removes smoke from one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "sparkles",
+      "group": "VIP",
+      "aliases": [
+        "✨"
+      ],
+      "description": "Adds sparkles to one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "unsparkles",
+      "group": "VIP",
+      "aliases": [
+        "un✨"
+      ],
+      "description": "Removes sparkles from one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "light",
+      "group": "VIP",
+      "aliases": [
+        "💡",
+        "lamp",
+        "lite"
+      ],
+      "description": "Adds a light to one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "unlight",
+      "group": "VIP",
+      "aliases": [
+        "un💡",
+        "unlamp",
+        "unlite"
+      ],
+      "description": "Removes a light from one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "highlight",
+      "group": "VIP",
+      "aliases": [
+        "hl",
+        "unhighlight",
+        "unhl"
+      ],
+      "description": "Highlights one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "particle",
+      "group": "VIP",
+      "aliases": [
+        "💫",
+        "pe"
+      ],
+      "description": "Adds a particle effect to one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "unparticle",
+      "group": "VIP",
+      "aliases": [
+        "un💫",
+        "unpe"
+      ],
+      "description": "Removes a particle effect from one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "trail",
+      "group": "VIP",
+      "aliases": [
+        "☄️"
+      ],
+      "description": "Adds a trail to one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "untrail",
+      "group": "VIP",
+      "aliases": [
+        "un☄️"
+      ],
+      "description": "Removers a trail from one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "shine",
+      "group": "VIP",
+      "aliases": [
+        "🌟",
+        "un🌟",
+        "unshine"
+      ],
+      "description": "Adds a shine effect to one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "bundle",
+      "group": "VIP",
+      "aliases": [
+        "📦",
+        "un📦",
+        "unbundle"
+      ],
+      "description": "Applies a bundle to one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "headless",
+      "group": "VIP",
+      "aliases": [
+        "nohead"
+      ],
+      "description": "Apply headless head to one or more player(s)",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "korblox",
+      "group": "VIP",
+      "aliases": [
+        "korbloxleg"
+      ],
+      "description": "Apply korblox bundle to one or more player(s)",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "werewolf",
+      "group": "VIP",
+      "aliases": [
+        "🌕",
+        "wolf"
+      ],
+      "description": "Apply werewolf bundle to one or more player(s)",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "vampire",
+      "group": "VIP",
+      "aliases": [
+        "🧛",
+        "dracula"
+      ],
+      "description": "Apply vampire bundle to one or more player(s)",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "cape",
+      "group": "VIP",
+      "aliases": [],
+      "description": "Gives a cape to one or more player(s)",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "uncape",
+      "group": "VIP",
+      "aliases": [],
+      "description": "Removes the cape from one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "hat",
+      "group": "VIP",
+      "aliases": [
+        "🎩",
+        "crmhat"
+      ],
+      "description": "Gives one or more hats to one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "removehats",
+      "group": "VIP",
+      "aliases": [
+        "remove🎩",
+        "r🎩",
+        "rhats"
+      ],
+      "description": "Removes the hats of one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "head",
+      "group": "VIP",
+      "aliases": [
+        "🗿",
+        "unhead"
+      ],
+      "description": "Changes the head of one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "headsize",
+      "group": "VIP",
+      "aliases": [
+        "headscale",
+        "bighead",
+        "hugehead",
+        "largehead",
+        "tinyhead",
+        "minihead",
+        "smallhead",
+        "normalhead"
+      ],
+      "description": "Changes the head size of one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "face",
+      "group": "VIP",
+      "aliases": [
+        "🙂",
+        "un🙂",
+        "unface"
+      ],
+      "description": "Changes the face of one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "shirt",
+      "group": "VIP",
+      "aliases": [
+        "👕",
+        "un👕",
+        "unshirt"
+      ],
+      "description": "Changes the shirt of one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "pants",
+      "group": "VIP",
+      "aliases": [
+        "👖",
+        "un👖",
+        "unpants"
+      ],
+      "description": "Changes the pants of one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "tshirt",
+      "group": "VIP",
+      "aliases": [
+        "untshirt"
+      ],
+      "description": "Changes the t-shirt of one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "bodycolor",
+      "group": "VIP",
+      "aliases": [
+        "bodycolors",
+        "skincolor",
+        "unbodycolor",
+        "unbodycolors",
+        "unskincolor"
+      ],
+      "description": "Changes the body colors of one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "crm",
+      "group": "VIP",
+      "aliases": [
+        "color",
+        "paint",
+        "uncrm",
+        "uncolor",
+        "unpaint"
+      ],
+      "description": "Changes the color, reflectance, or material of one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "goldify",
+      "group": "VIP",
+      "aliases": [
+        "gold"
+      ],
+      "description": "Glimmer like gold!",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "shiny",
+      "group": "VIP",
+      "aliases": [],
+      "description": "Shine like a diamond!",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "silverify",
+      "group": "VIP",
+      "aliases": [
+        "silver",
+        "metalify",
+        "metal"
+      ],
+      "description": "Shine bright as a silver statue!",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "ungoldify",
+      "group": "VIP",
+      "aliases": [
+        "ungold",
+        "unsilverify",
+        "unsilver",
+        "unmetalify",
+        "unmetal"
+      ],
+      "description": "Restores the character of one or more player(s).",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "swagify",
+      "group": "VIP",
+      "aliases": [
+        "swag"
+      ],
+      "description": "Makes one or more player(s) swaggy. 😎",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "unswagify",
+      "group": "VIP",
+      "aliases": [
+        "unswag"
+      ],
+      "description": "Removes swag from one or more player(s). 👎",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "wingscolor",
+      "group": "VIP",
+      "aliases": [],
+      "description": "Changes the VIP wings color.",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "rainbowwings",
+      "group": "VIP",
+      "aliases": [
+        "wingsrainbow"
+      ],
+      "description": "Toggles the VIP wings rainbow.",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "crowncolor",
+      "group": "VIP",
+      "aliases": [],
+      "description": "Changes the VIP crown color.",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "rainbowcrown",
+      "group": "VIP",
+      "aliases": [
+        "crownrainbow"
+      ],
+      "description": "Toggles the VIP crown rainbow.",
+      "status": "disabled",
+      "reason": "Avatar/accessory effects; no strategy-state effect."
+    },
+    {
+      "name": "bans",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Shows the bans in a separate window.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "members",
+      "group": "Moderation",
+      "aliases": [
+        "admins",
+        "roles"
+      ],
+      "description": "Shows the roled members in a separate window.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "servers",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Shows the live game servers in a separate window.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "ban",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Bans one or more user(s) by UserId.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "unban",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Unbans one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "kick",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Kicks one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "crash",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Crashes one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "mute",
+      "group": "Moderation",
+      "aliases": [
+        "silence",
+        "shush",
+        "shh"
+      ],
+      "description": "Mutes one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "unmute",
+      "group": "Moderation",
+      "aliases": [
+        "unsilence",
+        "unshush",
+        "unshh"
+      ],
+      "description": "Unmutes one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "punish",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Punishes one or more player(s) to the void.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "unpunish",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Unpunishes one or more player(s) from the void.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "name",
+      "group": "Moderation",
+      "aliases": [
+        "nickname",
+        "displayname",
+        "unname"
+      ],
+      "description": "Changes the DisplayName of one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "hidename",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Hides the character name of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "showname",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Shows the character name of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "setcoregui",
+      "group": "Moderation",
+      "aliases": [
+        "coregui"
+      ],
+      "description": "Enables/disables a CoreGui for one or more player(s)",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "toolban",
+      "group": "Moderation",
+      "aliases": [
+        "bantools"
+      ],
+      "description": "Bans one or more player(s) from using tools.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "untoolban",
+      "group": "Moderation",
+      "aliases": [
+        "unbantools"
+      ],
+      "description": "Unbans one or more player(s) from using tools.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "give",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Gives a tool to one or more player(s).\\nTools must be a descendant of <b>Lighting</b> or <b>ServerStorage</b>.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "startergive",
+      "group": "Moderation",
+      "aliases": [
+        "sgive"
+      ],
+      "description": "Permanently gives a tool to one or more player(s).\\nTools must be a descendant of <b>Lighting</b> or <b>ServerStorage</b>.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "starterremove",
+      "group": "Moderation",
+      "aliases": [
+        "sremove",
+        "unstartergive",
+        "unsgive"
+      ],
+      "description": "Permanently removes a tool from one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "copytools",
+      "group": "Moderation",
+      "aliases": [
+        "ctools"
+      ],
+      "description": "Copies tools from one or more player(s) to one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "removetools",
+      "group": "Moderation",
+      "aliases": [
+        "rtools"
+      ],
+      "description": "Removes all tools from one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "tools",
+      "group": "Moderation",
+      "aliases": [
+        "toollist"
+      ],
+      "description": "Views all tools usable with the give command.\\nThe default tool location is <b>game.ServerStorage</b>",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "startertools",
+      "group": "Moderation",
+      "aliases": [
+        "starttools",
+        "stools"
+      ],
+      "description": "Views all tools in the StarterPack.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "viewtools",
+      "group": "Moderation",
+      "aliases": [
+        "vtools"
+      ],
+      "description": "Views all tools from a player.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "sword",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Gives a sword to one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "kill",
+      "group": "Moderation",
+      "aliases": [
+        "slay",
+        "unalive",
+        "💀"
+      ],
+      "description": "Kills one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "loopkill",
+      "group": "Moderation",
+      "aliases": [
+        "loopslay",
+        "loopunalive",
+        "loop💀",
+        "unloopkill",
+        "unloopslay",
+        "unloopunalive",
+        "unloop💀"
+      ],
+      "description": "Kills one or more player(s) repeatedly.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "hurt",
+      "group": "Moderation",
+      "aliases": [
+        "damage"
+      ],
+      "description": "Damages one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "health",
+      "group": "Moderation",
+      "aliases": [
+        "maxhealth"
+      ],
+      "description": "Changes the maximum health one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "heal",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Heals one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "immortal",
+      "group": "Moderation",
+      "aliases": [
+        "god"
+      ],
+      "description": "Makes one or more player(s) invincible.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "forcefield",
+      "group": "Moderation",
+      "aliases": [
+        "ff"
+      ],
+      "description": "Gives a ForceField to one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "unforcefield",
+      "group": "Moderation",
+      "aliases": [
+        "unff",
+        "ungod",
+        "mortal"
+      ],
+      "description": "Removes a ForceField from one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "invisible",
+      "group": "Moderation",
+      "aliases": [
+        "inv",
+        "invis",
+        "hide"
+      ],
+      "description": "Makes one or more player(s) invisible.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "visible",
+      "group": "Moderation",
+      "aliases": [
+        "vis",
+        "show",
+        "unhide"
+      ],
+      "description": "Makes one or more player(s) visible.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "blind",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Blinds one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "unblind",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Unblinds one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "freeze",
+      "group": "Moderation",
+      "aliases": [
+        "anchor",
+        "ice"
+      ],
+      "description": "Freezes one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "thaw",
+      "group": "Moderation",
+      "aliases": [
+        "unfreeze",
+        "unanchor",
+        "unice"
+      ],
+      "description": "Thaws one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "jail",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Jails one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "unjail",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Frees one or more player(s) from jail.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "cameraoffset",
+      "group": "Moderation",
+      "aliases": [
+        "camoffset"
+      ],
+      "description": "Changes the CameraOffset of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "antilag",
+      "group": "Moderation",
+      "aliases": [
+        "unantilag"
+      ],
+      "description": "Improves the game performance for one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "fps",
+      "group": "Moderation",
+      "aliases": [
+        "lag",
+        "unlag",
+        "unfps"
+      ],
+      "description": "Limits the frames per second of one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "lock",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Locks the character of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "unlock",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Unlocks the character of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "stun",
+      "group": "Moderation",
+      "aliases": [
+        "disable"
+      ],
+      "description": "Stuns one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "unstun",
+      "group": "Moderation",
+      "aliases": [
+        "undisable",
+        "enable"
+      ],
+      "description": "Removes stun from one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "bring",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Teleports one or more player(s) to you.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "to",
+      "group": "Moderation",
+      "aliases": [
+        "goto"
+      ],
+      "description": "Teleports to a player.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "tp",
+      "group": "Moderation",
+      "aliases": [
+        "teleport"
+      ],
+      "description": "Teleports one or more player(s) to another player.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "join",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Join a player in the same game.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "fov",
+      "group": "Moderation",
+      "aliases": [
+        "unfov",
+        "resetfov"
+      ],
+      "description": "Changes the field of view of one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "jump",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Makes one or more player(s) jump.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "jumppower",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Changes the jump power of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "starterjumppower",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Changes the jump power of one or more player(s) when they spawn.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "sit",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Makes one or more player(s) sit.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "unsit",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Makes one or more player(s) stop sitting.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "speed",
+      "group": "Moderation",
+      "aliases": [
+        "walkspeed"
+      ],
+      "description": "Changes the walkspeed of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "starterspeed",
+      "group": "Moderation",
+      "aliases": [
+        "starterwalkspeed"
+      ],
+      "description": "Changes the walkspeed of one or more player(s) when they spawn.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "vehiclespeed",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Changes the vehicle speed of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "vehicletorque",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Changes the vehicle torque of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "slopeangle",
+      "group": "Moderation",
+      "aliases": [
+        "maxslopeangle"
+      ],
+      "description": "Changes the max slope angle of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "starterslopeangle",
+      "group": "Moderation",
+      "aliases": [
+        "startermaxslopeangle"
+      ],
+      "description": "Changes the starting max slope angle of one or more player(s) when they spawn.",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "r6",
+      "group": "Moderation",
+      "aliases": [
+        "r15"
+      ],
+      "description": "Changes the rig type of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "respawn",
+      "group": "Moderation",
+      "aliases": [
+        "spawn"
+      ],
+      "description": "Respawns the character of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "refresh",
+      "group": "Moderation",
+      "aliases": [
+        "re"
+      ],
+      "description": "Refreshes the character of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "removelimbs",
+      "group": "Moderation",
+      "aliases": [
+        "rlimbs"
+      ],
+      "description": "Removes the limbs of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "removearms",
+      "group": "Moderation",
+      "aliases": [
+        "rarms"
+      ],
+      "description": "Removes the arms of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "removelegs",
+      "group": "Moderation",
+      "aliases": [
+        "rlegs"
+      ],
+      "description": "Removes the legs of one or more player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    },
+    {
+      "name": "buy",
+      "group": "Moderation",
+      "aliases": [
+        "purchase"
+      ],
+      "description": "Prompts a purchase for one or more player(s).",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "has",
+      "group": "Moderation",
+      "aliases": [
+        "owns"
+      ],
+      "description": "Checks if a player(s) owns an item.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "promptgroup",
+      "group": "Moderation",
+      "aliases": [
+        "joingroup"
+      ],
+      "description": "Prompts one or more player(s) to join a group.",
+      "status": "retained",
+      "reason": "Moderation, inspection, presentation, platform utility or mixed use; existing permissions unchanged."
+    },
+    {
+      "name": "change",
+      "group": "Moderation",
+      "aliases": [],
+      "description": "Changes a leaderstat of one or more player(s).",
+      "status": "disabled",
+      "reason": "Roblox Teams/leaderstats do not own this game's realms/resources; use AdminBridge."
+    },
+    {
+      "name": "resetstats",
+      "group": "Moderation",
+      "aliases": [
+        "rs"
+      ],
+      "description": "Resets the stats of one or more player(s).",
+      "status": "disabled",
+      "reason": "Roblox Teams/leaderstats do not own this game's realms/resources; use AdminBridge."
+    },
+    {
+      "name": "team",
+      "group": "Moderation",
+      "aliases": [
+        "tm"
+      ],
+      "description": "Changes the team of one or more player(s).",
+      "status": "disabled",
+      "reason": "Roblox Teams/leaderstats do not own this game's realms/resources; use AdminBridge."
+    },
+    {
+      "name": "teamrespawn",
+      "group": "Moderation",
+      "aliases": [
+        "tmrs",
+        "trs",
+        "teamrs"
+      ],
+      "description": "Changes the team of one or more player(s) and spawns them.",
+      "status": "disabled",
+      "reason": "Roblox Teams/leaderstats do not own this game's realms/resources; use AdminBridge."
+    },
+    {
+      "name": "substitute",
+      "group": "Moderation",
+      "aliases": [
+        "sub",
+        "subteams",
+        "switch",
+        "switchteams"
+      ],
+      "description": "Switches the teams of 2 players and spawns them.",
+      "status": "disabled",
+      "reason": "Roblox Teams/leaderstats do not own this game's realms/resources; use AdminBridge."
+    },
+    {
+      "name": "randomizeteams",
+      "group": "Moderation",
+      "aliases": [
+        "randomiseteams",
+        "randomteams",
+        "rteams",
+        "rteam",
+        "rt"
+      ],
+      "description": "Randomizes the team of one or more player(s) from a list of teams.",
+      "status": "disabled",
+      "reason": "Roblox Teams/leaderstats do not own this game's realms/resources; use AdminBridge."
+    },
+    {
+      "name": "createteam",
+      "group": "Moderation",
+      "aliases": [
+        "cteam",
+        "newteam"
+      ],
+      "description": "Creates a new team with the given name and color.",
+      "status": "disabled",
+      "reason": "Roblox Teams/leaderstats do not own this game's realms/resources; use AdminBridge."
+    },
+    {
+      "name": "editteam",
+      "group": "Moderation",
+      "aliases": [
+        "eteam"
+      ],
+      "description": "Edits a team with the given name and color.",
+      "status": "disabled",
+      "reason": "Roblox Teams/leaderstats do not own this game's realms/resources; use AdminBridge."
+    },
+    {
+      "name": "removeteam",
+      "group": "Moderation",
+      "aliases": [
+        "delteam",
+        "deleteteam"
+      ],
+      "description": "Removes a team with the given name.",
+      "status": "disabled",
+      "reason": "Roblox Teams/leaderstats do not own this game's realms/resources; use AdminBridge."
+    },
+    {
+      "name": "clearteams",
+      "group": "Moderation",
+      "aliases": [
+        "ctm",
+        "cleartm"
+      ],
+      "description": "Clears all teams.",
+      "status": "disabled",
+      "reason": "Roblox Teams/leaderstats do not own this game's realms/resources; use AdminBridge."
+    },
+    {
+      "name": "collide",
+      "group": "Moderation",
+      "aliases": [
+        "nocollide",
+        "uncollide"
+      ],
+      "description": "Toggles collisions for one or more player(s) against other player(s).",
+      "status": "disabled",
+      "reason": "Physical character/tool effects, movement or respawn; not strategy gameplay."
+    }
+  ],
+  "auditedAt": "2026-10-11",
+  "gitBaseline": "ebe10389ef59128290914743b04f38d93e236f05",
+  "sourceHashes": {
+    "Auth": "ecc40770d372e562a77579a29b39c6aefc25b5196b27c87b0712ba8989bfe67e",
+    "Registry": "94528b280d7e4be8e8a3c190f4d55c930d71aed3bb36794fa12c86a44fd6b8bb",
+    "DefaultCommands.Administration": "e0cb6d64c71b499ebd04d72286826aa770b08bae35b94f9c2c9d63644b187733",
+    "DefaultCommands.Creator": "053cecfcf641d1f33c8cb4dc6598d83110daff7e09c8c0949e09e9495212929c",
+    "DefaultCommands.Environment": "fbf40ae8ee1be029380641b42bcc93accdfe57a754840acd8224b0c9c2cc5fe0",
+    "DefaultCommands.General": "0406c74a6bc64fb387aac1333b93a56faab0af6525e949e3d531caa8964693f1",
+    "DefaultCommands.SuperAdmin": "db55a514e97caa088be142643214434deb6325d06173777d4d143989f989a987",
+    "DefaultCommands.Utility": "dc6b21dbd212c90a77c6a350d5862f692a562c05759e90a54080809cedc20704",
+    "DefaultCommands.Fun": "e8a9b645003c37afe1306cf599289b8d582772a41e111c9f1b5ac227dbfedfd6",
+    "DefaultCommands.VIP": "bc7a51ac042c3e86770744205909cfb84bc9dbce2b0180a61d9c9d2d9898b7c3",
+    "DefaultCommands.Moderation": "6466f99867a7979d04d9562e297198ed24f27143a033009f167a6ddf616a094d"
+  },
+  "runtime": {
+    "canonicalCount": 302,
+    "names": [
+      "about",
+      "addgold",
+      "addtroops",
+      "admin",
+      "adminhelp",
+      "age",
+      "airdensity",
+      "ambient",
+      "announce",
+      "antilag",
+      "atmosphere",
+      "badge",
+      "ban",
+      "bans",
+      "blind",
+      "bodycolor",
+      "brightness",
+      "bring",
+      "btools",
+      "bundle",
+      "buy",
+      "cameraoffset",
+      "cape",
+      "change",
+      "char",
+      "chat",
+      "checkledgers",
+      "checkvictory",
+      "clean",
+      "clearlogs",
+      "clearteams",
+      "clearterrain",
+      "clip",
+      "clone",
+      "cmdbar2",
+      "collide",
+      "colorshift",
+      "commandbar",
+      "commands",
+      "confuse",
+      "control",
+      "copytools",
+      "countdown",
+      "crash",
+      "createteam",
+      "creator",
+      "creeper",
+      "crm",
+      "crowncolor",
+      "customcommand",
+      "dashboard",
+      "diffusescale",
+      "disco",
+      "dog",
+      "donate",
+      "editteam",
+      "emote",
+      "emotes",
+      "explode",
+      "explorer",
+      "exposure",
+      "face",
+      "fire",
+      "fix",
+      "fling",
+      "fly",
+      "fogcolor",
+      "fogend",
+      "fogstart",
+      "forcefield",
+      "fov",
+      "fps",
+      "freeze",
+      "fullmessage",
+      "gameid",
+      "gear",
+      "give",
+      "glitch",
+      "global",
+      "goldify",
+      "gravity",
+      "grouprank",
+      "has",
+      "hat",
+      "head",
+      "headless",
+      "headsize",
+      "heal",
+      "health",
+      "hidelogs",
+      "hidename",
+      "highlight",
+      "hint",
+      "hurt",
+      "immortal",
+      "incognito",
+      "incognitolist",
+      "infect",
+      "insert",
+      "inspectcomms",
+      "inspectcontest",
+      "inspectgold",
+      "inspectmilitary",
+      "inspectneutral",
+      "inspectrealm",
+      "inspectruler",
+      "inspectterritory",
+      "inspecttroops",
+      "inspectvictory",
+      "inspectwars",
+      "invisible",
+      "jail",
+      "jobid",
+      "join",
+      "jump",
+      "jumppower",
+      "jumpscare",
+      "kick",
+      "kill",
+      "korblox",
+      "latitude",
+      "light",
+      "link",
+      "localscript",
+      "lock",
+      "log",
+      "loopfling",
+      "loopkill",
+      "members",
+      "message",
+      "mod",
+      "mute",
+      "name",
+      "noclip",
+      "noobify",
+      "normal",
+      "notify",
+      "notrip",
+      "nuke",
+      "outdoorambient",
+      "pants",
+      "particle",
+      "pause",
+      "ping",
+      "pitch",
+      "place",
+      "placeid",
+      "play",
+      "playercount",
+      "poison",
+      "prefix",
+      "privatehint",
+      "privatemessage",
+      "promptgroup",
+      "punish",
+      "r6",
+      "rainbowcrown",
+      "rainbowwings",
+      "randomizeteams",
+      "refresh",
+      "rejoin",
+      "removearms",
+      "removehats",
+      "removelegs",
+      "removelimbs",
+      "removemember",
+      "removeteam",
+      "removetools",
+      "reserve",
+      "resetstats",
+      "resolvewar",
+      "respawn",
+      "resume",
+      "rocket",
+      "role",
+      "script",
+      "seedbattle",
+      "seizure",
+      "serverage",
+      "serverlock",
+      "servers",
+      "setcoregui",
+      "setgold",
+      "setgravity",
+      "setneutraldefense",
+      "setowner",
+      "setprestige",
+      "settings",
+      "settroops",
+      "shadows",
+      "shine",
+      "shiny",
+      "shirt",
+      "showfps",
+      "showname",
+      "shutdown",
+      "silverify",
+      "sit",
+      "size",
+      "skybox",
+      "skydive",
+      "slim",
+      "slippery",
+      "slopeangle",
+      "smite",
+      "smoke",
+      "sparkles",
+      "spectate",
+      "specularscale",
+      "speed",
+      "spendgold",
+      "spin",
+      "startergive",
+      "starterjumppower",
+      "starterremove",
+      "starterslopeangle",
+      "starterspeed",
+      "startertools",
+      "stop",
+      "stun",
+      "substitute",
+      "superadmin",
+      "swagify",
+      "sword",
+      "team",
+      "teamrespawn",
+      "tempadmin",
+      "tempcreator",
+      "tempmod",
+      "temprole",
+      "tempsuperadmin",
+      "tempvip",
+      "thaw",
+      "time",
+      "title",
+      "to",
+      "toolban",
+      "tools",
+      "tp",
+      "trail",
+      "trip",
+      "tshirt",
+      "tts",
+      "unadmin",
+      "unannounce",
+      "unban",
+      "unblind",
+      "uncape",
+      "unchar",
+      "uncreator",
+      "uncreeper",
+      "undog",
+      "unfire",
+      "unfly",
+      "unforcefield",
+      "ungoldify",
+      "unjail",
+      "unlight",
+      "unlink",
+      "unlock",
+      "unmod",
+      "unmute",
+      "unparticle",
+      "unpunish",
+      "unreserve",
+      "unrole",
+      "unseizure",
+      "unserverlock",
+      "unsit",
+      "unsmoke",
+      "unsparkles",
+      "unspectate",
+      "unspin",
+      "unstun",
+      "unsuperadmin",
+      "unswagify",
+      "untoolban",
+      "untrail",
+      "unvip",
+      "vampire",
+      "vehiclespeed",
+      "vehicletorque",
+      "version",
+      "viewas",
+      "viewtools",
+      "vip",
+      "visible",
+      "volume",
+      "vote",
+      "wait",
+      "watch",
+      "watercolor",
+      "waterreflectance",
+      "watersize",
+      "waterspeed",
+      "watertransparency",
+      "werewolf",
+      "whois",
+      "winddir",
+      "windspeed",
+      "wingscolor",
+      "xray"
+    ],
+    "dynamicRetained": [
+      "admin",
+      "creator",
+      "customcommand",
+      "mod",
+      "superadmin",
+      "tempadmin",
+      "tempcreator",
+      "tempmod",
+      "tempsuperadmin",
+      "tempvip",
+      "unadmin",
+      "uncreator",
+      "unmod",
+      "unsuperadmin",
+      "unvip",
+      "vip"
+    ],
+    "projectCommands": 24,
+    "disabledCommands": 155,
+    "retainedVendorDefinitions": 107
+  },
+  "verification": {
+    "environment": "Studio Solo server and one actual owner client; unauthorized server ranks/allowlist temporarily mocked and restored",
+    "serverAssertions": 1080,
+    "clientDisabledChecks": 155,
+    "unauthorizedRemoteRequests": 4,
+    "unauthorizedBridgeExecutions": 0,
+    "disabledPipelineRunCalls": 0,
+    "finalRuntimeLocalTime": "07:10:12",
+    "compiler": "Luau 0.740 --null: four production modules and two fixtures passed",
+    "knownVendorError": "Mute/unmute client notice indexes absent RBXSystem; server TextSource.CanSend moderation applies. No default channel created.",
+    "notVerified": [
+      "Published accounts and persistent moderation",
+      "Multiple simultaneous clients",
+      "Every retained command end-to-end",
+      "Future auto-update versions"
+    ],
+    "editSourceParity": "PASS: four disk production modules and live Config/Addons.AdminKohlAddon; temporary Scripts moved to recovery disabled"
+  },
+  "snapshot": {
+    "path": "docs/verification/admin-command-audit-2026-10-11.rbxl",
+    "bytes": 763519,
+    "sha256": "290b7159e47f06ef7917d9358e9a3cc8ff29fce1d14b500f62cbe13cbdddb57e",
+    "savedAt": "2026-10-11T14:14:53.022Z",
+    "ignored": true,
+    "method": "Studio File > Download a Copy after final edit-mode parity and fixture archive"
+  }
+}

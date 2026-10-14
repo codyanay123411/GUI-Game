@@ -17,6 +17,8 @@ local Config = require(ReplicatedStorage.Shared.Config.DiplomacyConfig)
 local Hierarchy = require(ServerScriptService.Services.PoliticalHierarchyService)
 
 local MatchState = require(script.Parent.MatchState)
+local Domain = require(ReplicatedStorage.Shared.Util.PoliticalDomain)
+local Permissions = require(script.Parent.PoliticalPermissionsService)
 local DiplomacyService = {}
 
 local stateChangedBindable = Instance.new("BindableEvent")
@@ -28,6 +30,7 @@ type Agreement = {
 	alliance: boolean,
 	allianceInstanceId: string?,
 	nap: boolean,
+	scope: string,
 }
 
 type DipRequest = {
@@ -38,6 +41,8 @@ type DipRequest = {
 	createdAt: number,
 	expiresAt: number,
 	expireThread: thread?,
+	fromDomain: string,
+	toDomain: string,
 }
 
 local started = false
@@ -133,6 +138,7 @@ local function getOrCreateAgreement(a: string, b: string): Agreement
 		rightId = right,
 		alliance = false,
 		nap = false,
+		scope = if isIndependentRoot(findRuler(a)) and isIndependentRoot(findRuler(b)) then "Root" else "Domain",
 	}
 	agreementsByKey[key] = created
 	return created
@@ -167,6 +173,7 @@ local function buildSnapshot()
 				alliance = agreement.alliance,
 				allianceInstanceId = agreement.allianceInstanceId or "",
 				nap = agreement.nap,
+				scope = agreement.scope,
 			})
 		end
 	end
@@ -239,19 +246,8 @@ function DiplomacyService.AreAllied(rulerA: string, rulerB: string): boolean
 	return agreement ~= nil and agreement.alliance == true
 end
 
-function DiplomacyService.HasNonAggressionPact(rulerA: string, rulerB: string): boolean
-	local a = findRuler(rulerA)
-	local b = findRuler(rulerB)
-	if not a or not b then
-		return false
-	end
-	local ra = a.rootRulerId
-	local rb = b.rootRulerId
-	if ra == rb then
-		return false
-	end
-	local agreement = agreementsByKey[pairKey(ra, rb)]
-	return agreement ~= nil and agreement.nap == true
+function DiplomacyService.HasNonAggressionPact(rulerA: string, targetOwner: string): boolean
+	return Domain.TreatyApplies(Hierarchy.GetSnapshot().rulers, buildSnapshot().agreements, rulerA, targetOwner)
 end
 
 local function dissolveInvolving(rulerId: string, reason: string)
@@ -296,9 +292,10 @@ function DiplomacyService.Offer(fromRulerId: string, toRulerId: string, agreemen
 	end
 	local fromRuler = findRuler(fromRulerId)
 	local toRuler = findRuler(toRulerId)
-	if not isIndependentRoot(fromRuler) or not isIndependentRoot(toRuler) then
-		return false, "Only independent rulers may conduct this diplomacy."
-	end
+	local canFrom, fromReason = Permissions.Can(fromRulerId, "Diplomacy")
+	if not canFrom then return false, fromReason end
+	if not toRuler then return false, "Ruler no longer exists." end
+	if fromRuler.rootRulerId == toRuler.rootRulerId then return false, "External diplomacy requires a different greater realm." end
 	local agreement = agreementsByKey[pairKey(fromRulerId, toRulerId)]
 	if agreementType == "Alliance" and agreement and agreement.alliance then
 		return false, "Alliance already exists."
@@ -320,6 +317,8 @@ function DiplomacyService.Offer(fromRulerId: string, toRulerId: string, agreemen
 		createdAt = created,
 		expiresAt = created + ttl,
 		expireThread = nil,
+		fromDomain = Domain.Signature(Hierarchy.GetSnapshot().rulers, fromRulerId),
+		toDomain = Domain.Signature(Hierarchy.GetSnapshot().rulers, toRulerId),
 	}
 	request.expireThread = task.delay(ttl, function()
 		local expired = requestsById[requestId]
@@ -351,6 +350,8 @@ function DiplomacyService.Decline(requestId: string, actorRulerId: string): (boo
 	if actorRulerId ~= request.toRulerId then
 		return false, "Only the recipient may decline this offer."
 	end
+	local permitted, reason = Permissions.Can(actorRulerId, "Diplomacy")
+	if not permitted then return false, reason end
 	local fromId = request.fromRulerId
 	local toId = request.toRulerId
 	local label = typeLabel(request.agreementType)
@@ -377,10 +378,16 @@ function DiplomacyService.Accept(requestId: string, actorRulerId: string): (bool
 	end
 	local fromRuler = findRuler(request.fromRulerId)
 	local toRuler = findRuler(request.toRulerId)
-	if not isIndependentRoot(fromRuler) or not isIndependentRoot(toRuler) then
-		removeRequest(requestId)
-		pushState()
-		return false, "Only independent rulers may conduct this diplomacy."
+	local canFrom, fromReason = Permissions.Can(request.fromRulerId, "Diplomacy")
+	local canTo, toReason = Permissions.Can(actorRulerId, "Diplomacy")
+	if not canFrom then return false, fromReason end
+	if not canTo then return false, toReason end
+	local rows = Hierarchy.GetSnapshot().rulers
+	if not fromRuler or not toRuler or fromRuler.rootRulerId == toRuler.rootRulerId
+		or request.fromDomain ~= Domain.Signature(rows, request.fromRulerId)
+		or request.toDomain ~= Domain.Signature(rows, request.toRulerId) then
+		removeRequest(requestId); pushState()
+		return false, "Offer's political domain changed. Send a new offer."
 	end
 	local agreement = getOrCreateAgreement(request.fromRulerId, request.toRulerId)
 	if request.agreementType == "Alliance" then
@@ -413,9 +420,8 @@ function DiplomacyService.Break(fromRulerId: string, toRulerId: string, agreemen
 		return false, "Unknown agreement type."
 	end
 	local fromRuler = findRuler(fromRulerId)
-	if not isIndependentRoot(fromRuler) then
-		return false, "Only independent rulers may break this agreement."
-	end
+	local permitted, reason = Permissions.Can(fromRulerId, "Diplomacy")
+	if not permitted then return false, reason end
 	local agreement = agreementsByKey[pairKey(fromRulerId, toRulerId)]
 	if not agreement then
 		return false, "No such agreement."
@@ -500,12 +506,40 @@ local function onClientIntent(player: Player, action: any, a: any, b: any)
 	noticePlayer(player, "Unknown action.")
 end
 
+local knownDomains: { [string]: string } = {}
+local knownIndependent: { [string]: boolean } = {}
 local function syncIndependence()
-	for _, ruler in Hierarchy.GetSnapshot().rulers do
-		if ruler.independent ~= true then
-			dissolveInvolving(ruler.rulerId, "no longer independent")
+	if MatchState.IsEnded() then return end
+	local rows = Hierarchy.GetSnapshot().rulers
+	local byId = Domain.Index(rows)
+	local changed = false
+	for id, signature in knownDomains do
+		local ruler = byId[id]
+		if not ruler then dissolveInvolving(id, "ruler removed")
+		elseif knownIndependent[id] and not ruler.independent then
+			-- Ordinary fealty still clears old root-owned agreements, not subject domains.
+			for key, agreement in agreementsByKey do
+				if agreement.scope == "Root" and (agreement.leftId == id or agreement.rightId == id) then
+					local other = if agreement.leftId == id then agreement.rightId else agreement.leftId
+					noticeRulerId(other, "Root-realm agreement dissolved (ruler became a subject).")
+					noticeRulerId(id, "Root-realm agreement dissolved (you became a subject).")
+					agreementsByKey[key] = nil; changed = true
+				end
+			end
+		end
+		if not ruler or Domain.Signature(rows, id) ~= signature then
+			for requestId, request in requestsById do
+				if request.fromRulerId == id or request.toRulerId == id then
+					noticeRulerId(request.fromRulerId, "Diplomatic offer invalidated: endpoint hierarchy/domain changed.")
+					noticeRulerId(request.toRulerId, "Diplomatic offer invalidated: endpoint hierarchy/domain changed.")
+					removeRequest(requestId); changed = true
+				end
+			end
 		end
 	end
+	knownDomains, knownIndependent = {}, {}
+	for _, ruler in rows do knownDomains[ruler.rulerId] = Domain.Signature(rows, ruler.rulerId); knownIndependent[ruler.rulerId] = ruler.independent end
+	if changed then pushState() end
 end
 
 function DiplomacyService.Start()
@@ -594,7 +628,8 @@ function DiplomacyService.Start()
 
 	_G.__DiplomacyV01 = DiplomacyService
 
-	Hierarchy.StateChanged:Connect(syncIndependence)
+	Hierarchy.SetDiplomacyRefresh(syncIndependence)
+	syncIndependence()
 	Hierarchy.RulerRemoving:Connect(function(rulerId: string)
 		dissolveInvolving(rulerId, "left the match")
 	end)

@@ -1,0 +1,23 @@
+-- Runtime-only read-only observer; native UI automation supplies mouse input.
+local p=game.Players.LocalPlayer;local g=p.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local R=game.ReplicatedStorage;local C=p.PlayerScripts.Controllers;local State=require(C.MapContextState)
+local Json=game:GetService("HttpService");local Input=game:GetService("UserInputService")
+local function emit()
+ local x={size={g.AbsoluteSize.X,g.AbsoluteSize.Y},selected=g.PresentationState.SelectedTerritoryId.Value,economy=g.EconomyPanel.Body.Text,titles=g.TitlePanel.Body.Text,system=g:GetAttribute("SelectedSystem"),military=g.MilitaryWorkflowPanel.Content.CommitBody.Text,available=g:GetAttribute("MilitaryAvailable"),ended=g:GetAttribute("MatchEnded"),bars={}}
+ for _,panel in {g.ContextWorkflowPanel.Content,g.MilitaryWorkflowPanel.Content} do
+  local b=panel.CommitmentBar;local track=b.Track;local pos=track.AbsolutePosition;local size=track.AbsoluteSize
+  local stops={};for i,v in {10,25,35,50,75}do table.insert(stops,{percent=v,x=pos.X+size.X*(i-1)/4,y=pos.Y+2})end
+  x.bars[panel.Parent.Name]={visible=b.Visible,root={b.AbsolutePosition.X,b.AbsolutePosition.Y,b.AbsoluteSize.X,b.AbsoluteSize.Y},percent=b:GetAttribute("SelectedPercent"),enabled=b:GetAttribute("EditingEnabled"),caption=b.Preview.Text,stops=stops}
+ end
+ x.ready=g.MilitaryWorkflowPanel.Content.LockButton.Active
+ x.camera=tostring(workspace.CurrentCamera.CFrame)
+ x.reviewOpen=g.ContextWorkflowPanel:GetAttribute("ContextOpen")
+ x.wars=State.military.wars
+ print("RANK_COMMIT_UI",Json:JSONEncode(x))
+end
+Input.InputEnded:Connect(function()task.delay(.2,emit)end)
+R.Remotes.MilitaryServerEvent.OnClientEvent:Connect(function(kind,data)if kind=="CommitResult" then print("RANK_COMMIT_RECEIPT",data);task.delay(.1,emit)end end)
+g:GetAttributeChangedSignal("GoldRankBonusPercent"):Connect(emit)
+g:GetAttributeChangedSignal("SelectedSystem"):Connect(function()task.delay(.3,emit)end)
+g:GetAttributeChangedSignal("MatchEnded"):Connect(function()task.delay(.3,emit)end)
+emit()

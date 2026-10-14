@@ -60,6 +60,13 @@ function AdminBridge.HelpText(): string
 		";inspectcomms",
 		";inspectcontest",
 		";resolvewar <warId> attacker|defender",
+		";inspectrealm <player|rulerId> — read realm membership, personal land and victory progress",
+		";checkledgers — read troop reservations and territory-index invariants; no mutation",
+		";seedbattle <integer 0..2147483647|clear> — DEBUG future battle RNG; clear restores normal randomness",
+		"All inspections are admin-only and remain available after match end. Mutations are blocked after match end.",
+		"DEBUG setowner bypasses conquest and can trigger final victory; setgold/settroops/setprestige replace test values.",
+		"DEBUG resolvewar overrides combat only before mechanical resolution; commitments unwind with zero casualties.",
+		"checkvictory evaluates normal rules and may end/freeze the match; it never forces a winner.",
 		"Studio fallback: ServerScriptService.AdminDebug.Invoke",
 	}, "\n")
 end
@@ -170,6 +177,11 @@ local function inspectTerritory(territoryId: string): (boolean, string)
 		return fail("Need territoryId.")
 	end
 	territoryId = string.lower(territoryId)
+	local known = false
+	for _, definition in Territory.GetMapDefinition().territories do
+		if definition.id == territoryId then known = true; break end
+	end
+	if not known then return fail("Unknown territory: " .. territoryId) end
 	local owner = Territory.GetOwnerRulerId(territoryId)
 	return true, HttpService:JSONEncode({
 		territoryId = territoryId,
@@ -346,6 +358,85 @@ local function resolveWar(warId: string, outcome: string): (boolean, string)
 	return Warfare.DebugResolveWar(warId, normalized)
 end
 
+local function inspectRealm(ref: any): (boolean, string)
+	local rulerId, err = AdminBridge.ResolveRulerId(ref)
+	if not rulerId then return fail(err or "Ruler not found.") end
+	local rulers = Hierarchy.GetSnapshot().rulers
+	local rootId = ""
+	for _, ruler in rulers do
+		if ruler.rulerId == rulerId then rootId = ruler.rootRulerId; break end
+	end
+	local members, holdings = {}, 0
+	for _, ruler in rulers do
+		if ruler.rootRulerId == rootId then
+			local personal = Territory.GetOwnedTerritoryIds(ruler.rulerId)
+			holdings += #personal
+			table.insert(members, string.format("%s: %d personal territories", rulerLabel(ruler.rulerId), #personal))
+		end
+	end
+	table.sort(members)
+	local victory = require(script.Parent.VictoryService).GetSnapshot()
+	local progress = require(ReplicatedStorage.Shared.Util.Domination).Evaluate(Territory.GetMapDefinition(), rulers, Territory.GetSnapshot().territories)
+	return true, string.format("Realm root: %s\nRequested ruler: %s\nMembers: %d; all holdings: %d\nDomination conquerable holdings: %d / %d required (%d total)\nMatch: %s\n%s",
+		rulerLabel(rootId), rulerLabel(rulerId), #members, holdings, progress.counts[rootId] or 0, progress.required, progress.total,
+		if victory.ended then "ENDED — final result frozen" else "ACTIVE", table.concat(members, "\n"))
+end
+
+local function checkLedgers(): (boolean, string)
+	local rulers = Hierarchy.GetSnapshot().rulers
+	if #rulers == 0 then return fail("No rulers yet; ledger check unavailable before initialization.") end
+	local failures, indexed, rulerIds = {}, {}, {}
+	local function whole(value: any): boolean
+		return typeof(value) == "number" and value == value and value < math.huge and value >= 0 and value == math.floor(value)
+	end
+	for _, ruler in rulers do
+		local id = ruler.rulerId
+		rulerIds[id] = true
+		local ledger = Military.GetInspect(id)
+		if not ledger then
+			table.insert(failures, "Missing troop state: " .. id)
+		else
+			local reserved = 0
+			for _, war in ledger.wars do
+				if whole(war.reserved) then reserved += war.reserved
+				else table.insert(failures, "Invalid troop reservation: " .. id) end
+			end
+			if not whole(ledger.total) or not whole(ledger.available) or not whole(ledger.committed)
+				or ledger.total ~= ledger.available + ledger.committed or ledger.ledgerOk ~= true or reserved ~= ledger.committed then
+				table.insert(failures, "Troop total/available/reservations mismatch: " .. id)
+			end
+		end
+		for _, territoryId in Territory.GetOwnedTerritoryIds(id) do
+			if indexed[territoryId] or Territory.GetOwnerRulerId(territoryId) ~= id then
+				table.insert(failures, "Ownership index mismatch: " .. territoryId)
+			end
+			indexed[territoryId] = id
+		end
+	end
+	for _, land in Territory.GetSnapshot().territories do
+		local owner = land.ownerRulerId
+		if owner and owner ~= "" and (not rulerIds[owner] or indexed[land.territoryId] ~= owner) then
+			table.insert(failures, "Missing owner/index: " .. land.territoryId)
+		end
+	end
+	table.sort(failures)
+	return #failures == 0, if #failures == 0 then string.format("Ledger check OK: %d rulers; troop totals/reservations and territory indexes agree. Read-only current snapshot; not a full gameplay test.", #rulers)
+		else "Ledger check FAILED:\n" .. table.concat(failures, "\n")
+end
+
+local function seedBattle(value: any): (boolean, string)
+	if typeof(value) == "string" and string.lower(value) == "clear" then
+		Military.DebugSetSeed(nil :: any)
+		return true, "DEBUG battle seed cleared; future battles use normal randomness. Existing resolved outcomes unchanged."
+	end
+	local seed = if typeof(value) == "string" or typeof(value) == "number" then tonumber(value) else nil
+	if not seed or seed ~= seed or seed < 0 or seed > 2147483647 or seed ~= math.floor(seed) then
+		return fail("Need integer seed 0..2147483647 or clear. No seed changed.")
+	end
+	Military.DebugSetSeed(seed)
+	return true, string.format("DEBUG battle seed %d set for future rolls; resolved outcomes unchanged. Use seedbattle clear after testing.", seed)
+end
+
 --[[
 	actorUserId: Player.UserId for Kohl/live commands.
 	nil = Studio/server BindableFunction (already server-only).
@@ -390,10 +481,16 @@ function AdminBridge.Execute(actorUserId: number?, operation: string, a: any, b:
 		return done(fail("Need operation."))
 	end
 	local op = operation
-	if MatchState.IsEnded() and ({ SetOwner = true, SetPrestige = true, SetGold = true, AddGold = true, SpendGold = true, SetTroops = true, AddTroops = true, ResolveWar = true, SetNeutralDefense = true })[op] then return done(false, "Match ended.") end
+	if MatchState.IsEnded() and ({ SetOwner = true, SetPrestige = true, SetGold = true, AddGold = true, SpendGold = true, SetTroops = true, AddTroops = true, ResolveWar = true, SetNeutralDefense = true, SeedBattle = true })[op] then return done(false, "Match ended.") end
 	print("[Admin] Execute", actorUserId or "studio", op, a, b, c)
 	if op == "Help" then
 		return done(true, AdminBridge.HelpText())
+	elseif op == "InspectRealm" then
+		return done(inspectRealm(a))
+	elseif op == "CheckLedgers" then
+		return done(checkLedgers())
+	elseif op == "SeedBattle" then
+		return done(seedBattle(a))
 	elseif op == "InspectVictory" then
 		return done(true, HttpService:JSONEncode(require(script.Parent.VictoryService).GetSnapshot()))
 	elseif op == "CheckVictory" then

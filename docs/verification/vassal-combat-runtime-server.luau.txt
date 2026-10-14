@@ -1,0 +1,57 @@
+-- Targeted Solo Studio integration. Synthetic rulers/ownership through trusted server fixtures.
+local S=game.ServerScriptService.Services
+local H,T,M,W,P,B=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.MilitaryService),require(S.WarfareService),require(S.PoliticalPermissionsService),require(S.BetrayalService)
+local Bridge=require(S.AdminBridge)
+local Players=game:GetService("Players")
+local deadline=os.clock()+20
+repeat task.wait(.1)until #Players:GetPlayers()>0 and H.GetRulerIdForUserId(Players:GetPlayers()[1].UserId) or os.clock()>deadline
+task.wait(2)
+local player=assert(Players:GetPlayers()[1]);local b=assert(H.GetRulerIdForUserId(player.UserId))
+local a=H.DebugCreateMockRuler("Synthetic upper liege",4)
+local c=H.DebugCreateMockRuler("Synthetic nested subject",2)
+local d=H.DebugCreateMockRuler("Synthetic remaining subject",1)
+local e=H.DebugCreateMockRuler("Synthetic external attacker",4)
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+local function near(x,y)return math.abs(x-y)<1e-8 end
+local function own(id,owner)check(Bridge.Execute(nil,"SetOwner",id,owner or "unclaimed"),"ownership")end
+local function troops(id,count)check(Bridge.Execute(nil,"SetTroops",id,count),"troops")end
+local function join(child,parent)local ok,req=H.OfferFealty(child,parent);check(ok,"offer:"..tostring(req));check(H.AcceptFealty(req,parent),"accept")end
+check(H.SetTitleRank(b,3),"synthetic rank")
+own("westmere",a);own("ashwood",b);own("riverholt",c);own("mossbank",d);own("northvale",e)
+join(b,a);join(c,b);join(d,b);task.wait(.2)
+check(P.Set(a,b,"War",true,P.GetEdgeRevision(b)),"grant subject conquest")
+local function resolve(actor,target,defender,atkMult,defMult)
+ troops(actor,2000);if defender then troops(defender,2000)end
+ local ok,id=W.DeclareWar(actor,target);check(ok,"declare:"..tostring(id))
+ check(M.SetCommit(actor,id,400),"attacker reserve")
+ if defender then check(M.SetCommit(defender,id,300),"defender reserve")end
+ check(M.LockCommit(actor,id),"attack lock")
+ if defender then check(M.LockCommit(defender,id),"defense lock")end
+ local r=assert(M.GetEngagementInspect(id));local battle=assert(r.battle)
+ check(near(battle.attackerEffective,400*battle.attackerCombatRoll*atkMult),"offensive modifier")
+ check(near(battle.defenderEffective,battle.defenderCommitted*battle.defenderCombatRoll*battle.defenderDefenseRoll*defMult),"defensive modifier")
+ check(M.GetTotalTroops(actor)==2000-battle.attackerCasualties and M.GetInspect(actor).ledgerOk,"real attacker ledger")
+ if defender then check(M.GetTotalTroops(defender)==2000-battle.defenderCasualties and M.GetInspect(defender).ledgerOk,"real defender ledger")end
+ check(M.DebugAdvance(20),"finish targeted interval")
+end
+check(Bridge.Execute(nil,"SetNeutralDefense","frostfield",100),"militia")
+resolve(b,"frostfield",nil,1.10,1)
+resolve(e,"westmere",a,1,1.02)
+own("westmere",a)
+resolve(e,"ashwood",a,1,1)
+own("ashwood",b)
+troops(b,1000);troops(c,3000);task.wait(10.2)
+local ok,quote=B.Prepare(c,"ashwood");check(ok,"nested quote:"..tostring(quote))
+local accepted,receipt=B.Commit(c,"ashwood",quote.token);check(accepted,"nested betrayal:"..tostring(receipt))
+check(M.GetTotalTroops(c)==2100 and M.GetTotalTroops(b)==1900,"existing troops transfer once")
+local r=assert(M.GetEngagementInspect(receipt.warId));check(r.defender.rulerId==b,"actual direct liege defender")
+check(M.SetCommit(c,receipt.warId,400) and M.SetCommit(b,receipt.warId,300),"nested reservations")
+check(M.LockCommit(c,receipt.warId) and M.LockCommit(b,receipt.warId),"nested mechanical battle")
+r=M.GetEngagementInspect(receipt.warId);local battle=r.battle
+check(near(battle.attackerEffective,400*battle.attackerCombatRoll),"betrayer loses former subject bonus")
+check(near(battle.defenderEffective,300*battle.defenderCombatRoll*battle.defenderDefenseRoll*1.10*1.02),"nested remaining relationships multiply")
+check(M.GetTotalTroops(c)==2100-battle.attackerCasualties and M.GetTotalTroops(b)==1900-battle.defenderCasualties,"nested actual casualty ledger")
+check(M.DebugAdvance(20),"finish nested interval")
+print("VASSAL_COMBAT_RUNTIME_PASS",n)
+-- Keep the local player subject to A with one remaining child D for representative UI.
+player:SetAttribute("VassalCombatVerificationChecks",n)

@@ -113,6 +113,8 @@ local function shouldReplaceAddon(existing: ModuleScript, sourceName: string): b
 			or moduleSourceContains(existing, "player # rawString")
 			or not moduleSourceContains(existing, "adminOwnerToken")
 			or not moduleSourceContains(existing, "_gameTesterCommandGate")
+			or not moduleSourceContains(existing, "_strategyCommandPolicy")
+			or not moduleSourceContains(existing, "seedbattle")
 	end
 	if sourceName == "AdminKohlThemeClient" then
 		return moduleSourceContains(existing, "changeTheme") and not moduleSourceContains(existing, "Font.fromEnum")

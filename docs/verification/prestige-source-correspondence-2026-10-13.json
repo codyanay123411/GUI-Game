@@ -1,0 +1,75 @@
+{
+  "snapshot": "docs/verification/prestige-final-2026-10-13.rbxl",
+  "bytes": 783169,
+  "mtimeUtc": "2026-10-13T19:37:42.523Z",
+  "sha256": "e02ee57404973ea8f642abedbcb8ad48a74d0d742b591687bd70528ab163e16b",
+  "method": "Read-only binary chunk decode of saved local snapshot; active instance paths and normalized LF source compared to disk",
+  "sources": [
+    {
+      "path": "ReplicatedStorage/Shared/Config/TitleProgressionConfig.luau",
+      "found": true,
+      "match": true
+    },
+    {
+      "path": "ReplicatedStorage/Shared/Util/PrestigeAccrual.luau",
+      "found": true,
+      "match": true
+    },
+    {
+      "path": "ReplicatedStorage/Shared/Util/TitleRequirements.luau",
+      "found": true,
+      "match": true
+    },
+    {
+      "path": "ReplicatedStorage/Shared/Config/ValePrototypeMap.luau",
+      "found": true,
+      "match": true
+    },
+    {
+      "path": "ReplicatedStorage/Shared/Types/TerritoryTypes.luau",
+      "found": true,
+      "match": true
+    },
+    {
+      "path": "ServerScriptService/Services/TerritoryMapService.luau",
+      "found": true,
+      "match": true
+    },
+    {
+      "path": "ServerScriptService/Services/PoliticalHierarchyService.luau",
+      "found": true,
+      "match": true
+    },
+    {
+      "path": "ServerScriptService/Services/MatchState.luau",
+      "found": true,
+      "match": true
+    },
+    {
+      "path": "ServerScriptService/Services/TitleProgressionService.luau",
+      "found": true,
+      "match": true
+    },
+    {
+      "path": "StarterPlayerScripts/Controllers/TitleProgressionController.luau",
+      "found": true,
+      "match": true
+    },
+    {
+      "path": "StarterPlayerScripts/Controllers/StrategyPresentationController.luau",
+      "found": true,
+      "match": true
+    }
+  ],
+  "fixtures": [
+    {
+      "path": "ServerStorage/PrestigeRecovery_20261013/PrestigeVerificationClient",
+      "disabled": true
+    },
+    {
+      "path": "ServerStorage/PrestigeRecovery_20261013/PrestigeVerificationServer",
+      "disabled": true
+    }
+  ],
+  "scope": "Affected sources only; not whole-place/published freshness or final formatting runtime evidence"
+}

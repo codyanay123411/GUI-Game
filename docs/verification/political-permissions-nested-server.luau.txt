@@ -1,0 +1,49 @@
+-- Disposable three-client integration; synthetic setup via trusted server AdminBridge.
+local S=game.ServerScriptService.Services
+local H,T,M,W,D,P,A,B,Match=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.MilitaryService),require(S.WarfareService),require(S.DiplomacyService),require(S.PoliticalPermissionsService),require(S.PoliticalCouncilService),require(S.BetrayalService),require(S.MatchState)
+local Bridge=require(S.AdminBridge)
+local Players,R,J=game:GetService("Players"),game:GetService("ReplicatedStorage"),game:GetService("HttpService")
+local control=assert(R:FindFirstChild("PoliticsVerification"))
+local ack=control.Ack
+local replies,n={},0
+local function check(v,m)assert(v,m);n+=1 end
+ack.OnServerEvent:Connect(function(player,phase,ok,count,message)
+ if phase==control:GetAttribute("Phase")then replies[player.UserId]={ok,count,message};print("POLITICS_CLIENT",player.Name,phase,ok,count,message)end
+end)
+local timeout=os.clock()+75
+repeat task.wait(.2)until #Players:GetPlayers()==3 and #H.GetSnapshot().rulers>=3 or os.clock()>timeout
+check(#Players:GetPlayers()==3,"three actual clients");task.wait(2)
+local players=Players:GetPlayers();table.sort(players,function(a,b)return a.Name<b.Name end)
+local ids={};for i,p in players do ids[i]=assert(H.GetRulerIdForUserId(p.UserId));p:SetAttribute("PoliticsIndex",i);control:SetAttribute("Ruler"..i,ids[i])end
+local function phase(name)
+ replies={};control:SetAttribute("Phase",name);local limit=os.clock()+18
+ repeat task.wait(.1)until (function()for _,p in players do if not replies[p.UserId]then return false end end return true end)()or os.clock()>limit
+ for _,p in players do local r=replies[p.UserId];check(r and r[1],name..":"..p.Name..":"..tostring(r and r[3]))end
+ print("POLITICS_PHASE_PASS",name,n)
+end
+local function own(id,owner)check(Bridge.Execute(nil,"SetOwner",id,owner or "unclaimed"),"set ownership")end
+local function troops(id,total)check(Bridge.Execute(nil,"SetTroops",id,total),"set personal troops")end
+local function ruler(id)for _,r in H.GetSnapshot().rulers do if r.rulerId==id then return r end end end
+local function join(child,parent)
+ local ok,req=H.OfferFealty(child,parent);check(ok,"fealty offer:"..tostring(req));check(H.AcceptFealty(req,parent),"fealty accepted")
+end
+local function warRow(id)for _,w in W.GetSnapshot().wars do if w.warId==id then return w end end error("missing war")end
+local function grant(subject,key,value)
+ check(P.Set(ruler(subject).liegeId,subject,key,value,P.GetEdgeRevision(subject)),"direct grant")
+end
+local function request(from,to,kind)local ok,id=D.Offer(from,to,kind);check(ok,"offer:"..tostring(id));return id end
+check(not B.Prepare(ids[3],"northvale"),"retained own NAP blocks nested betrayal");check(D.Break(ids[3],ids[2],"NAP"),"explicitly break own NAP")
+check(H.SetTitleRank(ids[3],2),"synthetic descendant setup rank")
+local child=H.DebugCreateMockRuler("Synthetic retained descendant",1);join(child,ids[3])
+local rootTotal=M.GetTotalTroops(ids[1]);reviewed,quote=B.Prepare(ids[3],"northvale");check(reviewed,"nested quote:"..tostring(quote))
+accepted,receipt=B.Commit(ids[3],"northvale",quote.token);check(accepted,"nested betrayal")
+check(warRow(receipt.warId).defenderRootId==ids[2],"nested defender actual former liege")
+check(M.GetTotalTroops(ids[1])==rootTotal and M.GetTotalTroops(ids[2])==2900 and M.GetTotalTroops(ids[3])==2101,"no ancestor army borrowed")
+check(ruler(ids[2]).liegeId==ids[1] and ruler(ids[3]).independent,"nested hierarchy retained")
+check(ruler(child).liegeId==ids[3],"own descendant retained");H.DebugRemoveRuler(child)
+check(M.UnwindPreResolution(receipt.warId),"nested fixture cleanup");W.CancelWar(receipt.warId,"targeted fixture cleanup")
+-- Restore a live permission/UI scenario; no match end yet.
+troops(ids[2],1000);troops(ids[1],1000);grant(ids[2],"War",false);grant(ids[2],"Diplomacy",false)
+phase("Privacy")
+control:SetAttribute("Checks",n);control:SetAttribute("Phase","Visual")
+print("POLITICS_INTEGRATION_PASS",n,J:JSONEncode({players={players[1].Name,players[2].Name,players[3].Name},syntheticSetup=true,nestedDefender="directLiege",checks=n}))

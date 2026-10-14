@@ -1,0 +1,24 @@
+-- Fake transport exercises real result UI only; never invokes TeleportService.
+local S=game.ServerScriptService.Services
+local p=game.Players:GetPlayers()[1]
+local E=game.ReplicatedStorage.Remotes.VictoryServerEvent
+local JSON=game:GetService("HttpService")
+local Requests=require(S.ReplayRequests)
+local fail=Instance.new("BindableEvent");fail.Name="ReplaySyntheticFailure";fail.Parent=game.ServerScriptService
+local id
+local api=Requests.Create({description="SYNTHETIC UI TEST: fresh reserved match for requester only.",
+ clock=os.clock,ended=function()return true end,connected=function(actor)return actor.Parent==game.Players end,
+ available=function()return true,""end,spawn=task.spawn,log=warn,
+ teleport=function(_,request)id=request end,
+ publish=function(actor,status)status.revision+=1000;E:FireClient(actor,"ReplayStatus",JSON:JSONEncode(status))end})
+fail.Event:Connect(function()
+ assert(api.Fail(p,id,"SYNTHETIC FAILURE: still here. Try Play Again again."))
+ E:FireClient(p,"VerifyReplay","failure")
+ print("REPLAY_SYNTHETIC_FAILURE_SENT")
+end)
+assert(api.Request(p));assert(not api.Request(p))
+E:FireClient(p,"VerifyReplay","pending")
+task.wait(.6)
+E:FireClient(p,"ReplayStatus",JSON:JSONEncode({revision=4,pending=false,message="stale",description="stale"}))
+E:FireClient(p,"VerifyReplay","stale")
+print("REPLAY_SYNTHETIC_PENDING_SENT")

@@ -70,7 +70,7 @@ function Controller.Start()
 					add({ id = id, rulerId = request.fromRulerId, priority = 2, category = "diplomacy", system = system, requestId = request.requestId })
 				end
 			end
-			for _, war in View.FilterWarsForLocalRoot(State.warfare.wars, rootId) do
+			for _, war in View.FilterWarsForLocalRoot(State.warfare.wars, rootId, localId) do
 				local id = "war:" .. war.warId
 				keep[id] = true
 				add({ id = id, targetTerritoryId = war.targetTerritoryId, priority = 3, category = "war", warId = war.warId })
@@ -92,17 +92,42 @@ function Controller.Start()
 		local density = Theme.Presentation.UIScale
 		for id, button in markers do
 			local position = Map.Project(id)
-			local inside = position and position.X > stage.AbsolutePosition.X + 20 and position.Y > stage.AbsolutePosition.Y + 35
-				and position.X < stage.AbsolutePosition.X + stage.AbsoluteSize.X - 20
-				and position.Y < stage.AbsolutePosition.Y + stage.AbsoluteSize.Y - 10
-			button.Visible = inside == true and not hide
-			if position then button.Position = UDim2.fromOffset(position.X - 17 * density, position.Y - 42 * density) end
+			local viewport = stage:FindFirstChild("MapView") :: ViewportFrame?
+			local bounds = viewport or stage
+			local minimum = bounds.AbsolutePosition + Vector2.new(20 * density, 30 * density)
+			local maximum = bounds.AbsolutePosition + bounds.AbsoluteSize - Vector2.new(20 * density, 20 * density)
+			maximum = Vector2.new(math.max(minimum.X, maximum.X), math.max(minimum.Y, maximum.Y))
+			button.Visible = position ~= nil and not hide
+			if position then
+				local clamped = Vector2.new(math.clamp(position.X, minimum.X, maximum.X), math.clamp(position.Y, minimum.Y, maximum.Y))
+				local offscreen = (clamped - position).Magnitude > 1
+				button:SetAttribute("Offscreen", offscreen)
+				button.Text = (if offscreen then "↗ " else "") .. (button:GetAttribute("MarkerText") or "!")
+				button.Position = UDim2.fromOffset(clamped.X - 17 * density, clamped.Y - 15 * density)
+			end
 			button.Size = UDim2.fromOffset(34 * density, 30 * density)
 		end
 	end
 	local function activate(event: any)
-		local id = event.territoryId
-		if not id then return end
+		-- Revalidate a queued attention item against the latest replicated view.
+		if not events[event.id] or (event.expiresAt and event.expiresAt <= os.clock()) then sync(); return false end
+		local valid = event.category == "result"
+		if event.category == "war" then
+			local mine = me()
+			for _, war in View.FilterWarsForLocalRoot(State.warfare.wars, mine and (mine.rootRulerId or mine.rulerId), mine and mine.rulerId) do
+				if war.warId == event.warId then valid = true end
+			end
+		elseif event.category == "diplomacy" then
+			local mine = me()
+			for _, request in State[event.system].requests or {} do
+				if mine and request.requestId == event.requestId and request.toRulerId == mine.rulerId then valid = true end
+			end
+		elseif event.category == "communication" then
+			for _, context in State.communications.contexts or {} do if context.id == event.contextId then valid = true end end
+		end
+		local id = anchor(event)
+		if not valid or not id or not Map.Project(id) then events[event.id] = nil; redraw(); return false end
+		event.territoryId = id
 		Map.Select(id, if event.category == "result" then "Info" else "silent")
 		if event.category == "communication" then
 			Strategy.OpenSystem("Communications")
@@ -130,7 +155,16 @@ function Controller.Start()
 		else
 			events[event.id] = nil
 		end
+		-- Workflow layout may resize the viewport. Focus afterward, using the same bounded camera.
+		task.defer(function() if gui.PresentationState.SelectedTerritoryId.Value == id then Map.Focus(id) end end)
 		redraw()
+		return true
+	end
+	-- Existing marker activation, also callable by presentation verification. No mutation API.
+	function Controller.Locate(territoryId: string): boolean
+		local group = rendered[territoryId]
+		if not group then return false end
+		return activate(group.event) == true
 	end
 	redraw = function()
 		rendered = Policy.Aggregate(events)
@@ -150,7 +184,7 @@ function Controller.Start()
 				local corner = Instance.new("UICorner"); corner.CornerRadius = UDim.new(0, 10); corner.Parent = button
 				button.Parent = layer
 				markers[id] = button
-				button.Activated:Connect(function() local current = rendered[id]; if current then activate(current.event) end end)
+				button.Activated:Connect(function() Controller.Locate(id) end)
 				if Theme.Presentation.AnimationsEnabled then
 					local scale = Instance.new("UIScale"); scale.Scale = 0.85; scale.Parent = button
 					local tween = TweenService:Create(scale, TweenInfo.new(0.22 / Theme.Presentation.AnimationSpeed, Enum.EasingStyle.Back), { Scale = 1 })
@@ -159,8 +193,9 @@ function Controller.Start()
 			end
 			local event = group.event
 			button.BackgroundColor3 = if event.priority >= 3 then Theme.Colors.danger else Theme.Colors.action
-			button.Text = (if event.category == "communication" then "…" elseif event.category == "result" then "✓" else "!")
+			button:SetAttribute("MarkerText", (if event.category == "communication" then "…" elseif event.category == "result" then "✓" else "!")
 				.. (if group.count > 1 then " " .. group.count else "")
+			)
 		end
 		reposition()
 	end

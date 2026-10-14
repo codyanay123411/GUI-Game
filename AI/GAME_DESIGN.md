@@ -1,5 +1,10 @@
 # Game Design
 
+## Approved vassalage combat modifiers — 2026-10-13
+
+Director-authorized: subject strength9% +1% per immediate liege direct subject; ruler defense2% per own direct subject only while personally defending directly owned land. No cap, ancestor stacking or bonus from own subjects on offense. Applicable factors multiply. Resolve against authoritative current hierarchy/ownership at mechanical resolution, after betrayal detachment/transfer. Effective strength only; actual troops, reservations, casualty accounting and political authority remain unscaled. Own bonus UI only; no enemy strength disclosure. [Implementation/evidence](OPENFRONT_PLAYABILITY_REVIEW.md#vassalage-combat-bonuses--2026-10-13) is not Director acceptance.
+
+
 ## Director-authorized GUI redundancy migration — 2026-10-10
 
 This explicit cleanup supersedes temporary full-navigation retention in the earlier contextual milestone below. Territory actions, Military and Diplomacy use map context; their primary navigation and duplicate panels are retired. Global access remains Map, Realm, Titles, Economy, Messages and Players, plus conditional Match Result. Context closes on click-away/Back and yields to incoming offers, Players and Victory. Intentionally opened global detail persists. Subtle opacity/animation uses existing GAME UI settings; gameplay, server authority and communication permissions are unchanged. See AI/GUI_REDUNDANCY_CLEANUP.md.
@@ -285,6 +290,8 @@ Clients may **request** political actions and **display** state. The **server** 
 
 ### Delegated greater-realm authority (future architecture — not implemented)
 
+**Historical future concept:** the approved personal-domain permissions below supersede this only for war/conquest and own external diplomacy; rank defaults and acting on behalf of the entire greater realm remain future.
+
 Future independent **roots** may delegate specific greater-realm powers to subjects. This is **not** Political Hierarchy V0.1, **not** Economy V0.1, and **not** a retrofit into accepted Warfare / Diplomacy / Title / Map systems.
 
 **Effective delegated authority** = **rank defaults** + **individual overrides**.
@@ -557,6 +564,18 @@ Gold and Influence are **not** establishment requirements.
 
 Do not implement a full Prestige economy, Gold, Influence, warfare, claims, AI, religion, succession, aging, dynasties, persistence, title laws, de jure, coronations, or extra rank tiers from this checkpoint.
 
+### Personal Prestige and map-scaled titles — approved 2026-10-13
+
+This Director-approved extension supersedes the earlier test-only Prestige / unresolved map-scaling restrictions for this scope. Historical V0.1 acceptance below/above remains dated; implementation verification is recorded separately in Progress and the planning report. **20/min/province, ratios and multiplier are initial playtest settings, not proven balance.**
+
+Start at **0 Prestige**. Each personally/directly owned **conquerable** province earns **20 Prestige/minute**, including admin-assigned land after its transfer. Subjects earn independently; no subject income is credited to a liege. Accumulate fractions using actual server ownership intervals; transfers/captures/admin changes themselves grant nothing. Land loss preserves accrued Prestige; zero personal eligible land earns zero. Fealty only affects the existing subordinate-subtree land gate, never grants Prestige. Retain cumulative thresholds (not spent), sequential manual Establish, current rank retention, disconnect wipe/reconnect fresh-zero and match resource reset. Freeze exactly at the first authoritative match-end timestamp; no offline accrual, client mutation or provenance exclusions.
+
+At server map initialization count conquerable province **definitions** (`conquerable ~= false`), including Unclaimed; ignore players/current owners. Resolve once: Duke `ceil(N × 0.125)`, King `ceil(N × 0.3125)`, Emperor `ceil(N × 0.625)` land; each Prestige threshold is its derived land count × **50**. Vale N=16 remains **2/100, 5/250, 10/500**. Keep existing ruler-plus-descendants land eligibility and personal-only Prestige income distinct. Clients display server-resolved values; they never recompute qualification formulas.
+
+Future maps use these defaults. Optional map `titleRequirements` balance overrides identify rank 2/3/4 and explicit `territoryCount`/`prestige`; absent ranks use defaults. Validate unique ranks/definitions, positive finite integer land counts, positive finite Prestige thresholds, strictly increasing land and Prestige across all ranks, ratios in (0,1], and enough conquerable land. Tiny maps whose rounded defaults collapse ranks fail clearly; require valid overrides or a separately approved rank policy. No silent threshold adjustment/rank disabling. Ownership, hierarchy, ranks and population never recalculate the resolved set.
+
+Rank Gold bonuses and council/authority/permissions/voting/overthrow remain separate milestones. Domination remains independent of title establishment; rapid victory may precede higher titles. Human pacing/acceptance is pending. Current source, evidence and pacing: [Prestige implementation record](OPENFRONT_PLAYABILITY_REVIEW.md#prestige-earning-and-map-scaled-titles--2026-10-13).
+
 ### Title qualification and establishment (long-term)
 
 Higher-title qualification **adapts to the selected map**. Do **not** permanently hardcode universal territory counts for every future map. Conceptually: `TitleRequirements = f(MapConfiguration)`. Vale V0.1 test numbers are locked for that prototype map only. Exact formula, percentages, rounding, and per-map tuning for **other** maps remain **unresolved**.
@@ -775,7 +794,7 @@ Example: Bob personally owns Westmere; vassal Cody owns Northvale; Northvale bor
 
 #### Battle (one battle = one war)
 
-- Combat effectiveness (hidden): each side Committed × random **0.90–1.10**. Defender also × independent random **1.00–1.05**. These rolls do **not** add/remove soldiers. Players see actual committed counts, not Effective Strength.
+- Combat effectiveness (hidden): each side Committed × random **0.90–1.10**. Defender also × independent random **1.00–1.05**. Apply [approved vassalage strength modifiers](#approved-vassalage-combat-modifiers--2026-10-13) at resolution. These rolls/modifiers do **not** add/remove soldiers. Players see actual committed counts, not Effective Strength.
 - Higher Effective Strength wins. **Exact ties favor defender** (treat as defender win when attacker Effective Strength is not greater).
 - Randomness must not rescue terrible numerical strategy.
 - **Unopposed** (attacker has valid committed force, defender commitment = 0): no effectiveness/defense/ratio/casualty rolls; attacker casualties 0; defender battle casualties 0.
@@ -791,7 +810,7 @@ Example: Bob personally owns Westmere; vassal Cody owns Northvale; Northvale bor
 
 - When **both** valid commitments are locked, Military **immediately** calculates the battle (rolls, winner, ratio/band, casualties). The result is **mechanically final**.
 - Then ~**5 seconds** of **presentation only** (prototype timing). UI may look “in progress”; nothing in those 5 seconds may reinforce, change commitments, reroll, change casualties, retreat, or change the winner through ordinary play.
-- After ~5s, show the final result and apply normal Warfare outcome display. Do **not** show rolls, defense multiplier, ratio, or casualty-percent rolls to ordinary players.
+- After ~5s, show the final result and apply normal Warfare outcome display. Do **not** show random rolls, random defense multiplier, ratio, or casualty-percent rolls to ordinary players. Own configured hierarchy bonuses and own resolved hierarchy modifier are permitted; enemy effective strength remains hidden.
 - **Last Battle summary (participant Military panel):** after conclusion, cache each participant-authorized BattleResult **per territory** for ~**20 seconds** (independent expiry per result). Selecting that territory shows **that** summary. Another territory’s later battle does not overwrite it. An **active** war on a territory supersedes that territory’s old Last Battle. Unrelated selected land must not show another territory’s summary. Empty selection with exactly one cached result may show it (single-war). ResultToast remains the brief “this just happened” notice. No battle history. Third parties do not get this summary. **LAST BATTLE READABILITY: DIRECTOR PASS. TERRITORY-CONTEXTUAL LAST BATTLE: DIRECTOR PASS.**
 
 #### Outcomes
@@ -851,7 +870,7 @@ Do not design them as interchangeable currencies with different icons. Each shou
 
 **Gold** — economic and material power. **Economy / Resources V0.1** (below) is the Gold foundation. Gold may eventually interact with military expenses, territorial investment, economic development, political transactions, and other tangible expenditures. Those sinks are **not** V0.1 gameplay.
 
-**Prestige** — reputation, status, renown, and political legitimacy. May eventually be gained through significant accomplishments (successful rule, warfare, political advancement, dynastic achievements, diplomacy, or other approved systems). May be used as a **requirement** for political actions. For title establishment: a **minimum Prestige threshold is required; that Prestige is not consumed**. Vale Title Progression V0.1 **test** thresholds are 100 / 250 / 500 for Duke / King / Emperor; those are not the full Prestige economy. Title Progression V0.1 uses temporary server-side test Prestige only. Prestige **income, decay, spending, caps, and persistence remain unresolved**. Economy V0.1 does **not** implement Prestige.
+**Prestige** — reputation, status, renown, and political legitimacy. May eventually be gained through significant accomplishments (successful rule, warfare, political advancement, dynastic achievements, diplomacy, or other approved systems). May be used as a **requirement** for political actions. For title establishment: a **minimum Prestige threshold is required; that Prestige is not consumed**. Vale Title Progression V0.1 **test** thresholds are 100 / 250 / 500 for Duke / King / Emperor; those are not the full Prestige economy. Title Progression V0.1 uses temporary server-side test Prestige only. Personal timed Prestige income is authorized by the 2026-10-13 extension above. Decay, spending, caps and persistence remain unresolved; the historical Economy V0.1 Gold checkpoint did not implement Prestige.
 
 **Influence** — political leverage and political capital. May eventually interact with political organization, factions, political demands, support for political objectives, and other political actions. **Deferred** until those political systems are designed. Economy V0.1 does **not** implement Influence.
 
@@ -1040,7 +1059,7 @@ Defense is configurable per province, then map, then NeutralDefenseConfig fallba
 
 Domination counts all conquerable map territories, including Unclaimed in the denominator. Root plus all deeper descendants count together through authoritative Hierarchy truth. Map victory config uses type Domination and territoryControlPercent 0.70; required holdings = ceil(total * threshold), giving 12 of 16 in The Vale. Emperor is not automatically victory. The independent root is the one political winner; its subjects share REALM VICTORY. Root gets VICTORY, others DEFEAT.
 
-VictoryService evaluates meaningful ownership/hierarchy changes, records the first winning root/title/realm/member snapshot and ends exactly once. Major competitive actions, ownership transfers, recruitment/spending/payouts, title/fealty/diplomacy mutations and remaining war outcomes freeze; pending military survivors return, already incurred casualties remain. Final political/ownership state is retained across post-victory disconnects; late joins inspect the ended match without a new starting ruler/territory. Map inspection, Realm Overview, final-result inspection and existing safe Communications remain available. No kicks, rematch, lobby, persistent rewards or other victory types. Agent implementation/verification does not imply Director acceptance.
+VictoryService evaluates meaningful ownership/hierarchy changes, records the first winning root/title/realm/member snapshot and ends exactly once. Major competitive actions, ownership transfers, recruitment/spending/payouts, title/fealty/diplomacy mutations and remaining war outcomes freeze; pending military survivors return, already incurred casualties remain. Final political/ownership state is retained across post-victory disconnects; late joins inspect the ended match without a new starting ruler/territory. Map inspection, Realm Overview, final-result inspection and existing safe Communications remain available. No kicks, lobby, persistent rewards or other victory types. Director-authorized requester-only Play Again deliberately requests a fresh reserved server of the current place, starting alone; it never resets the shared match. Final inspection remains available until departure. See [repeat-play contract and verification limits](CONQUEST_VICTORY.md#requester-only-play-again--2026-10-13). Agent implementation/verification does not imply Director acceptance.
 
 ## Replayability
 
@@ -1057,6 +1076,8 @@ A full numbered 0.1 feature freeze beyond the following is **not** specified.
 **Political Hierarchy V0.1** is specified in this document and the prototype is **accepted / complete**. Do not reopen it.
 
 **Territory / Map Foundation V0.1** is specified under Titles & Territory. The prototype is **accepted / complete**. Do not expand it into deferred systems.
+
+**Current extension (2026-10-13):** personal Prestige earning and automatic map-scaled title requirements are separately Director-approved and now implemented/agent-tested; see the approved section above and implementation report. V0.1 acceptance below is historical scope, not acceptance of this extension. Older test-only/earning-deferred statements are superseded only for this approved scope.
 
 **Title Progression V0.1** is specified under Titles & Territory. The prototype is **accepted / complete**. Sequential Lord → Duke → King → Emperor, Vale test thresholds, greater-realm control, manual establish, server revalidation, test Prestige not spent, no auto-demotion.
 
@@ -1099,8 +1120,8 @@ Part of the long-term vision, **not** authorized for immediate implementation me
 - Polished production UI
 - Battle History / War Chronicle (optional future flavor: scrollable prior battles, territory, victory/defeat, fielded forces, casualties/survivors, timestamps, notable stats). **Not** Military V0.1. **Not** a blocker. Do not implement from this line.
 - Settings / Controls menu and player-configurable keybind remapping (long-term product; not automatically required for the first published playtest)
-- Title-scaling formula and numerical thresholds for maps **other than** Vale Title Progression V0.1 test numbers (Duke 2/100, King 5/250, Emperor 10/500)
-- Real Prestige resource system (income, decay, spending, UI economy, persistence); V0.1 titles use temporary server-side test Prestige only
+- Final title/Prestige balance tuning; the default map-scaling formula is now approved (2026-10-13), including explicit validated map overrides
+- Additional Prestige systems (decay, spending, caps, persistence); personal earning and existing Titles/resource presentation are now authorized separately (2026-10-13)
 - Title-loss systems
 - Vassal obligations (tax, military contribution, contracts, formulas). Economy V0.1 has **no automatic tax**
 - Independence gameplay methods
@@ -1111,7 +1132,7 @@ Part of the long-term vision, **not** authorized for immediate implementation me
 - Behavior when more humans join than the selected map has territories
 - Additional production maps beyond the 16-territory V0.1 test map
 - Touch / controller map input (architecturally possible; not required for V0.1)
-- Gold / Prestige / Influence **caps** and remaining formulas; Prestige/Influence **starting amounts and rates**; Gold **final** (non-prototype) balance after sinks exist. Economy V0.1 locks prototype **150 starting Gold** and **10 Gold/min** baseline per claimed territory only
+- Gold / Prestige / Influence **caps** and remaining formulas; Influence **starting amounts and rates** and final Prestige rate tuning (initial Prestige starts at 0 and earns 20/min/personal conquerable province); Gold **final** (non-prototype) balance after sinks exist. Economy V0.1 locks prototype **150 starting Gold** and **10 Gold/min** baseline per claimed territory only
 - Crown prices, packages, earning methods, and exact cosmetics
 - Lifetime Support calculations and monetization implementation
 - Procedural naming algorithm and final geographic/political names
@@ -1143,3 +1164,24 @@ This is a design/architecture philosophy, not authorization to prematurely optim
 ## Authority
 
 `AI/GAME_DESIGN.md` is the authoritative product vision. Directors determine design direction. Agents implement approved designs and must ask when an important mechanic is unspecified.
+
+### Approved focused extension — rank income and commitment input (2026-10-13)
+
+Director authorized current-rank, non-stacking personal province Gold bonuses: Lord 0%, Duke +0.5%, King +1%, Emperor +2%. Subject income, starting Gold and grants excluded; fractional value carries through existing payouts and match-end freeze. Commitment input is limited to 10/25/35/50/75% stops, submitted as integer amounts through existing validation; review defaults to preview-only 10%. Active pool excludes other-war reservations and includes its own. Prestige, thresholds and combat rules remain unchanged. Implementation/verification is separate from acceptance: [report](GUI_UX_SPRINT.md#rank-gold-bonuses-and-fixed-stop-commitments--2026-10-13). Earlier deferred rank-bonus references describe historical scope.
+
+### Approved political authority and council foundation — 2026-10-13
+
+Authority =100 × personally owned conquerable provinces + personal total surviving troops/10. Reservations remain part of Total; recruitment and mechanical casualties change it. No descendant land/troops, title, Prestige, Gold or seat multipliers. Each ruler has up to five connected active direct subjects with personal conquerable land: strongest initial/vacant seats, immediate vacancies and invalidation, stable ruler-ID initial ties and incumbent tie retention. Replacement requires strict superiority and at least10% advantage against the same incumbent continuously for30 seconds; reset when conditions cease. Weights, seat limit, margin/duration are configurable. Freeze final councils at match end, retaining inspection after disconnect.
+
+Scores/comparisons/troops/timers stay server-only. Show membership alphabetically, only to the council's ruler/direct subjects; unavoidable membership inference is explicitly approved. Existing Realm houses a compact section. Seats grant no bonuses/permissions. Council chat remains ruler plus all direct subjects; Direct/Allies/Diplomatic/filtering/delivery unchanged. Delegation/bypass, voting, governance, overthrow, taxation and pooled armies remain unimplemented/unapproved for this scope. Earlier politics-deferred statements are superseded only for this approved foundation. [Implementation/evidence](OPENFRONT_PLAYABILITY_REVIEW.md#political-authority-and-council-foundation--2026-10-13-implementation); no Director implementation acceptance inferred.
+
+
+### Approved personal-domain permissions/autonomy/betrayal — 2026-10-13
+
+This explicitly supersedes root-only War/Diplomacy restrictions and the older proposed on-behalf-of-root delegation model within this scope. Direct lieges may grant/revoke external war/conquest and own Alliance/NAP offer/accept/decline/break; both default denied and reset with a new direct edge. Strict current personal authority greater than the direct liege bypasses denials immediately; equality does not. Grants work regardless of comparison. No council margin/timer/seat power, admin access or exact military disclosure.
+
+The subject acts as itself with personal treasury/army and own subtree borders/domain. Subject diplomatic pairs bind that domain, never a relabeled root offer; applicable treaties remain enforced. Ordinary external attacks retain root defense. Preserve costs, authored corner adjacency, cooldowns, validation, private military state and freeze.
+
+Explicit accepted betrayal detaches the subject (retaining descendants), transfers floor(30% personal surviving Total) to the former direct liege, then initiates war with post-transfer availability. Nested defender is that former direct liege’s personal army/remaining subtree, not the ancestor. Invalid/stale/duplicate requests cannot cause partial/repeated mutations.
+
+Director-approved lifecycle: block either participant’s engagement/result or wars touching the departing subtree; retain own treaties/no liege inheritance and preflight NAPs; invalidate endpoint hierarchy/domain-changed offers and revalidate permission at acceptance; keep accepted actors/resources fixed, refund stale unresolved commitments and preserve calculated results. Reservations/held survivors are never corrupted. Ordinary non-betrayal fealty stays unchanged, including old Root-agreement dissolution. Chat/council seats stay unchanged; no new subject Allies audience. Rank defaults, broader delegation, voting, governance, taxation and pooled armies remain future. [Implementation/evidence](OPENFRONT_PLAYABILITY_REVIEW.md#liege-permissions-autonomy-and-betrayal--2026-10-13); agent checks are not Director acceptance.

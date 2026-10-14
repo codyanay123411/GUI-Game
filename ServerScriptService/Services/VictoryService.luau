@@ -6,6 +6,7 @@ local Hierarchy = require(script.Parent.PoliticalHierarchyService)
 local Territory = require(script.Parent.TerritoryMapService)
 local MatchState = require(script.Parent.MatchState)
 local Domination = require(ReplicatedStorage.Shared.Util.Domination)
+local Replay = require(script.Parent.MatchReplayService)
 local Service = {}
 local started = false
 local startedAt = 0
@@ -58,7 +59,11 @@ function Service.Start()
 	local intent = remotes:WaitForChild("VictoryClientEvent") :: RemoteEvent
 	Domination.Evaluate(Territory.GetMapDefinition(), Hierarchy.GetSnapshot().rulers, Territory.GetSnapshot().territories)
 	started = true
-	intent.OnServerEvent:Connect(function(player, action) if action == "Ready" then send(player) end end)
+	Replay.Start(push)
+	intent.OnServerEvent:Connect(function(player, action)
+		if action == "Ready" then send(player); Replay.SendStatus(player)
+		elseif action == "PlayAgain" then Replay.Request(player) end
+	end)
 	Hierarchy.StateChanged:Connect(Service.Evaluate)
 	Territory.OwnershipChanged:Connect(Service.Evaluate)
 	Players.PlayerAdded:Connect(function(player) task.defer(function() if player.Parent then send(player) end end) end)

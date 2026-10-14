@@ -55,7 +55,7 @@ function MilitaryCombat.FloorCasualties(committed: number, pct: number): number
 	return math.floor(committed * pct)
 end
 
-function MilitaryCombat.Resolve(attackerCommitted: number, defenderCommitted: number, rng: Random): BattleResult
+function MilitaryCombat.Resolve(attackerCommitted: number, defenderCommitted: number, rng: Random, attackerMultiplier: number?, defenderMultiplier: number?): BattleResult
 	local attackerN = math.floor(attackerCommitted)
 	local defenderN = math.floor(defenderCommitted)
 
@@ -75,8 +75,8 @@ function MilitaryCombat.Resolve(attackerCommitted: number, defenderCommitted: nu
 	local atkRoll = inRange(rng, MilitaryConfig.CombatRollMin, MilitaryConfig.CombatRollMax)
 	local defRoll = inRange(rng, MilitaryConfig.CombatRollMin, MilitaryConfig.CombatRollMax)
 	local defMult = inRange(rng, MilitaryConfig.DefenseRollMin, MilitaryConfig.DefenseRollMax)
-	local atkEff = attackerN * atkRoll
-	local defEff = defenderN * defRoll * defMult
+	local atkEff = attackerN * atkRoll * (attackerMultiplier or 1)
+	local defEff = defenderN * defRoll * defMult * (defenderMultiplier or 1)
 	local attackerWins = atkEff > defEff
 	local winner = if attackerWins then "Attacker" else "Defender"
 	local winnerEff = if attackerWins then atkEff else defEff

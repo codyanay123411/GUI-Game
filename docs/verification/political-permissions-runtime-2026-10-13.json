@@ -1,0 +1,109 @@
+{
+  "date": "2026-10-13",
+  "status": "implemented; agent checks; not Director accepted",
+  "coverage": "affected sources/Realm Main baseline only; no whole-place or published parity claim",
+  "productionSources": {
+    "ServerScriptService/Bootstrap.server.luau": "ea3020e468b06a5159d32c6ed4d279276fe16ce3ad645a50ecf8ff30bb287f3d",
+    "StarterPlayerScripts/Bootstrap.local.luau": "134681d5a8468f083fe47809f9a4e76738f195d3cbcf472fc17fbaab2619579b",
+    "ServerScriptService/Services/PoliticalCouncilService.luau": "7054180107e8ae4b9d353d39cd3c025357b4f5634a238c65ab278f47ba58018a",
+    "ServerScriptService/Services/PoliticalHierarchyService.luau": "9d75118252e7e4107e272f55356bee886b4a62da1bfcc49b7da851908e4aa292",
+    "ServerScriptService/Services/MilitaryService.luau": "5c1aba76c7daba1305de8e76972f4f081860385155f411aeeb8582d782e7ee05",
+    "ServerScriptService/Services/WarfareService.luau": "eb86e3fa512aaff8cb71d296c31f1291dfa1ecb04a35c783cbb3c6c977d50358",
+    "ServerScriptService/Services/DiplomacyService.luau": "521245aac611ce804b40d2dde6ddd11b85076447589f6249c6de245451da7335",
+    "ServerScriptService/Services/PoliticalAuthorityConfig.luau": "b3912af77dacc3542655a0b1c59986cf473c78d97566cfe8666ebaa37c200d4b",
+    "StarterPlayerScripts/Controllers/MapContextController.luau": "0ecde9efe4b1d4a3971239ab911445dc46710ce8547a161d9be68a90922d2f12",
+    "StarterPlayerScripts/Controllers/MapContextState.luau": "6354ad280ec812ee3bffb8c6783bbc46f15b2e30134b856bae5faa6f32f7d398",
+    "StarterPlayerScripts/Controllers/DiplomacyController.luau": "d12caab9c945e257adf591db8cff9454fe763d6f7c7512c6163ba82493ffaccf",
+    "ReplicatedStorage/Shared/Util/ContextActionResolver.luau": "4238d4f9a890cfd9cfbd07d66ff149c2138b0a7686614dee101d9134c78733f3",
+    "ReplicatedStorage/Shared/Util/PoliticalDomain.luau": "adffe591888684eca677c88753ed3cd28601991932900b1e0ab29d503b1915ab",
+    "ServerScriptService/Services/PoliticalPermissionPolicy.luau": "fd2deb2a3a32ed00423a9def8cc3729e76cebe531e26c3513382806198dbadbe",
+    "ServerScriptService/Services/PoliticalPermissionsService.luau": "d2a6851ffb15628e074c2ba66e9294c822f0cfe7ec9e912cd34c07c9930f6d83",
+    "ServerScriptService/Services/BetrayalService.luau": "3ebfadc352b272584c8be6dbac293ee773a76ec44210901357a1da963c3ad8fe",
+    "StarterPlayerScripts/Controllers/PoliticalPermissionsController.luau": "72c0082cf24d613ac7d7af30a3594071d1adcc30fe6660d75c0bc6a9474de915",
+    "ReplicatedStorage/Shared/Util/PlayerRelevantView.luau": "a813f0ad9dabcdfa6acf4ce88463f89a496a22b66a99f496fb2899ca7784071e",
+    "StarterPlayerScripts/Controllers/MapAttentionController.luau": "ecbe476cef85da590b9932bd6f15fcb2443f74114cef5eeffce262ddb02ded28"
+  },
+  "checks": {
+    "purePolicy": 54,
+    "threeActualLocalServerClients": [
+      "Player1",
+      "Player2",
+      "Player3"
+    ],
+    "nestedPrivacySuffix": 20,
+    "casualtyConquestLifecycle": 21,
+    "seededFreezeSuffix": 32,
+    "finalSourceSoloDomainRace": 45,
+    "finalRealmFontLayout": {
+      "974x354": 24,
+      "639x422": 24,
+      "font": "Arial",
+      "FontScale": 1.1,
+      "UIScale": 1.1,
+      "PanelOpacity": 0.8
+    },
+    "native": [
+      "grant/revoke",
+      "effective autonomy",
+      "normal/compact betrayal review",
+      "explicit betrayal confirmation",
+      "post-penalty commitment/Military transition"
+    ],
+    "nativeTransferExample": {
+      "beforeTotal": 1953,
+      "penalty": 585,
+      "afterPool": 1368,
+      "acceptedAt10Percent": 136
+    },
+    "compile": {
+      "productionSources": 19,
+      "retainedFocusedFixtures": 13,
+      "result": "pass; latest affected sources/fixtures recompiled after fixes"
+    },
+    "diffCheck": "pass",
+    "finalCorrectedExpiry": {
+      "seconds": 30.513648986816406,
+      "assertions": 3,
+      "result": "pass; feedback/zero mutation/disabled confirmation"
+    },
+    "finalDomainUI": {
+      "assertions": 4,
+      "method": "real client VM; synthetic read-only projection through fresh actual resolver copy",
+      "result": "pass; own same-realm NAP blocks betrayal but remains breakable; no new same-realm offers"
+    },
+    "finalStudioCorrespondence": {
+      "sources": 19,
+      "result": "exact normalized source equality; recovery inactive; no active fixture remains",
+      "output": "POLITICS_FINAL_SOURCE_PARITY_PASS 19 recovery inactive"
+    },
+    "links": "relevant record links exist"
+  },
+  "fixtureFailures": [
+    "Retained own NAP blocked nested betrayal; explicitly broke own NAP and reran suffix",
+    "Ordinary deadline combat captured extra personal land; corrected stronger-liege setup and reran affected suffix",
+    "Expiry fixture opened before deferred selection then raced initial player creation; corrected fixture timing.",
+    "Initial client expiry selection was deferred; corrected selection timing. Fresh server fixture initially had no player; corrected initialization wait; reran only affected setup/client."
+  ],
+  "supportedDefectsFixed": [
+    "Same-turn hierarchy transitions now synchronously invalidate offers/unresolved wars",
+    "Dynamic themed text remeasurement",
+    "Expired confirmation nil/false condition; server rejection was already enforced",
+    "Own Domain pact Break remains visible after both parties enter same greater realm; new same-realm offers remain forbidden"
+  ],
+  "pendingEvidence": [],
+  "limitations": [
+    "POLITICS-UX Director human usability verification",
+    "POLITICS-NET published-account latency/disconnect, touch/gamepad unverified",
+    "Synthetic admin/mock setups do not establish natural competitive progression",
+    "Existing Kohl Announce/API warnings and unrelated Model To Pixel plugin error observed; not modified"
+  ],
+  "preservation": "no baseline files missing; changes limited to scoped production/docs; no admin, economy, Prestige, title, communications source changes; recovery retained",
+  "git": "no commit/push/publication",
+  "localSnapshot": {
+    "path": "docs\\verification\\political-permissions-final-2026-10-13.rbxl",
+    "bytes": 825676,
+    "sha256": "c3e94b0a29930e6f8594e28ea1d7f23b456c785d63c30228421e3d5672e2ab8f",
+    "freshness": "Saved from stopped/edit-mode current Studio after final 19-source correspondence; scoped coverage only",
+    "git": "ignored/local-only"
+  }
+}

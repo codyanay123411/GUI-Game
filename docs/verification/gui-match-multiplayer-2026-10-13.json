@@ -1,0 +1,230 @@
+{
+  "date": "2026-10-13",
+  "environment": "Studio Local Server, three actual synthetic-ID clients",
+  "method": "Seeded ownership/hierarchy/treaty/war regression via existing server APIs; real client commitment remotes. Not natural full match. No production timer or combat overrides.",
+  "phases": [
+    "Baseline",
+    "FealtyOffer",
+    "Hierarchy",
+    "TreatyOffer",
+    "NAP",
+    "Commit",
+    "Reserved",
+    "LockOne",
+    "LockBoth",
+    "Present",
+    "Result",
+    "Cooldown",
+    "CooldownExpired",
+    "Ended"
+  ],
+  "client_results": [
+    {
+      "player": "Player1",
+      "phase": "Baseline",
+      "passed": true,
+      "cumulative_assertions": 7,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:38.534 [Hierarchy] Ready from Player2"
+    },
+    {
+      "player": "Player2",
+      "phase": "Baseline",
+      "passed": true,
+      "cumulative_assertions": 5,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:39.801 GUI_MATCH_CLIENT Player3 Baseline true 5"
+    },
+    {
+      "player": "Player3",
+      "phase": "FealtyOffer",
+      "passed": true,
+      "cumulative_assertions": 5,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:40.484 GUI_MATCH_CLIENT Player1 FealtyOffer true 10"
+    },
+    {
+      "player": "Player2",
+      "phase": "FealtyOffer",
+      "passed": true,
+      "cumulative_assertions": 5,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:40.501 GUI_MATCH_MP_PHASE_PASS FealtyOffer"
+    },
+    {
+      "player": "Player3",
+      "phase": "Hierarchy",
+      "passed": true,
+      "cumulative_assertions": 8,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:41.267 GUI_MATCH_CLIENT Player1 Hierarchy true 12"
+    },
+    {
+      "player": "Player2",
+      "phase": "Hierarchy",
+      "passed": true,
+      "cumulative_assertions": 6,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:41.469 GUI_MATCH_MP_PHASE_PASS Hierarchy"
+    },
+    {
+      "player": "Player3",
+      "phase": "TreatyOffer",
+      "passed": true,
+      "cumulative_assertions": 8,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:42.118 GUI_MATCH_CLIENT Player2 TreatyOffer true 6"
+    },
+    {
+      "player": "Player1",
+      "phase": "TreatyOffer",
+      "passed": true,
+      "cumulative_assertions": 15,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:42.135 GUI_MATCH_MP_PHASE_PASS TreatyOffer"
+    },
+    {
+      "player": "Player3",
+      "phase": "NAP",
+      "passed": true,
+      "cumulative_assertions": 8,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:42.767 GUI_MATCH_CLIENT Player1 NAP true 16"
+    },
+    {
+      "player": "Player2",
+      "phase": "NAP",
+      "passed": true,
+      "cumulative_assertions": 6,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:42.818 GUI_MATCH_MP_PHASE_PASS NAP"
+    },
+    {
+      "player": "Player3",
+      "phase": "Commit",
+      "passed": true,
+      "cumulative_assertions": 9,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:43.900 GUI_MATCH_CLIENT Player1 Commit true 22"
+    },
+    {
+      "player": "Player2",
+      "phase": "Commit",
+      "passed": true,
+      "cumulative_assertions": 12,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:43.933 GUI_MATCH_MP_PHASE_PASS Commit"
+    },
+    {
+      "player": "Player3",
+      "phase": "Reserved",
+      "passed": true,
+      "cumulative_assertions": 9,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:45.567 GUI_MATCH_CLIENT Player1 Reserved true 24"
+    },
+    {
+      "player": "Player2",
+      "phase": "Reserved",
+      "passed": true,
+      "cumulative_assertions": 14,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:45.617 GUI_MATCH_MP_PHASE_PASS Reserved"
+    },
+    {
+      "player": "Player3",
+      "phase": "LockOne",
+      "passed": true,
+      "cumulative_assertions": 9,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:46.266 GUI_MATCH_CLIENT Player2 LockOne true 14"
+    },
+    {
+      "player": "Player1",
+      "phase": "LockOne",
+      "passed": true,
+      "cumulative_assertions": 26,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:46.716 GUI_MATCH_MP_PHASE_PASS LockOne"
+    },
+    {
+      "player": "Player3",
+      "phase": "LockBoth",
+      "passed": true,
+      "cumulative_assertions": 9,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:47.350 [Military] notice -> Player2 Forces locked."
+    },
+    {
+      "player": "Player2",
+      "phase": "LockBoth",
+      "passed": true,
+      "cumulative_assertions": 14,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:47.383 GUI_MATCH_CLIENT Player1 LockBoth true 26"
+    },
+    {
+      "player": "Player3",
+      "phase": "Present",
+      "passed": true,
+      "cumulative_assertions": 9,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:48.367 GUI_MATCH_CLIENT Player2 Present true 19"
+    },
+    {
+      "player": "Player1",
+      "phase": "Present",
+      "passed": true,
+      "cumulative_assertions": 31,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:48.484 GUI_MATCH_MP_PHASE_PASS Present"
+    },
+    {
+      "player": "Player3",
+      "phase": "Result",
+      "passed": true,
+      "cumulative_assertions": 9,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:54.849 GUI_MATCH_CLIENT Player2 Result true 24"
+    },
+    {
+      "player": "Player1",
+      "phase": "Result",
+      "passed": true,
+      "cumulative_assertions": 36,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:54.884 GUI_MATCH_MP_PHASE_PASS Result"
+    },
+    {
+      "player": "Player3",
+      "phase": "Cooldown",
+      "passed": true,
+      "cumulative_assertions": 9,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:55.533 GUI_MATCH_CLIENT Player2 Cooldown true 24"
+    },
+    {
+      "player": "Player1",
+      "phase": "Cooldown",
+      "passed": true,
+      "cumulative_assertions": 37,
+      "message": "- Server - GuiMatchVerificationServer:10 10:23:55.534 GUI_MATCH_MP_PHASE_PASS Cooldown"
+    },
+    {
+      "player": "Player3",
+      "phase": "CooldownExpired",
+      "passed": true,
+      "cumulative_assertions": 10,
+      "message": "- Server - GuiMatchVerificationServer:10 10:24:06.682 GUI_MATCH_CLIENT Player1 CooldownExpired true 38"
+    },
+    {
+      "player": "Player2",
+      "phase": "CooldownExpired",
+      "passed": true,
+      "cumulative_assertions": 25,
+      "message": "- Server - GuiMatchVerificationServer:10 10:24:06.733 GUI_MATCH_MP_PHASE_PASS CooldownExpired"
+    },
+    {
+      "player": "Player3",
+      "phase": "Ended",
+      "passed": true,
+      "cumulative_assertions": 19,
+      "message": "- Server - GuiMatchVerificationServer:10 10:24:08.150 GUI_MATCH_CLIENT Player1 Ended true 47"
+    },
+    {
+      "player": "Player2",
+      "phase": "Ended",
+      "passed": true,
+      "cumulative_assertions": 34,
+      "message": "- Server - GuiMatchVerificationServer:10 10:24:08.166 GUI_MATCH_MP_PHASE_PASS Ended"
+    }
+  ],
+  "server_pass": true,
+  "limitations": [
+    "Published-account communications filtering not tested",
+    "No human usability or balance acceptance"
+  ],
+  "final_cumulative_assertions": {
+    "Player1": 47,
+    "Player2": 34,
+    "Player3": 19
+  },
+  "capture_note": "UI Automation retained only part of per-client Output rows; all 14 phase acknowledgments and final three-client counts were directly observed. Server phase assertions require all three clients to pass."
+}

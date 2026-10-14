@@ -1,0 +1,31 @@
+-- Focused client theme/bounds regression. Existing authorized settings only, no gameplay mutations.
+local p=game.Players.LocalPlayer;local g=p.PlayerGui.HierarchyPrototypeGui;local C=p.PlayerScripts.Controllers
+local Settings=require(C.GameSettingsController);local Strategy=require(C.StrategyPresentationController)
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+local function fits(x)check(x.TextBounds.Y<=x.AbsoluteSize.Y+2,x.Name.." vertical text clipping")end
+local function bounds()
+ Strategy.OpenSystem("Military");task.wait(.2)
+ local c=g.MilitaryWorkflowPanel.Content;local b=c.CommitmentBar
+ for _,x in {c.CommitBody,c.LockButton,c.BackButton,b}do check(x.AbsolutePosition.X+x.AbsoluteSize.X<=c.AbsolutePosition.X+c.AbsoluteWindowSize.X,"military scrollbar/padding margin")end
+ fits(c.CommitBody);fits(b.Preview)
+ for _,x in b.Track:GetChildren()do if x:IsA("TextLabel")then fits(x);check(x.TextBounds.X<=x.AbsoluteSize.X,"stop caption")end end
+ check(not c.CommitBox.Visible and not c.CommitBox.Active and not c.CommitBox.TextEditable,"retired commit input")
+ check(not g.ContextWorkflowPanel.Content.CommitAmount.Visible and not g.ContextWorkflowPanel.Content.CommitAmount.Active,"retired review input")
+ check(b:GetAttribute("BlocksMapInput")==true and b.Active,"bar blocks map")
+ check(not g.ContextRadialPanel.Active,"radial pass-through preserved")
+ Strategy.OpenSystem("Economy");task.wait(.1);fits(g.EconomyPanel.Body)
+ Strategy.OpenSystem("Titles");task.wait(.1);fits(g.TitlePanel.Body)
+ check(g.TitlePanel.Body.Text:find("Rank +0.5%",1,true),"Duke bonus in Titles")
+end
+local function set(k,v)
+ Settings.Request(k,v);local untilAt=os.clock()+4
+ repeat task.wait(.1)until Settings.GetSnapshot().values[k]==v or os.clock()>untilAt
+ check(Settings.GetSnapshot().values[k]==v,"settings accepted")
+end
+local ok,err=pcall(function()
+ for _,font in {"GothamSSm","SourceSansPro","Roboto","Arial"}do set("Font",font);bounds()end
+ set("Font","GothamSSm")
+ for _,scale in {.9,1.1}do set("UIScale",scale);set("FontScale",scale);set("PanelOpacity",.8);bounds()end
+end)
+Settings.Reset("Game UI");task.wait(1);Strategy.OpenSystem("Military")
+if ok then print("RANK_COMMIT_LAYOUT_PASS",g.AbsoluteSize,n)else warn("RANK_COMMIT_LAYOUT_FAIL",err,n)end

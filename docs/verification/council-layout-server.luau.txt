@@ -1,0 +1,12 @@
+-- Authorized server settings API; synthetic clients do not receive creator privileges.
+local S=game.ServerScriptService.Services;local Settings=require(S.GameSettingsService);local Admin=require(S.AdminConfig)
+local creator=106676397;assert(Admin.CanConfigureGame(creator))
+local p=game.Players:FindFirstChild("Player2");assert(p)
+local E=game.ReplicatedStorage.Remotes.CouncilServerEvent
+local function set(k,v)assert(Settings.Apply(creator,"Set",k,v));task.wait(.4)end
+for _,font in {"GothamSSm","SourceSansPro","Roboto","Arial"}do set("Font",font);E:FireClient(p,"VerifyCouncilLayout",font);task.wait(.4)end
+set("Font","GothamSSm")
+for _,scale in {.9,1.1}do set("UIScale",scale);set("FontScale",scale);set("PanelOpacity",.8);E:FireClient(p,"VerifyCouncilLayout","scale"..scale);task.wait(.4)end
+assert(Settings.Apply(creator,"Reset","Game UI"));task.wait(.5)
+E:FireClient(p,"VerifyCouncilLayout","defaults")
+print("COUNCIL_SETTINGS_VARIANTS_SENT")

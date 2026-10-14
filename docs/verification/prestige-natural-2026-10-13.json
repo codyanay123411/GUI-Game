@@ -1,0 +1,657 @@
+{
+  "date": "2026-10-13",
+  "method": "Fresh Solo owner, ordinary mouse map/conquest/500-troop commitment/Ready or normal deadline, earned Gold Max recruitment, manual Duke/King/Emperor. No admin resources/ownership/Prestige or timer/result overrides. Read-only observer only.",
+  "observedStages": [
+    {
+      "rank": 2,
+      "personal": 2,
+      "prestige": 123
+    },
+    {
+      "rank": 3,
+      "personal": 5,
+      "prestige": 764
+    },
+    {
+      "rank": 4,
+      "personal": 10,
+      "prestige": 2255
+    }
+  ],
+  "records": [
+    {
+      "prestige": 1225.4566438198094,
+      "time": 1791918224.634327,
+      "rank": 3,
+      "personal": 6,
+      "realm": 6,
+      "rate": 120,
+      "ended": false
+    },
+    {
+      "prestige": 1253.6225960254674,
+      "time": 1791918238.715081,
+      "rank": 3,
+      "personal": 6,
+      "realm": 6,
+      "rate": 120,
+      "ended": false
+    },
+    {
+      "prestige": 1279.649072170258,
+      "time": 1791918250.799036,
+      "rank": 3,
+      "personal": 7,
+      "realm": 7,
+      "rate": 140,
+      "ended": false
+    },
+    {
+      "prestige": 1303.0971917311354,
+      "time": 1791918260.846196,
+      "rank": 3,
+      "personal": 7,
+      "realm": 7,
+      "rate": 140,
+      "ended": false
+    },
+    {
+      "prestige": 1326.5842007001245,
+      "time": 1791918270.914425,
+      "rank": 3,
+      "personal": 7,
+      "realm": 7,
+      "rate": 140,
+      "ended": false
+    },
+    {
+      "prestige": 1350.0737508932755,
+      "time": 1791918280.978838,
+      "rank": 3,
+      "personal": 7,
+      "realm": 7,
+      "rate": 140,
+      "ended": false
+    },
+    {
+      "prestige": 1378.2682012716934,
+      "time": 1791918293.06426,
+      "rank": 3,
+      "personal": 7,
+      "realm": 7,
+      "rate": 140,
+      "ended": false
+    },
+    {
+      "prestige": 1401.7551078796394,
+      "time": 1791918303.129474,
+      "rank": 3,
+      "personal": 7,
+      "realm": 7,
+      "rate": 140,
+      "ended": false
+    },
+    {
+      "prestige": 1425.2415638764705,
+      "time": 1791918313.193131,
+      "rank": 3,
+      "personal": 7,
+      "realm": 7,
+      "rate": 140,
+      "ended": false
+    },
+    {
+      "prestige": 1453.3974908987689,
+      "time": 1791918325.263104,
+      "rank": 3,
+      "personal": 7,
+      "realm": 7,
+      "rate": 140,
+      "ended": false
+    },
+    {
+      "prestige": 1476.8857298692076,
+      "time": 1791918335.330303,
+      "rank": 3,
+      "personal": 7,
+      "realm": 7,
+      "rate": 140,
+      "ended": false
+    },
+    {
+      "prestige": 1502.3450881640126,
+      "time": 1791918345.391981,
+      "rank": 3,
+      "personal": 8,
+      "realm": 8,
+      "rate": 160,
+      "ended": false
+    },
+    {
+      "prestige": 1529.1872480710358,
+      "time": 1791918355.461094,
+      "rank": 3,
+      "personal": 8,
+      "realm": 8,
+      "rate": 160,
+      "ended": false
+    },
+    {
+      "prestige": 1550.6542693773918,
+      "time": 1791918363.510011,
+      "rank": 3,
+      "personal": 8,
+      "realm": 8,
+      "rate": 160,
+      "ended": false
+    },
+    {
+      "prestige": 1577.541786670686,
+      "time": 1791918373.592234,
+      "rank": 3,
+      "personal": 8,
+      "realm": 8,
+      "rate": 160,
+      "ended": false
+    },
+    {
+      "prestige": 1604.3874135017409,
+      "time": 1791918383.661399,
+      "rank": 3,
+      "personal": 8,
+      "realm": 8,
+      "rate": 160,
+      "ended": false
+    },
+    {
+      "prestige": 1625.8968052864088,
+      "time": 1791918391.724673,
+      "rank": 3,
+      "personal": 8,
+      "realm": 8,
+      "rate": 160,
+      "ended": false
+    },
+    {
+      "prestige": 1652.7397840817782,
+      "time": 1791918401.79055,
+      "rank": 3,
+      "personal": 8,
+      "realm": 8,
+      "rate": 160,
+      "ended": false
+    },
+    {
+      "prestige": 1679.6292958259596,
+      "time": 1791918411.873622,
+      "rank": 3,
+      "personal": 8,
+      "realm": 8,
+      "rate": 160,
+      "ended": false
+    },
+    {
+      "prestige": 1701.137194792431,
+      "time": 1791918419.940155,
+      "rank": 3,
+      "personal": 8,
+      "realm": 8,
+      "rate": 160,
+      "ended": false
+    },
+    {
+      "prestige": 1727.9820135434481,
+      "time": 1791918430.007444,
+      "rank": 3,
+      "personal": 8,
+      "realm": 8,
+      "rate": 160,
+      "ended": false
+    },
+    {
+      "prestige": 1750.559878031414,
+      "time": 1791918438.474707,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 1779.556609551113,
+      "time": 1791918448.137644,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 1803.7066480318717,
+      "time": 1791918456.191143,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 1827.9061307112388,
+      "time": 1791918464.252353,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 1852.0566763083152,
+      "time": 1791918472.309241,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 1876.1556433836631,
+      "time": 1791918480.338202,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 1900.3514954249076,
+      "time": 1791918488.402676,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 1930.5997213522605,
+      "time": 1791918498.487612,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 1954.7522775332145,
+      "time": 1791918506.521644,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 1978.8988277117423,
+      "time": 1791918514.586873,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 2003.0467783610038,
+      "time": 1791918522.633829,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 2027.1957432429008,
+      "time": 1791918530.689691,
+      "rank": 3,
+      "personal": 9,
+      "realm": 9,
+      "rate": 180,
+      "ended": false
+    },
+    {
+      "prestige": 2053.8289161523194,
+      "time": 1791918538.720337,
+      "rank": 3,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2080.6622660160074,
+      "time": 1791918546.768774,
+      "rank": 3,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2100.828435818355,
+      "time": 1791918552.816926,
+      "rank": 3,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2127.6606126626343,
+      "time": 1791918560.870209,
+      "rank": 3,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2154.494882822038,
+      "time": 1791918568.916632,
+      "rank": 3,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2181.3790396849326,
+      "time": 1791918576.983584,
+      "rank": 3,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2201.542879343034,
+      "time": 1791918583.037762,
+      "rank": 3,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2228.266582886379,
+      "time": 1791918591.034715,
+      "rank": 3,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2255.09832262993,
+      "time": 1791918599.100413,
+      "rank": 3,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2255.9322194258384,
+      "time": 1791918599.351679,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2275.2662161986045,
+      "time": 1791918605.15213,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2302.094179391862,
+      "time": 1791918613.199405,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2328.8718195756287,
+      "time": 1791918621.236238,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2355.7055358092002,
+      "time": 1791918629.279873,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2375.813595851264,
+      "time": 1791918635.316289,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2402.6483062903103,
+      "time": 1791918643.366671,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2429.478359619778,
+      "time": 1791918651.416469,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2456.2570059299487,
+      "time": 1791918659.447606,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2476.42483909925,
+      "time": 1791918665.500282,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2503.308286269508,
+      "time": 1791918673.565311,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2530.143586397173,
+      "time": 1791918681.614754,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2550.306476354601,
+      "time": 1791918687.663357,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2577.1427992979707,
+      "time": 1791918695.71241,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2604.028759400052,
+      "time": 1791918703.777714,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2630.8626830577873,
+      "time": 1791918711.829885,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2651.027072668078,
+      "time": 1791918717.876724,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2677.802338997525,
+      "time": 1791918725.913892,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2704.637959400815,
+      "time": 1791918733.959605,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2731.4119557539643,
+      "time": 1791918741.997981,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2751.5229324499787,
+      "time": 1791918748.03019,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2778.3014992872895,
+      "time": 1791918756.063571,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2805.1330490907053,
+      "time": 1791918764.094537,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2825.2447124322275,
+      "time": 1791918770.143138,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2852.1312995751723,
+      "time": 1791918778.212668,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2879.0176157156648,
+      "time": 1791918786.275524,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2905.796162684761,
+      "time": 1791918794.309729,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    },
+    {
+      "prestige": 2925.9594428539303,
+      "time": 1791918800.360633,
+      "rank": 4,
+      "personal": 10,
+      "realm": 10,
+      "rate": 200,
+      "ended": false
+    }
+  ],
+  "prestige": 2939,
+  "title": "Current title: Emperor\nNext title: —\nRealm control: 10\nPrestige: 2939\nStatus: Maximum title\nIncome: 200 Prestige/min · 10 personal provinces\n\nPersonal conquerable holdings earn Prestige over time. Subject land earns for its direct owner. Realm control includes your descendants.\n\nPrestige is retained when establishing a title or losing land.",
+  "rate": 200,
+  "ended": false
+}

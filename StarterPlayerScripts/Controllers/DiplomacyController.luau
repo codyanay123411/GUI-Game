@@ -104,7 +104,7 @@ function DiplomacyController.Start()
 		local me = myRuler()
 		clearFrames(overlayExtra)
 		local incoming = 0
-		if me and me.independent == true then
+		if me then
 			for _, request in dip.requests do
 				if request.toRulerId == me.rulerId then
 					incoming += 1
@@ -123,14 +123,18 @@ function DiplomacyController.Start()
 					local decline = card:FindFirstChild("DeclineButton", true) :: TextButton
 					accept.Visible = true
 					decline.Visible = true
-					PrototypeGuiTheme.applyPrimaryButton(accept, true)
+					local effective = require(script.Parent.MapContextState).permissions.self or {}
+					local canRespond = effective.diplomacy == true and gui:GetAttribute("MatchEnded") ~= true
+					accept.Active = canRespond; decline.Active = canRespond
+					if not canRespond then label.Text ..= "\n" .. (effective.diplomacyReason or "Waiting for permissions") end
+					PrototypeGuiTheme.applyPrimaryButton(accept, canRespond)
 					PrototypeGuiTheme.applyDangerButton(decline)
 					local requestId = request.requestId
 					accept.MouseButton1Click:Connect(function()
-						intent:FireServer("Accept", requestId)
+						if accept.Active then intent:FireServer("Accept", requestId) end
 					end)
 					decline.MouseButton1Click:Connect(function()
-						intent:FireServer("Decline", requestId)
+						if decline.Active then intent:FireServer("Decline", requestId) end
 					end)
 				end
 			end
@@ -167,6 +171,8 @@ function DiplomacyController.Start()
 		end
 	end)
 
+	require(script.Parent.MapContextState).Changed.Event:Connect(function(system) if system == "permissions" then refresh() end end)
+	gui:GetAttributeChangedSignal("MatchEnded"):Connect(refresh)
 	refresh()
 	intent:FireServer("Ready")
 	print("[Diplomacy] controller started; Ready sent")

@@ -12,6 +12,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerScriptService = game:GetService("ServerScriptService")
 
 local MapCatalog = require(ReplicatedStorage.Shared.Config.MapCatalog)
+local TitleRequirements = require(ReplicatedStorage.Shared.Util.TitleRequirements)
 local MapAdjacency = require(ReplicatedStorage.Shared.Util.MapAdjacency)
 local Hierarchy = require(ServerScriptService.Services.PoliticalHierarchyService)
 
@@ -25,6 +26,20 @@ TerritoryMapService.OwnershipChanged = ownerChangedBindable.Event
 
 local started = false
 local mapDef
+local resolvedTitleRequirements: { TitleRequirements.TitleRequirement } = {}
+local ownershipAccounting: ((string, string?, string?, number) -> ())? = nil
+
+-- One synchronous, non-yielding Title-service accounting observer, before ownership writes.
+function TerritoryMapService.SetOwnershipAccounting(callback: (string, string?, string?, number) -> ())
+	assert(ownershipAccounting == nil, "Ownership accounting already installed")
+	ownershipAccounting = callback
+end
+
+local function accountOwnership(id: string, previous: string?, nextOwner: string?)
+	if previous ~= nextOwner and ownershipAccounting then
+		ownershipAccounting(id, previous, nextOwner, workspace:GetServerTimeNow())
+	end
+end
 local ownerByTerritory: { [string]: string } = {}
 local territoriesByRuler: { [string]: { string } } = {}
 local colorIndexByRuler: { [string]: number } = {}
@@ -92,6 +107,12 @@ local function buildSnapshot()
 	}
 end
 
+local councilRefresh: (() -> ())? = nil
+function TerritoryMapService.SetCouncilRefresh(callback: () -> ())
+	assert(councilRefresh == nil, "Council refresh already installed")
+	councilRefresh = callback
+end
+
 local function pushState(toPlayer: Player?)
 	local payload = buildSnapshot()
 	local encoded = HttpService:JSONEncode(payload)
@@ -105,6 +126,7 @@ local function pushState(toPlayer: Player?)
 		print("[Territory] push State all clients")
 		serverPush:FireAllClients("State", encoded)
 	end
+	if councilRefresh then councilRefresh() end
 	ownerChangedBindable:Fire()
 end
 
@@ -117,6 +139,7 @@ local function unclaimRuler(rulerId: string)
 	end
 	for _, territoryId in owned do
 		if ownerByTerritory[territoryId] == rulerId then
+			accountOwnership(territoryId, rulerId, nil)
 			revisionByTerritory[territoryId] = (revisionByTerritory[territoryId] or 0) + 1
 			ownerByTerritory[territoryId] = nil
 			print("[Territory] unclaimed", territoryId, "from", rulerId)
@@ -139,6 +162,7 @@ local function assignStartingTerritory(rulerId: string)
 		return
 	end
 	local pick = free[math.random(1, #free)]
+	accountOwnership(pick, nil, rulerId)
 	ensureColor(rulerId)
 	revisionByTerritory[pick] = (revisionByTerritory[pick] or 0) + 1
 	ownerByTerritory[pick] = rulerId
@@ -161,6 +185,10 @@ end
 
 function TerritoryMapService.GetMapId(): string
 	return mapDef.mapId
+end
+
+function TerritoryMapService.GetTitleRequirements(): { TitleRequirements.TitleRequirement }
+	return resolvedTitleRequirements
 end
 
 function TerritoryMapService.GetMapDefinition()
@@ -219,8 +247,9 @@ function TerritoryMapService.SetOwner(territoryId: string, rulerId: string?): (b
 	if not byId[territoryId] then
 		return false, "Unknown territory."
 	end
-	revisionByTerritory[territoryId] = (revisionByTerritory[territoryId] or 0) + 1
 	local previous = ownerByTerritory[territoryId]
+	accountOwnership(territoryId, previous, if rulerId == "" then nil else rulerId)
+	revisionByTerritory[territoryId] = (revisionByTerritory[territoryId] or 0) + 1
 	if previous then
 		local list = territoriesByRuler[previous]
 		if list then
@@ -276,6 +305,7 @@ function TerritoryMapService.Start()
 	started = true
 
 	mapDef = MapCatalog.GetDefault()
+	resolvedTitleRequirements = TitleRequirements.Resolve(mapDef)
 	local ok, err = MapAdjacency.Validate(mapDef.territories)
 	assert(ok, err)
 

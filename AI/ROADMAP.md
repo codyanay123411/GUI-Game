@@ -18,6 +18,8 @@ Studio Play / Local Server / MCP / Director acceptance sessions are **developmen
 
 Do not implement aging, family simulation, or succession as currently approved core design. Do not implement a real Prestige economy, title-loss, Military / Armies V0.2, opinion, vassal diplomatic autonomy, buildings/development, or delegated greater-realm permissions unless directors authorize that work. Do not implement pre-playtest polish (map orientation, admin copy/reuse dashboard) unless the Director authorizes it. Do not implement public-product lobby / matchmaking unless the Director authorizes it. Communications replacement implementation was authorized on 2026-10-09; retain frozen scope and the Director-clarified personal-territory Direct rule.
 
+Current authorized extension (2026-10-13): personal Prestige earning and default map-scaled title requirements, with validated map overrides. See [Game Design](GAME_DESIGN.md#personal-prestige-and-map-scaled-titles--approved-2026-10-13). This supersedes older test-only/income/map-scaling deferrals only for that scope; rank Gold bonuses, title-loss, other Prestige economics and political mechanics remain separate. Initial tuning is not accepted balance.
+
 ## 1. Foundation & Architecture — COMPLETE
 
 Source layout, Script Sync, Studio MCP workflow, shared types/config/util conventions, remotes reservation, thin bootstraps, GUI-first client/server split. Performance philosophy: store authoritative state and recalculate on meaningful change (do not prematurely optimize nonexistent systems). No major gameplay systems. Closed after audit result PASS WITH MINOR CLEANUP.
@@ -115,3 +117,20 @@ Explicitly authorized custom political player list implemented and agent-verifie
 ## Authorized 2026-10-10 — Unclaimed conquest and Domination V0.x
 
 **IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** This explicit request permits military-only conquest of territory-owned Unclaimed militia and a configurable 70% root-plus-descendants Domination victory. It supersedes older future/design-only wording only for this scope. Competitive end-state freeze and final inspection are implemented; balance and Director acceptance remain pending. See [CONQUEST_VICTORY.md](CONQUEST_VICTORY.md). No character simulation, regeneration, rewards, rematch or lobby work is implied.
+
+### 2026-10-13 focused extension status
+
+Approved personal rank Gold bonuses and five-stop commitment controls are implemented and agent-checked; [evidence/limits](GUI_UX_SPRINT.md#rank-gold-bonuses-and-fixed-stop-commitments--2026-10-13). Historical deferred Gold-bonus statements are superseded for this scoped extension. Politics remains separate; no new scope or acceptance inferred.
+
+### 2026-10-13 political foundation status
+
+Approved authority/council membership foundation implemented with focused agent checks; [evidence](OPENFRONT_PLAYABILITY_REVIEW.md#political-authority-and-council-foundation--2026-10-13-implementation). The later personal-domain permissions/autonomy/betrayal milestone is recorded below; broader delegation, governance/voting and overthrow remain unimplemented. Membership confers no capabilities and does not narrow Council chat. Human acceptance and six-plus-client scheduling remain outstanding.
+
+## Requester-only repeat play — 2026-10-13
+
+Director explicitly authorized fresh reserved-server Play Again for one requester. Implemented with targeted agent checks; actual published routing remains unverified. This narrowly supersedes the earlier rematch exclusion; public-product lobby/queue/matchmaking and rewards remain future work. [Evidence/next step](CONQUEST_VICTORY.md#requester-only-play-again--2026-10-13).
+
+
+## Authorized 2026-10-13 — Personal-domain permissions/autonomy/betrayal
+
+Implemented the two direct-subject grants, strict-greater autonomy and confirmed conserved betrayal with four approved lifecycle policies/nested direct-liege defender. Supersedes earlier root-only restrictions within this scope; broader delegation/rank defaults, seat powers, voting and chat expansion remain future. [Evidence](OPENFRONT_PLAYABILITY_REVIEW.md#liege-permissions-autonomy-and-betrayal--2026-10-13). Human/published verification remains separate.

@@ -27,6 +27,10 @@ Start with this file, the requested outcome, and `git status`. Read the latest r
 
 The [coverage map and command reference](docs/ARCHITECTURE.md#repository--studio-coverage) distinguish Git, Studio and snapshots. Repository inspection is sufficient for disk-only edits/static claims. GUI bindings, Explorer objects, place settings or recovered Studio work require live inspection or a sufficiently current saved export. Compare versions before syncing; never overwrite recovered work on assumption. Obtain a current export when needed within the task's authorization, rather than treating an old snapshot as current. If unavailable, document the gap and complete independent work. “Not represented in Git” does not mean “not implemented.” Input/visual behavior requires runtime verification; multiplayer authority/delivery needs appropriate multi-client or real-account checks.
 
+## Mandatory GUI contract
+
+Before GUI work, inspect the current live interface and relevant shared theme/component patterns. Use `PrototypeGuiTheme` tokens/helpers and existing presentation/settings infrastructure; document purposeful semantic exceptions. Verify changed UI beside existing screens in runtime, including generated/reopened content and supported font, density and opacity settings. Static checks do not establish visual consistency. The authoritative component/style reference is [Game presentation guidance](AI/GAME_PRESENTATION_SETTINGS.md#gui-component-contract).
+
 ## Development loop
 
 1. Establish the requested outcome, completion criteria and authorized scope. Preserve approved design; roadmap concepts do not authorize implementation. Ask about material unspecified mechanics rather than inventing them.

@@ -1,0 +1,49 @@
+-- Native UI acceptance, stale war cleanup and seeded final cutoff in the same session.
+local S=game.ServerScriptService.Services
+local H,T,M,W,D,P,A,B,Match=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.MilitaryService),require(S.WarfareService),require(S.DiplomacyService),require(S.PoliticalPermissionsService),require(S.PoliticalCouncilService),require(S.BetrayalService),require(S.MatchState)
+local Bridge=require(S.AdminBridge);local control=game.ReplicatedStorage.PoliticsVerification
+local a,b,c=control:GetAttribute("Ruler1"),control:GetAttribute("Ruler2"),control:GetAttribute("Ruler3")
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+local function row(id)for _,r in H.GetSnapshot().rulers do if r.rulerId==id then return r end end end
+local function join(child,parent)local ok,req=H.OfferFealty(child,parent);check(ok,"fealty offer");check(H.AcceptFealty(req,parent),"fealty accept")end
+check(row(b).independent,"native confirmation detached")
+-- Native screenshot records 585 transferred and accepted 136 from post-transfer 1368.
+-- The normal 40-second deadline may already have resolved while screenshots were taken.
+local war;for _,w in W.GetSnapshot().wars do if w.targetTerritoryId=="westmere"then war=w end end
+if war then
+ check(war.attackerRootId==b and war.defenderRootId==a,"native actor IDs")
+ if not M.IsMechanicallyResolved(war.warId)then check(M.UnwindPreResolution(war.warId),"native cleanup");W.CancelWar(war.warId,"targeted native verification cleanup")
+ else check(M.DebugAdvance(20),"finish already calculated native interval")end
+end
+check(Bridge.Execute(nil,"SetTroops",b,1800),"synthetic stale-war setup")
+join(b,a)
+local ok,id=W.DeclareWar(b,"frostfield");check(ok,"stale-domain setup")
+check(M.SetCommit(b,id,200),"stale-domain reservation")
+check(H.SetTitleRank(c,4),"test reparent rank");join(b,c);task.wait(.2)
+check(not W.IsActorCurrent(id) and M.GetInspect(b).committed==0,"pre-resolution actor reparent cleanup/refund")
+check(P.GetForPlayer(game.Players:GetPlayerByUserId(-3)).subjects[1].warGranted==false,"new edge grants reset")
+check(Bridge.Execute(nil,"SetTroops",b,1000),"test weaker army")
+check(Bridge.Execute(nil,"SetTroops",c,10000),"explicit stronger new liege fixture")
+check(not P.GetEffective(b).war,"reparent denies under stronger new liege")
+check(P.Set(c,b,"War",true,P.GetEdgeRevision(b)),"grant new edge")
+check(Bridge.Execute(nil,"SetNeutralDefense","mossbank",100),"neutral setup")
+ok,id=W.DeclareWar(b,"mossbank");check(ok,"calculated-result setup")
+check(M.SetCommit(b,id,400) and M.LockCommit(b,id),"mechanical battle")
+check(M.IsMechanicallyResolved(id),"calculated result exists")
+local total=M.GetTotalTroops(b);join(b,a);task.wait(.1)
+check(M.IsMechanicallyResolved(id) and M.GetTotalTroops(b)==total,"hierarchy changes preserve calculated casualty result")
+check(not W.DebugResolveWar(id,"Attacker"),"no reroll calculated battle")
+check(M.DebugAdvance(20),"end affected result interval")
+check(M.GetInspect(b).committed==0 and M.GetTotalTroops(b)==total,"held survivor cleanup no duplication")
+-- Seed normal victory gate, not a full-match rerun.
+for _,definition in T.GetMapDefinition().territories do if Match.IsEnded()then break end;check(Bridge.Execute(nil,"SetOwner",definition.id,a),"seed cutoff")end
+check(Match.IsEnded(),"normal victory cutoff")
+local after=M.GetTotalTroops(b)
+check(not P.Set(a,b,"War",true,P.GetEdgeRevision(b)),"frozen grants")
+check(not P.GetEffective(b).war and not P.GetEffective(b).diplomacy,"frozen effective permission")
+check(not W.DeclareWar(b,"greyfen"),"frozen declaration")
+check(not D.Offer(b,c,"NAP"),"frozen diplomacy")
+check(not B.Prepare(b,"westmere") and not B.Commit(b,"westmere","invalid"),"frozen betrayal")
+check(M.GetTotalTroops(b)==after,"freeze no troop mutation")
+control:SetAttribute("FinalChecks",n)
+print("POLITICS_FINAL_PASS",n)

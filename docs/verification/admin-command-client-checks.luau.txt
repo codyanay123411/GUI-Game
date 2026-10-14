@@ -1,0 +1,9 @@
+local K=require(game.ReplicatedStorage:WaitForChild("Kohl's Admin Source")); local p=game.Players.LocalPlayer
+local checks=0
+repeat task.wait(0.1) until K._strategyCommandPolicy
+for name in require(game.ReplicatedStorage.Shared.Config.AdminCommandPolicy).Disabled do assert(K.Auth.hasCommand(p.UserId,name)==false,name); checks+=1 end
+print('ADMIN_POLICY_CLIENT_PASS',checks)
+game.ReplicatedStorage:WaitForChild('AdminPolicyRemoteReady',50)
+p:SetAttribute('_GameTesterAuthorized',true); p:SetAttribute('KohlRank','SuperAdmin')
+for _,text in {';inspectrealm AUDIT_REJECT',';seedbattle AUDIT_REJECT',';inspectterritory AUDIT_REJECT',';fly AUDIT_REJECT'} do K.Remote.Command:Fire(text,{userId=701857,rank='SuperAdmin'}) end
+print('ADMIN_POLICY_CLIENT_REMOTE_SENT')

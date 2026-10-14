@@ -1,0 +1,29 @@
+-- Targeted continuation in the same three-client match, not a fresh full-match test.
+local S=game.ServerScriptService.Services
+local H,T,M,W,D,P,A,B=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.MilitaryService),require(S.WarfareService),require(S.DiplomacyService),require(S.PoliticalPermissionsService),require(S.PoliticalCouncilService),require(S.BetrayalService)
+local Bridge=require(S.AdminBridge);local control=game.ReplicatedStorage.PoliticsVerification
+local a,b,c=control:GetAttribute("Ruler1"),control:GetAttribute("Ruler2"),control:GetAttribute("Ruler3")
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+check(not P.GetEffective(b).war,"native revoke reached server")
+check(not P.Set(c,b,"Diplomacy",true,P.GetEdgeRevision(b)),"unrelated cannot grant")
+check(not P.Set(a,b,"Unknown",true,P.GetEdgeRevision(b)),"invalid permission fails")
+check(not P.Set(a,b,"War",true,-1),"stale grant fails")
+check(Bridge.Execute(nil,"SetTroops",b,2000),"synthetic stronger army")
+check(Bridge.Execute(nil,"SetNeutralDefense","riverholt",100),"synthetic militia")
+local ok,war=W.DeclareWar(b,"riverholt");check(ok,"autonomous conquest")
+check(M.SetCommit(b,war,400),"reservation")
+check(not B.Prepare(b,"westmere"),"reservation blocks betrayal")
+check(M.LockCommit(b,war),"lock")
+check(M.IsMechanicallyResolved(war),"mechanical resolution")
+check(M.GetTotalTroops(b)<2000 and A.GetAuthority(b)==100+M.GetTotalTroops(b)/10,"actual casualty authority")
+check(not B.Prepare(b,"westmere"),"result presentation blocks betrayal")
+check(M.DebugAdvance(20),"advance affected interval only")
+check(T.GetOwnerRulerId("riverholt")==b,"subject capture personally owned")
+check(P.GetEffective(b).autonomy,"captured personal land contributes")
+-- Retained root NAP restricts subjects before independence; never copied after.
+local offered,req=D.Offer(a,c,"NAP");check(offered,"root NAP offer");check(D.Accept(req,c),"root NAP accept")
+check(not W.DeclareWar(b,"greyfen"),"ancestor NAP enforced for subject")
+check(D.Break(a,c,"NAP"),"normal root break")
+local reviewed,quote=B.Prepare(b,"westmere");check(reviewed,"native review fixture available")
+control:SetAttribute("ExpectedPenalty",quote.penalty);control:SetAttribute("BeforeSubject",M.GetTotalTroops(b));control:SetAttribute("BeforeLiege",M.GetTotalTroops(a))
+print("POLITICS_LIFECYCLE_PASS",n,"Native betrayal ready; no detach yet")

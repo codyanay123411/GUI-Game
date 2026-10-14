@@ -1,0 +1,61 @@
+-- Focused pure checks; synthetic candidate sizes and authoritative time.
+local P=require("./PoliticalCouncilPolicy")
+local C=require("./PoliticalAuthorityConfig")
+local n=0
+local function check(v,m)assert(v,m);n+=1 end
+local function same(ids,s)check(table.concat(ids,",")==s,"members: "..table.concat(ids,","))end
+local function row(id,a)return {id=id,authority=a}end
+local function evaluate(s,rows,t) return P.Evaluate(s,rows,t,C)end
+P.Validate(C)
+check(P.Authority(1,1000,C)==200,"one personal province")
+check(P.Authority(3,1000,C)==400,"land weight")
+check(P.Authority(0,1001,C)==100.1,"fractional authority")
+check(P.Authority(1,1000,C)==P.Authority(1,300+700,C),"reservation invariant")
+check(P.Authority(1,900,C)==190,"casualty change")
+check(P.Authority(1,1003,C)==200.3,"recruitment change")
+local eligible={liegeId="root",connected=true,active=true,land=1}
+check(P.Eligible(eligible,"root"),"eligible direct")
+for _,k in {"connected","active"}do local e=table.clone(eligible);e[k]=false;check(not P.Eligible(e,"root"),k)end
+local e=table.clone(eligible);e.land=0;check(not P.Eligible(e,"root"),"landless")
+check(not P.Eligible(eligible,"ancestor"),"descendant excluded")
+local s=P.New();evaluate(s,{},0);same(s.members,"")
+evaluate(s,{row("b",100),row("a",100)},0);same(s.members,"a,b")
+-- Initial strongest and stable-ID ties, even with shuffled input.
+s=P.New();local rows={row("g",90),row("f",100),row("e",200),row("d",300),row("c",400),row("b",500),row("a",600)}
+evaluate(s,rows,0);same(s.members,"a,b,c,d,e")
+-- Eligible incumbents retain seats against exact ties and sub-margin superiority.
+rows[2].authority=200;evaluate(s,rows,1);same(s.members,"a,b,c,d,e");check(next(s.since)==nil,"tie no timer")
+rows[2].authority=219;evaluate(s,rows,2);check(next(s.since)==nil,"under margin")
+rows[2].authority=220;evaluate(s,rows,3);check(s.since.f.e==3,"exact 10% starts")
+evaluate(s,rows,32.999);same(s.members,"a,b,c,d,e")
+evaluate(s,rows,33);same(s.members,"a,b,c,d,f")
+-- Immediate vacancies and invalid incumbent removal.
+local fewer={row("a",600),row("b",500),row("c",400),row("d",300),row("g",90)}
+evaluate(s,fewer,34);same(s.members,"a,b,c,d,g");check(next(s.since)==nil,"stale timers removed")
+-- Continuous duration resets after condition ceases.
+local c=table.clone(C);c.SeatLimit=1;s=P.New();local q={row("inc",100)};P.Evaluate(s,q,0,c)
+table.insert(q,row("new",110));P.Evaluate(s,q,1,c);q[2].authority=109;P.Evaluate(s,q,20,c)
+check(next(s.since)==nil,"condition ceased resets");q[2].authority=110;P.Evaluate(s,q,21,c)
+P.Evaluate(s,q,31,c);same(s.members,"inc");P.Evaluate(s,q,51,c);same(s.members,"new")
+-- Multiple challengers: strongest mature first, then independent mature pairs.
+c.SeatLimit=2;s=P.New();local r={row("a",100),row("b",120)};P.Evaluate(s,r,0,c)
+table.insert(r,row("x",150));table.insert(r,row("y",140));P.Evaluate(s,r,1,c)
+P.Evaluate(s,r,31,c);same(s.members,"x,y");check(next(s.since)==nil,"no duplicate seats/timers")
+-- Stronger new challenger cannot steal an older challenger's elapsed time.
+c.SeatLimit=1;s=P.New();r={row("inc",100)};P.Evaluate(s,r,0,c)
+table.insert(r,row("old",110));P.Evaluate(s,r,1,c);table.insert(r,row("fresh",500));P.Evaluate(s,r,20,c)
+P.Evaluate(s,r,31,c);same(s.members,"old");check(s.since.fresh.old==31,"new incumbent new interval")
+-- A different victim does not inherit another pair's timer.
+c.SeatLimit=2;s=P.New();r={row("a",100),row("b",300)};P.Evaluate(s,r,0,c)
+table.insert(r,row("new",110));P.Evaluate(s,r,1,c);r[1].authority=500;r[3].authority=330;P.Evaluate(s,r,20,c)
+check(s.since.new.a==nil and s.since.new.b==20,"pair reset")
+P.Evaluate(s,r,31,c);same(s.members,"a,b");P.Evaluate(s,r,50,c);same(s.members,"a,new")
+-- Privacy scope for own, direct liege, unrelated and non-ruler viewers.
+local rulers={root={liegeId=""},sub={liegeId="root"},grand={liegeId="sub"},other={liegeId=""}}
+same(P.VisibleCouncilIds("root",rulers),"root")
+same(P.VisibleCouncilIds("sub",rulers),"sub,root")
+same(P.VisibleCouncilIds("grand",rulers),"grand,sub")
+same(P.VisibleCouncilIds("other",rulers),"other")
+same(P.VisibleCouncilIds(nil,rulers),"")
+local bad=table.clone(C);bad.SeatLimit=0;check(not pcall(P.Validate,bad),"invalid config rejected")
+print("COUNCIL_POLICY_PASS",n)

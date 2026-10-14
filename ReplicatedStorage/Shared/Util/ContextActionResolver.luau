@@ -5,6 +5,7 @@ local Rank = require(script.Parent.PoliticalRankRules)
 local View = require(script.Parent.PlayerRelevantView)
 local Graph = require(script.Parent.RealmGraph)
 local CommsConfig = require(script.Parent.Parent.Config.CommunicationsConfig)
+local Domain = require(script.Parent.PoliticalDomain)
 local Resolver = {}
 
 function Resolver.Resolve(state: any, definitions: { any }, territoryId: string, userId: number, ended: boolean, now: number): any
@@ -29,37 +30,45 @@ function Resolver.Resolve(state: any, definitions: { any }, territoryId: string,
 		elseif holder.liegeId == me.rulerId then "Your direct subject"
 		elseif me.liegeId == holder.rulerId then "Your liege"
 		elseif targetRoot == localRoot then "Your greater realm" else "Unrelated ruler"
+	local capabilities = (state.permissions and state.permissions.self) or {}
+	local ownAgreement = nil
 	local agreement = nil
 	for _, a in state.diplomacy.agreements or {} do
+		if me and holder and ((a.leftRulerId == me.rulerId and a.rightRulerId == holder.rulerId) or (a.rightRulerId == me.rulerId and a.leftRulerId == holder.rulerId)) then ownAgreement = a end
 		if (a.leftRulerId == localRoot and a.rightRulerId == targetRoot)
 			or (a.rightRulerId == localRoot and a.leftRulerId == targetRoot) then agreement = a end
 	end
 	if agreement then relation = if agreement.nap then "Non-Aggression Pact" elseif agreement.alliance then "Ally" else relation end
 	local war, contested = nil, false
 	for _, w in state.warfare.wars or {} do
-		if w.targetTerritoryId == territoryId then
+		if w.targetTerritoryId == territoryId and localRoot and (View.WarInvolvesRoot(w, localRoot) or (me and View.WarInvolvesRoot(w, me.rulerId))) then
 			contested = true
-			if localRoot and View.WarInvolvesRoot(w, localRoot) then war = w end
+			war = w
 		end
 	end
 	if war and holder and targetRoot ~= localRoot then relation = "Current enemy" end
 	local lands, personal = {}, {}
 	for id, ownerId in ownership do
 		local owner = rulers[ownerId]
-		if owner and (owner.rootRulerId or owner.rulerId) == localRoot then table.insert(lands, id) end
+		if owner and me and Domain.Contains(state.hierarchy.rulers, me.rulerId, owner.rulerId) then table.insert(lands, id) end
 		if me and ownerId == me.rulerId then table.insert(personal, id) end
 	end
+	local betrayal = capabilities.betrayal == true and me and holder and me.liegeId ~= ""
+		and Domain.Contains(state.hierarchy.rulers, me.liegeId, holder.rulerId)
+		and not Domain.Contains(state.hierarchy.rulers, me.rulerId, holder.rulerId)
 	local reason = nil
 	if ended then reason = "Match ended"
 	elseif not me or not province then reason = "Waiting for authoritative state"
-	elseif not me.independent then reason = "Only your independent root may declare external war"
-	elseif holder and targetRoot == localRoot then reason = "Target belongs to your realm"
-	elseif agreement and agreement.nap then reason = "Non-Aggression Pact blocks war"
+	elseif not me.independent and not capabilities.war then reason = capabilities.warReason or "Waiting for your liege permissions"
+	elseif holder and targetRoot == localRoot and not betrayal then reason = "Target belongs to your realm"
+	elseif holder and me and Domain.TreatyApplies(state.hierarchy.rulers, state.diplomacy.agreements or {}, me.rulerId, holder.rulerId) then reason = "Non-Aggression Pact blocks war"
 	elseif contested then reason = "Province is already contested"
-	elseif not Adjacency.IsTargetAdjacentToOwned(definitions, territoryId, lands) then reason = "No border with your greater realm"
+	elseif not Adjacency.IsTargetAdjacentToOwned(definitions, territoryId, lands) then reason = "No border with your own territorial domain"
 	elseif not holder and (typeof(province.neutralDefense) ~= "table" or typeof(province.neutralDefense.current) ~= "number") then reason = "Waiting for militia state" end
-	for _, c in state.warfare.cooldowns or {} do
-		if c.territoryId == territoryId and (tonumber(c.endsAt) or 0) > now then reason = "Post-war cooldown" end
+	if not reason then
+		for _, c in state.warfare.cooldowns or {} do
+			if c.territoryId == territoryId and (tonumber(c.endsAt) or 0) > now then reason = "Post-war cooldown" end
+		end
 	end
 	local communication = {}
 	if holder and me and holder.rulerId ~= me.rulerId then
@@ -90,18 +99,22 @@ function Resolver.Resolve(state: any, definitions: { any }, territoryId: string,
 			if relevant then table.insert(communication, { label = c.label, contextId = c.id }) end
 		end
 	end
+	-- Preserve ordinary root offers; a subject acts as itself. Existing subject-domain
+	-- agreements remain directly addressable even by an independent counterpart.
+	local diplomacyTarget = if ownAgreement or (me and not me.independent) then (holder and holder.rulerId) else targetRoot
+	local actionableAgreement = if diplomacyTarget == (holder and holder.rulerId) then ownAgreement else agreement
 	local diplomacy = {}
 	if not ended and me and holder and holder.rulerId ~= me.rulerId then
-		if me.independent and root and root.independent and targetRoot ~= localRoot then
+		if (me.independent or capabilities.diplomacy) and root and (targetRoot ~= localRoot or ownAgreement ~= nil) then
 			for _, kind in { "Alliance", "NAP" } do
-				local exists = agreement and (if kind == "Alliance" then agreement.alliance else agreement.nap)
+				local exists = actionableAgreement and (if kind == "Alliance" then actionableAgreement.alliance else actionableAgreement.nap)
 				local pending = false
 				for _, r in state.diplomacy.requests or {} do
-					if r.agreementType == kind and ((r.fromRulerId == me.rulerId and r.toRulerId == targetRoot)
-						or (r.toRulerId == me.rulerId and r.fromRulerId == targetRoot)) then pending = true end
+					if r.agreementType == kind and ((r.fromRulerId == me.rulerId and r.toRulerId == diplomacyTarget)
+						or (r.toRulerId == me.rulerId and r.fromRulerId == diplomacyTarget)) then pending = true end
 				end
-				if exists or not pending then table.insert(diplomacy, { label = (if exists then "Break " else "Offer ") .. kind,
-					action = (if exists then "Break" else "Offer") .. kind, target = targetRoot, system = "Diplomacy" }) end
+				if exists or (targetRoot ~= localRoot and not pending) then table.insert(diplomacy, { label = (if exists then "Break " else "Offer ") .. kind,
+					action = (if exists then "Break" else "Offer") .. kind, target = diplomacyTarget, system = "Diplomacy" }) end
 			end
 		end
 		local cursor, cycle = holder, false
@@ -118,14 +131,29 @@ function Resolver.Resolve(state: any, definitions: { any }, territoryId: string,
 	end
 	local actions = { { id = "Info", label = "Province info" } }
 	if war and not ended then table.insert(actions, { id = "Battle", label = "War / battle" })
-	elseif not reason then table.insert(actions, { id = "War", label = if holder then "War review" else "Conquer" }) end
+	elseif not reason then table.insert(actions, { id = if betrayal then "Betrayal" else "War", label = if betrayal then "Betray liege" elseif holder then "War review" else "Conquer" }) end
 	if #diplomacy > 0 then table.insert(actions, { id = "Diplomacy", label = "Diplomacy" }) end
 	if #communication > 0 then table.insert(actions, { id = "Message", label = "Message" }) end
 	if holder then table.insert(actions, { id = "Realm", label = "Realm info" }) end
 	if me and holder and holder.rulerId == me.rulerId and not ended then table.insert(actions, { id = "Military", label = "Military" }) end
 	return { territoryId = territoryId, definition = target, province = province, holder = holder, root = root,
 		me = me, relation = relation, actions = actions, communication = communication, diplomacy = diplomacy,
-		war = war, warReason = reason, canDeclare = reason == nil, personalLands = personal, rulers = rulers,
+		war = war, warReason = reason, canDeclare = reason == nil and not betrayal, canBetray = reason == nil and betrayal == true, personalLands = personal, rulers = rulers,
+		diplomacyReason = if ended then "Match ended" elseif me and (me.independent or capabilities.diplomacy) then "Own domain diplomacy allowed" else capabilities.diplomacyReason or "Waiting for permissions",
 		available = tonumber(state.military.available) or 0 }
+end
+
+-- Public identity and a predicted action reason, never additional war intelligence.
+function Resolver.SelectionText(context: any): string
+	local holder, root = context.holder, context.root
+	local identity = if holder then "Owner: " .. holder.displayName .. " · Realm: " .. (if root then root.displayName else holder.displayName) else "Owner: Unclaimed · No realm"
+	local authority = if holder and root and holder.rulerId ~= root.rulerId then "Ordinary external defense: root " .. root.displayName .. "; subject-initiated wars use personal forces" else nil
+	local status = if context.warReason == "Match ended" then "Match ended · Inspection only"
+		elseif context.war then "Your realm's conflict · Open War / battle"
+		elseif context.canBetray then "Betrayal review available - independence and troop transfer require confirmation"
+		elseif context.canDeclare then (if holder then "War eligible" else "Conquest eligible") .. " · Server rechecks"
+		else context.warReason or "Waiting for state"
+	return context.definition.displayName .. " · " .. context.relation .. "\n" .. identity .. "\n"
+		.. (if authority then authority .. "\n" else "") .. status .. "\n" .. context.diplomacyReason
 end
 return Resolver

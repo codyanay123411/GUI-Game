@@ -1,0 +1,17 @@
+-- Same targeted session: change immediate liege count after reservation, before lock.
+local S=game.ServerScriptService.Services
+local H,M,W=require(S.PoliticalHierarchyService),require(S.MilitaryService),require(S.WarfareService)
+local Bridge=require(S.AdminBridge)
+local p=game.Players:GetPlayers()[1];local b=H.GetRulerIdForUserId(p.UserId)
+local a;for _,r in H.GetSnapshot().rulers do if r.rulerId==b then a=r.liegeId end end
+assert(Bridge.Execute(nil,"SetTroops",b,2000));assert(Bridge.Execute(nil,"SetNeutralDefense","goldmere",100))
+local ok,id=W.DeclareWar(b,"goldmere");assert(ok,id);assert(M.SetCommit(b,id,400))
+local x=H.DebugCreateMockRuler("Synthetic boundary subject",1)
+local offered,req=H.OfferFealty(x,a);assert(offered,req);assert(H.AcceptFealty(req,a))
+assert(M.LockCommit(b,id));local result=M.GetEngagementInspect(id).battle
+assert(math.abs(result.attackerEffective-400*result.attackerCombatRoll*1.11)<1e-8,"fresh hierarchy at resolution")
+local total=M.GetTotalTroops(b)
+H.DebugRemoveRuler(x)
+assert(M.GetEngagementInspect(id).battle==result and M.GetTotalTroops(b)==total,"calculated battle immutable after hierarchy change")
+assert(M.GetInspect(b).ledgerOk,"reservation conservation")
+print("VASSAL_COMBAT_BOUNDARY_PASS",3)

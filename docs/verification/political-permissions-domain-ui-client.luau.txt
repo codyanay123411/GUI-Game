@@ -1,0 +1,17 @@
+-- Synthetic read-only projections using a fresh copy of the actual changed resolver.
+local C=game.Players.LocalPlayer.PlayerScripts.Controllers
+local state=require(C.MapContextState);local player=game.Players.LocalPlayer
+local rows=state.hierarchy.rulers;local me
+for _,r in rows do if r.userId==player.UserId then me=r end end
+assert(me and me.liegeId~="")
+local shadow=table.clone(state);shadow.diplomacy={agreements={{leftRulerId=me.rulerId,rightRulerId=me.liegeId,nap=true,alliance=false,scope="Domain"}},requests={}}
+local resolver=require(game.ReplicatedStorage.Shared.Util.PoliticsResolverVerification)
+local definitions=require(game.ReplicatedStorage.Shared.Config.MapCatalog).GetDefault().territories
+local context=resolver.Resolve(shadow,definitions,"northvale",player.UserId,false,workspace:GetServerTimeNow())
+assert(context.warReason=="Non-Aggression Pact blocks war","own NAP blocks betrayal")
+assert(#context.diplomacy==1 and context.diplomacy[1].action=="BreakNAP" and context.diplomacy[1].target==me.liegeId,"own same-realm pact remains breakable")
+shadow.diplomacy={agreements={},requests={}}
+context=resolver.Resolve(shadow,definitions,"northvale",player.UserId,false,workspace:GetServerTimeNow())
+assert(#context.diplomacy==0,"no new same-realm diplomacy offer")
+assert(context.canBetray,"ordinary betrayal cue after own NAP removal")
+print("POLITICS_DOMAIN_UI_PASS",4)

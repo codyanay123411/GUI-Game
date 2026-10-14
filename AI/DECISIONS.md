@@ -1,5 +1,16 @@
 # Decisions
 
+## 2026-10-13 — Approved vassalage strength rules
+
+Director approved immediate-parent9% +1%/direct subject and own-personal-defense2%/direct subject, multiplicative, uncapped, measured at mechanical resolution. Actual combat actors matter, including nested betrayal defender; no inherited root army bonus, troop scaling or political authority change. [Authoritative rule](GAME_DESIGN.md#approved-vassalage-combat-modifiers--2026-10-13); [verification](OPENFRONT_PLAYABILITY_REVIEW.md#vassalage-combat-bonuses--2026-10-13).
+
+
+## 2026-10-11 — Recoverable strategy command policy
+
+The scoped admin audit authorizes disabling irrelevant commands and adding debug tools for implemented systems, without gameplay redesign or expanded access. Use explicit audited names in AdminCommandPolicy and project Registry overrides; retain initialized dependencies, vendor source, original definitions and pre-edit Studio Config. Kohl creator/admin fast paths require a scoped Auth admission denial as well as harmless replacement handlers. Retain mixed-use tools pending evidence; new/renamed auto-update commands require re-audit rather than blanket disabling.
+
+InspectRealm and CheckLedgers are read-only AdminBridge observability; SeedBattle uses existing Military debug RNG and respects match-end freeze. No arbitrary new mutation API, client authority, force-winner or restart override. Existing AdminConfig and creator presentation permissions remain authoritative. Coverage, classifications and limitations: [ADMIN_PERMISSIONS.md](ADMIN_PERMISSIONS.md). This records implementation decisions, not Director acceptance.
+
 ## 2026-10-10 — Director-authorized retirement of redundant primary GUI
 
 The explicit GUI redundancy request supersedes the previous milestone's temporary retention of full Territory/Diplomacy/Military navigation. Map is primary; Realm, Titles, Economy, Messages and Players remain global destinations. Recruitment, commitment and battle reuse MilitaryController inside a contextual shell. Incoming cards and notices remain available; duplicate ruler/outbound-action lists and templates leave active GUI. Twenty retired assets are retained under ServerStorage recovery. This changes presentation only.
@@ -231,3 +242,29 @@ Agent verification and Director acceptance remain distinct; see CONQUEST_VICTORY
 The explicit presentation/audio request authorizes two categories inside existing Kohl Settings and a presentation-only owner request remote. This is separate from AdminBridge gameplay testing and does not authorize gameplay/balance controls. GameSettingsService owns global runtime values and validates actual Player.UserId against CanConfigureGame. Project owner/actual creator edits; trusted GameTesters/SuperAdmins view only; client claims and Studio synthetic tester IDs do not grant editing.
 
 Installed Kohl v0.17.0 supports addon delivery but no category registration API. Only GamePresentationKohlClient knows the guarded Settings scroller/search handles and native reactive controls; no vendor fork. Game controllers consume PrototypeGuiTheme/GameSettingsController/GuiSounds. Active Kohl GothamSSm establishes source defaults, while personal Kohl APPEARANCE and savedSettings remain isolated. No suitable game persistence exists; source defaults plus runtime replication are implemented and global persistence is future work. This is agent-verified, not Director acceptance.
+
+
+## 2026-10-13 — Personal Prestige / default map-scaled titles (Director-approved design)
+
+Supersedes test-only/no-income and unresolved map-scaling restrictions for this scope, preserving historical checkpoint acceptance. Start 0; earn **20/min/directly owned conquerable province**, personal for subjects/lieges alike. Fractions and exact ownership intervals; cumulative eligibility not spent; retain sequential manual establishment, ranks after land loss, zero-land zero-income, disconnect wipe/rejoin reset, exact match-end cutoff. No instant capture/admin/fealty reward; **admin-assigned holdings earn normally**, with **no provenance exclusions** (this explicitly replaces the earlier unaccepted strict-exclusion proposal).
+
+Resolve requirements once at server map initialization from conquerable definitions N: Duke ceil(0.125N), King ceil(0.3125N), Emperor ceil(0.625N), Prestige = each derived count ×50. Vale unchanged 2/100, 5/250, 10/500. Existing subtree land eligibility remains; income is personal only. Optional explicit map balance overrides; strict finite/positive/increasing/sufficient-land validation; tiny-map collapse is a clear configuration error, not silent rank policy. These are initial playtest values, not proven balance. Ownership/population changes do not re-resolve requirements.
+
+Authorization is design approval, not Director acceptance of implementation. Agent evidence/limitations: [current report](OPENFRONT_PLAYABILITY_REVIEW.md#prestige-earning-and-map-scaled-titles--2026-10-13). No rank Gold bonuses, political mechanics, persistence, victory-rule changes or publication authorized by this milestone.
+
+## 2026-10-13 — Approved rank income and commitment controls
+
+Director authorized current-rank personal Gold bonuses (0/.5/1/2%) and five commitment stops (10/25/35/50/75). Basis-point fractional carry preserves whole-Gold spending. Percentages remain local; server receipts acknowledge existing integer SetCommit validation and gate Ready. Arbitrary existing reservations are retained; passive preview refresh is not an edit. No Prestige, threshold, combat or authorization expansion. [Implementation evidence](GUI_UX_SPRINT.md#rank-gold-bonuses-and-fixed-stop-commitments--2026-10-13); agent checks do not imply Director acceptance.
+
+## 2026-10-13 — Approved authority/council foundation only
+
+Director approved100 per personal conquerable province plus personal Total/10; direct connected active landholding subjects; up to five seats; immediate vacancies/removal; strict greater and >=10% continuously30 seconds per challenger/incumbent; frozen final membership. Configurable server-only policy and per-player membership projection. This supersedes the unaccepted proposal's delayed vacancy rule and approves only unavoidable seat inference, not numeric strength disclosure. No stronger-subject bypass, delegation, voting or chat audience change. [Evidence](OPENFRONT_PLAYABILITY_REVIEW.md#political-authority-and-council-foundation--2026-10-13-implementation); agent checks are not acceptance.
+
+## 2026-10-13 — Approved requester-only fresh reserved replay
+
+Director selected “Fresh reserved server for the requester.” After match end, Play Again deliberately requests a new reserved server of the current place, starting alone; other players retain their ended match. No public/same-JobId fallback, shared reset, matchmaking/lobby, cohort transfer, rewards or persistence. This narrowly supersedes earlier no-rematch wording, preserving ordinary new-server/disconnect resource lifecycle and final inspection until departure. Approved design is distinct from platform verification and Director acceptance. [Implementation and limits](CONQUEST_VICTORY.md#requester-only-play-again--2026-10-13).
+
+
+## 2026-10-13 — Approved personal-domain permissions and betrayal
+
+Director authorized denied-by-default direct-liege War/Diplomacy grants, immediate strict-greater autonomy and conserved confirmed betrayal. Approved all four lifecycle policies: block participant/subtree engagement/result; retain own treaties/no inheritance and check NAPs; invalidate hierarchy/domain-changed offers/revalidate permissions; preserve accepted actors/resources/calculated results and clean stale unresolved wars. Nested ruling: **use the former direct liege as defender**, with their own army/subtree, not ancestor forces. This narrowly supersedes root-only restrictions/older proposed root delegation; no rank defaults, seat powers or chat/admin changes. [Implementation/evidence](OPENFRONT_PLAYABILITY_REVIEW.md#liege-permissions-autonomy-and-betrayal--2026-10-13); agent verification is not Director acceptance.

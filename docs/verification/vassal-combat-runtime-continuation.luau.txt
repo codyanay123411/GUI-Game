@@ -1,0 +1,19 @@
+local S=game.ServerScriptService.Services
+local H,M,B=require(S.PoliticalHierarchyService),require(S.MilitaryService),require(S.BetrayalService)
+local player=game.Players:GetPlayers()[1];local b=H.GetRulerIdForUserId(player.UserId)
+local c;for _,r in H.GetSnapshot().rulers do if r.displayName=="Synthetic nested subject"then c=r.rulerId end end
+assert(c);local n=0;local function check(v,m)assert(v,m);n+=1 end;local function near(x,y)return math.abs(x-y)<1e-8 end
+local ok,quote=B.Prepare(c,"ashwood");check(ok,"nested quote:"..tostring(quote))
+local accepted,receipt=B.Commit(c,"ashwood",quote.token);check(accepted,"nested betrayal:"..tostring(receipt))
+check(M.GetTotalTroops(c)==2100 and M.GetTotalTroops(b)==1900,"existing troops transfer once")
+local r=assert(M.GetEngagementInspect(receipt.warId));check(r.defender.rulerId==b,"actual direct liege defender")
+check(M.SetCommit(c,receipt.warId,400) and M.SetCommit(b,receipt.warId,300),"nested reservations")
+check(M.LockCommit(c,receipt.warId) and M.LockCommit(b,receipt.warId),"nested mechanical battle")
+r=M.GetEngagementInspect(receipt.warId);local battle=r.battle
+check(near(battle.attackerEffective,400*battle.attackerCombatRoll),"betrayer loses former subject bonus")
+check(near(battle.defenderEffective,300*battle.defenderCombatRoll*battle.defenderDefenseRoll*1.10*1.02),"nested remaining relationships multiply")
+check(M.GetTotalTroops(c)==2100-battle.attackerCasualties and M.GetTotalTroops(b)==1900-battle.defenderCasualties,"nested actual casualty ledger")
+check(M.DebugAdvance(20),"finish nested interval")
+print("VASSAL_COMBAT_RUNTIME_PASS",n)
+-- Keep the local player subject to A with one remaining child D for representative UI.
+player:SetAttribute("VassalCombatVerificationChecks",n)

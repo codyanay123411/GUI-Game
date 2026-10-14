@@ -1,0 +1,359 @@
+{
+  "environment": "Studio Local Server, three actual synthetic clients; seeded ownership/ranks; no full-match claim",
+  "policyChecks": 38,
+  "integrationChecks": 72,
+  "integration": {
+    "players": [
+      "Player1",
+      "Player2",
+      "Player3"
+    ],
+    "syntheticTimer": true,
+    "views": [
+      {
+        "councils": [
+          {
+            "titleName": "Emperor",
+            "rulerId": "Player_-1",
+            "members": [
+              {
+                "rulerId": "Player_-2",
+                "titleName": "Lord",
+                "displayName": "Player2"
+              }
+            ],
+            "displayName": "Player1"
+          }
+        ],
+        "seatLimit": 5,
+        "frozen": false
+      },
+      {
+        "councils": [
+          {
+            "titleName": "Lord",
+            "rulerId": "Player_-2",
+            "members": [
+              {
+                "rulerId": "Player_-3",
+                "titleName": "Lord",
+                "displayName": "Player3"
+              }
+            ],
+            "displayName": "Player2"
+          },
+          {
+            "titleName": "Emperor",
+            "rulerId": "Player_-1",
+            "members": [
+              {
+                "rulerId": "Player_-2",
+                "titleName": "Lord",
+                "displayName": "Player2"
+              }
+            ],
+            "displayName": "Player1"
+          }
+        ],
+        "seatLimit": 5,
+        "frozen": false
+      },
+      {
+        "councils": [
+          {
+            "titleName": "Lord",
+            "rulerId": "Player_-3",
+            "members": [],
+            "displayName": "Player3"
+          },
+          {
+            "titleName": "Lord",
+            "rulerId": "Player_-2",
+            "members": [
+              {
+                "rulerId": "Player_-3",
+                "titleName": "Lord",
+                "displayName": "Player3"
+              }
+            ],
+            "displayName": "Player2"
+          }
+        ],
+        "seatLimit": 5,
+        "frozen": false
+      }
+    ]
+  },
+  "initialActualClientViews": [
+    {
+      "windowId": 8065284,
+      "states": [
+        {
+          "player": "Player3",
+          "state": {
+            "councils": [
+              {
+                "titleName": "Lord",
+                "rulerId": "Player_-3",
+                "members": [],
+                "displayName": "Player3"
+              },
+              {
+                "titleName": "Lord",
+                "rulerId": "Player_-2",
+                "members": [
+                  {
+                    "rulerId": "Player_-3",
+                    "titleName": "Lord",
+                    "displayName": "Player3"
+                  }
+                ],
+                "displayName": "Player2"
+              }
+            ],
+            "seatLimit": 5,
+            "frozen": false
+          }
+        }
+      ],
+      "uiPass": true
+    },
+    {
+      "windowId": 1314828,
+      "states": [
+        {
+          "player": "Player2",
+          "state": {
+            "councils": [
+              {
+                "titleName": "Lord",
+                "rulerId": "Player_-2",
+                "members": [
+                  {
+                    "rulerId": "Player_-3",
+                    "titleName": "Lord",
+                    "displayName": "Player3"
+                  }
+                ],
+                "displayName": "Player2"
+              },
+              {
+                "titleName": "Emperor",
+                "rulerId": "Player_-1",
+                "members": [
+                  {
+                    "rulerId": "Player_-2",
+                    "titleName": "Lord",
+                    "displayName": "Player2"
+                  }
+                ],
+                "displayName": "Player1"
+              }
+            ],
+            "seatLimit": 5,
+            "frozen": false
+          }
+        }
+      ],
+      "uiPass": true
+    },
+    {
+      "windowId": 789638,
+      "states": [
+        {
+          "player": "Player1",
+          "state": {
+            "councils": [
+              {
+                "titleName": "Emperor",
+                "rulerId": "Player_-1",
+                "members": [
+                  {
+                    "rulerId": "Player_-2",
+                    "titleName": "Lord",
+                    "displayName": "Player2"
+                  }
+                ],
+                "displayName": "Player1"
+              }
+            ],
+            "seatLimit": 5,
+            "frozen": false
+          }
+        }
+      ],
+      "uiPass": true
+    }
+  ],
+  "realDurationSixCandidatePolicy": true,
+  "layouts": [
+    {
+      "player": "Player2",
+      "size": [
+        1279,
+        662
+      ],
+      "variant": "GothamSSm",
+      "cumulativeAssertions": 10
+    },
+    {
+      "player": "Player2",
+      "size": [
+        1279,
+        662
+      ],
+      "variant": "SourceSansPro",
+      "cumulativeAssertions": 20
+    },
+    {
+      "player": "Player2",
+      "size": [
+        1279,
+        662
+      ],
+      "variant": "Roboto",
+      "cumulativeAssertions": 30
+    },
+    {
+      "player": "Player2",
+      "size": [
+        1279,
+        662
+      ],
+      "variant": "Arial",
+      "cumulativeAssertions": 40
+    },
+    {
+      "player": "Player2",
+      "size": [
+        1279,
+        662
+      ],
+      "variant": "scale0.9",
+      "cumulativeAssertions": 50
+    },
+    {
+      "player": "Player2",
+      "size": [
+        1279,
+        662
+      ],
+      "variant": "scale1.1",
+      "cumulativeAssertions": 60
+    },
+    {
+      "player": "Player2",
+      "size": [
+        1279,
+        662
+      ],
+      "variant": "defaults",
+      "cumulativeAssertions": 70
+    },
+    {
+      "player": "Player2",
+      "size": [
+        639,
+        421
+      ],
+      "variant": "GothamSSm",
+      "cumulativeAssertions": 80
+    },
+    {
+      "player": "Player2",
+      "size": [
+        639,
+        421
+      ],
+      "variant": "SourceSansPro",
+      "cumulativeAssertions": 90
+    },
+    {
+      "player": "Player2",
+      "size": [
+        639,
+        421
+      ],
+      "variant": "Roboto",
+      "cumulativeAssertions": 100
+    },
+    {
+      "player": "Player2",
+      "size": [
+        639,
+        421
+      ],
+      "variant": "Arial",
+      "cumulativeAssertions": 110
+    },
+    {
+      "player": "Player2",
+      "size": [
+        639,
+        421
+      ],
+      "variant": "scale0.9",
+      "cumulativeAssertions": 120
+    },
+    {
+      "player": "Player2",
+      "size": [
+        639,
+        421
+      ],
+      "variant": "scale1.1",
+      "cumulativeAssertions": 130
+    },
+    {
+      "player": "Player2",
+      "size": [
+        639,
+        421
+      ],
+      "variant": "defaults",
+      "cumulativeAssertions": 140
+    }
+  ],
+  "freezeChecks": 11,
+  "finalCouncil": {
+    "councils": [
+      {
+        "titleName": "Emperor",
+        "rulerId": "Player_-1",
+        "members": [
+          {
+            "rulerId": "Player_-2",
+            "titleName": "Lord",
+            "displayName": "Player2"
+          }
+        ],
+        "displayName": "Player1"
+      }
+    ],
+    "seatLimit": 5,
+    "frozen": true
+  },
+  "postEndActualMemberDisconnect": true,
+  "nativeScroll": {
+    "y": 164.41526794433594,
+    "mapSelectionAndCameraUnchanged": true
+  },
+  "limitations": [
+    "Five-seat UI and six-candidate timer are synthetic; not six connected players",
+    "Initial unauthorized settings probe failed; authorized server settings variants passed",
+    "Not Director accepted; no published-account or touch/gamepad tests"
+  ],
+  "finalFreshStartup": {
+    "environment": "Studio Solo, actual owner client",
+    "pass": true,
+    "player": "Akuma_Ackermna",
+    "size": [
+      1280,
+      661
+    ],
+    "assertions": 6
+  },
+  "initialFinalAlignmentFailed": true,
+  "correctedLiveSourceDiff": "Only four intended alignment properties; normalized guard reconciled",
+  "finalSourceCorrespondence": true
+}

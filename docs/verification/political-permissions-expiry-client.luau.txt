@@ -1,0 +1,21 @@
+-- Current real client VM; synthetic hierarchy setup, ordinary read-only review path.
+local p=game.Players.LocalPlayer;local C=p.PlayerScripts.Controllers
+local gui=p.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local state=require(C.MapContextState)
+local untilAt=os.clock()+12
+repeat task.wait(.1)until state.permissions.self.betrayal or os.clock()>untilAt
+assert(state.permissions.self.betrayal,"subject autonomy state ready")
+require(C.TerritoryMapController).Select("northvale", "silent")
+task.wait(.2) -- Map selection observers are deferred.
+require(C.MapContextController).OpenWorkflow("Betrayal")
+task.wait(.5)
+local panel=gui.ContextWorkflowPanel.Content
+assert(panel.Body.Text:find("Transfer"),"server quote review displayed before expiration test")
+local before=require(C.MapContextState).military.total
+local at=workspace:GetServerTimeNow()
+task.wait(30.5)
+local body=panel.Body
+assert(body.Text:find("review expired"),"explicit expired review feedback")
+assert(require(C.MapContextState).military.total==before,"review/expiration no troop mutation")
+for _,x in panel.Actions:GetChildren()do if x:IsA("TextButton")and x.Text:find("Confirm betrayal")then assert(not x.Active,"expired confirmation disabled")end end
+print("POLITICS_EXPIRY_CLIENT_PASS",workspace:GetServerTimeNow()-at)

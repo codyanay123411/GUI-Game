@@ -1,0 +1,31 @@
+-- Fresh final-source Solo synthetic service fixture for same-turn hierarchy transitions.
+local S=game.ServerScriptService.Services
+local H,T,M,W,D,P,B,Bridge=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.MilitaryService),require(S.WarfareService),require(S.DiplomacyService),require(S.PoliticalPermissionsService),require(S.BetrayalService),require(S.AdminBridge)
+local Players=game:GetService("Players");local player=Players:GetPlayers()[1]or Players.PlayerAdded:Wait();local a
+repeat task.wait(.1);a=H.GetRulerIdForUserId(player.UserId)until a;task.wait(2)
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+local function join(c,l)local ok,req=H.OfferFealty(c,l);check(ok,"offer");check(H.AcceptFealty(req,l),"accept")end
+local c=H.DebugCreateMockRuler("Synthetic domain-race subject",3);local x=H.DebugCreateMockRuler("Synthetic alternative liege",4);task.wait(.2)
+check(H.SetTitleRank(a,4),"fixture rank")
+for _,d in T.GetMapDefinition().territories do check(Bridge.Execute(nil,"SetOwner",d.id,"unclaimed"),"fixture ownership")end
+for land,id in {westmere=a,northvale=c,greyfen=x}do check(Bridge.Execute(nil,"SetOwner",land,id),"personal province")end
+check(Bridge.Execute(nil,"SetTroops",a,1000));check(Bridge.Execute(nil,"SetTroops",c,1101));check(Bridge.Execute(nil,"SetTroops",x,1000))
+join(c,a)
+local valid,quote=B.Prepare(c,"westmere");check(valid,"review before political transitions")
+check(P.Set(a,c,"Diplomacy",true,P.GetEdgeRevision(c)),"granted subject diplomacy")
+local ok,request=D.Offer(c,x,"NAP");check(ok,"pending offer")
+local declared,war=W.DeclareWar(c,"riverholt");check(declared,"own conquest")
+check(M.SetCommit(c,war,100),"reservation")
+-- Deliberately no yield: both intermediate domain changes must be observed.
+join(c,x);join(c,a)
+check(not D.Accept(request,x),"old offer invalidated even after return to same hierarchy")
+check(not W.IsActorCurrent(war) and M.GetInspect(c).committed==0,"war cancelled/refunded across intermediate domain")
+check(not B.Commit(c,"westmere",quote.token),"edge revision rejects round-trip stale betrayal")
+check(M.GetTotalTroops(c)==1101 and M.GetTotalTroops(a)==1000,"stale quote no transfer")
+check(P.GetForPlayer(player).subjects[1].diplomacyGranted==false,"round-trip resets grant")
+-- Historical ordinary root agreements still dissolve on fealty.
+local offered,rootRequest=D.Offer(x,a,"Alliance");check(offered);check(D.Accept(rootRequest,a))
+check(H.SetTitleRank(x,3));join(x,a)
+local remains=false;for _,agreement in D.GetSnapshot().agreements do if agreement.alliance then remains=true end end
+check(not remains,"old root agreement dissolved synchronously")
+print("POLITICS_DOMAIN_RACE_PASS",n)

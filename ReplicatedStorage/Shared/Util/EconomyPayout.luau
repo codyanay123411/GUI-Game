@@ -5,7 +5,7 @@
 
 	Territory config stores Gold per minute, not "+1 per 6 seconds".
 	V0.1 requires that (goldPerMinute * intervalSeconds / 60) is a whole number.
-	No fractional carry is implemented.
+	Rank bonuses carry exact fractional units; configured base payouts remain whole.
 ]]
 
 local EconomyConfig = require(script.Parent.Parent.Config.EconomyConfig)
@@ -64,6 +64,22 @@ function EconomyPayout.ValidateMap(mapDef: any): (boolean, string?)
 		end
 	end
 	return true, nil
+end
+
+function EconomyPayout.RankBonusPercent(rank: number): number
+	return (EconomyConfig.RankBonusBasisPoints[rank] or 0) / 100
+end
+
+function EconomyPayout.IncomeWithRank(baseIncome: number, rank: number): number
+	return baseIncome * (10000 + (EconomyConfig.RankBonusBasisPoints[rank] or 0)) / 10000
+end
+
+-- Only personal province payouts call this. Grants/start/spending never enter it.
+function EconomyPayout.CreditWithRank(baseWholePayout: number, rank: number, remainder: number): (number, number)
+	assert(baseWholePayout >= 0 and baseWholePayout % 1 == 0 and baseWholePayout < math.huge, "Invalid base payout")
+	assert(remainder >= 0 and remainder < 10000 and remainder % 1 == 0, "Invalid Gold remainder")
+	local units = baseWholePayout * (10000 + (EconomyConfig.RankBonusBasisPoints[rank] or 0)) + remainder
+	return math.floor(units / 10000), units % 10000
 end
 
 return EconomyPayout

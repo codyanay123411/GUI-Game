@@ -1,0 +1,23 @@
+-- One actual Solo client, synthetic relationships. Run again after viewport resize.
+local player=game.Players.LocalPlayer
+local controllers=player.PlayerScripts.Controllers
+local state=require(controllers.MapContextState)
+local strategy=require(controllers.StrategyPresentationController)
+local main=player.PlayerGui.HierarchyPrototypeGui.Main
+local gui=player.PlayerGui.HierarchyPrototypeGui
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+local bonus=assert(state.military.combatBonuses)
+check(math.abs(bonus.subjectBonus-.10)<1e-8 and math.abs(bonus.personalDefenseBonus-.02)<1e-8,"own current modifiers after betrayal")
+check(bonus.enemy==nil and bonus.authority==nil and bonus.total==nil,"no enemy strength/authority fields")
+strategy.OpenSystem("Realm");task.wait(.4)
+local label=assert(main.PermissionsSection:FindFirstChild("CombatBonuses"))
+check(label.Text:find("+10%%") and label.Text:find("+2%%"),"Realm own modifiers")
+check(label.TextBounds.Y<=label.AbsoluteSize.Y+2 and label.AbsoluteSize.X<=main.AbsoluteSize.X,"Realm measured layout")
+check(label.BackgroundTransparency==1 and not label.Active,"Realm decorative text pass-through")
+require(controllers.TerritoryMapController).Select("frostfield","silent");task.wait(.2)
+require(controllers.MapContextController).OpenWorkflow("Military");task.wait(.5)
+local stats=gui.MilitaryWorkflowPanel.Content.Stats
+check(stats.Text:find("Subject combat") and stats.Text:find("Personal%-land defense"),"Military own modifiers")
+check(stats.TextBounds.Y<=stats.AbsoluteSize.Y+2,"Military measured layout")
+check(stats.FontFace.Family==label.FontFace.Family,"shared font theme")
+print("VASSAL_COMBAT_LAYOUT_PASS",n,gui.AbsoluteSize,stats.AbsoluteSize,label.AbsoluteSize)

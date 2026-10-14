@@ -1,0 +1,42 @@
+-- Disposable actual-client fixture. No client Prestige mutation capability is introduced.
+local p=game.Players.LocalPlayer;local R=game.ReplicatedStorage
+local g=p.PlayerGui:WaitForChild("HierarchyPrototypeGui");local C=p.PlayerScripts.Controllers
+local Strategy=require(C.StrategyPresentationController)
+local control=R:WaitForChild("PrestigeVerification");local ack=control:WaitForChild("Ack")
+repeat task.wait(.1) until p:GetAttribute("PrestigeTestIndex")
+local index=p:GetAttribute("PrestigeTestIndex");local count=0;local title
+R.Remotes.TitleServerEvent.OnClientEvent:Connect(function(kind,payload) if kind=="State" then local data=game.HttpService:JSONDecode(payload);for _,r in data.rows do if r.userId==p.UserId then title=r end end end end)
+local function check(v,m) assert(v,m);count+=1 end
+local function phase()
+ local name=control:GetAttribute("Phase");if not name then return end
+ local ok,err=pcall(function()
+  R.Remotes.TitleClientEvent:FireServer("Ready");task.wait(.5)
+  Strategy.OpenSystem("Titles");task.wait(.2)
+  check(title and not string.find(g.TitlePanel.Body.Text,"Test Prestige",1,true),"actual Prestige wording")
+  check(g.TitlePanel.Body.Text:find("personal",1,true)~=nil,"personal ownership explanation")
+  check(g.TitlePanel.Body.FontFace.Family:find("GothamSSm")~=nil,"shared font")
+  check(g.TitlePanel.EstablishButton:GetAttribute("ThemeRole")=="Primary","shared action component")
+  if name=="Personal" then
+   check(title.personalHoldings==(if index==2 then 2 else 1),"personal snapshot count")
+   check(title.prestigePerMinute==(if index==2 then 40 else 20),"personal snapshot rate")
+   check(title.realmRequired==2 and title.prestigeRequired==100,"resolved requirements")
+  elseif name=="Subject" then
+   check(title.prestigePerMinute==(if index==2 then 40 else 20),"subject land not paid to liege")
+   if index==1 then check(title.realmControl==3,"liege subtree counts") end
+  elseif name=="Transferred" then
+   check(title.prestigePerMinute==(if index==1 then 40 else 20),"transfer UI rate")
+  elseif name=="RejectAndReady" then
+   for i=1,10 do R.Remotes.TitleClientEvent:FireServer("Ready") end
+   R.Remotes.TitleClientEvent:FireServer("SetPrestige",99999)
+   R.Remotes.TitleClientEvent:FireServer("Establish",4)
+   task.wait(.4);check(title.currentRank==1,"no unauthorized rank skipping")
+  elseif name=="Titles" and index==1 then check(title.currentRank==4 and title.prestige>=500,"Emperor snapshot cumulative")
+  elseif name=="Ended" then
+   check(title.matchEnded and title.prestigePerMinute==0,"frozen UI rate")
+   check(not g.TitlePanel.EstablishButton.Active,"frozen title action")
+   check(g.TitlePanel.Body.Text:find("earning frozen",1,true)~=nil,"freeze explanation")
+  end
+ end)
+ ack:FireServer(name,ok,count,tostring(err or ""))
+end
+control:GetAttributeChangedSignal("Phase"):Connect(phase);phase()

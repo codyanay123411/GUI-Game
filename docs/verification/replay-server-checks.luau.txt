@@ -1,0 +1,23 @@
+-- Seed final state through normal ownership/Victory APIs; not natural-match progression.
+local S=game.ServerScriptService.Services
+local H,T,V,Match,Replay=require(S.PoliticalHierarchyService),require(S.TerritoryMapService),require(S.VictoryService),require(S.MatchState),require(S.MatchReplayService)
+local p=game.Players:GetPlayers()[1];assert(p)
+local id=H.GetRulerIdForUserId(p.UserId);assert(id)
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+check(not Match.IsEnded(),"live state before seed")
+Replay.Start(game.ReplicatedStorage.Remotes.VictoryServerEvent)
+for _,d in T.GetMapDefinition().territories do
+ if Match.IsEnded()then break end
+ assert(T.SetOwner(d.id,id))
+end
+check(Match.IsEnded(),"normal domination ends match")
+local final=Match.GetFinal()
+local before=game:GetService("HttpService"):JSONEncode(final)
+Replay.Request(p);Replay.Request(p);Replay.SendStatus(p)
+task.wait(.5)
+check(p.Parent==game.Players,"Studio unavailable preserves player")
+check(game:GetService("HttpService"):JSONEncode(Match.GetFinal())==before,"replay preserves final snapshot")
+check(not T.SetOwner(T.GetMapDefinition().territories[1].id,nil),"ownership freeze intact")
+check(H.GetRulerIdForUserId(p.UserId)==id,"ruler identity intact")
+game.ReplicatedStorage.Remotes.VictoryServerEvent:FireClient(p,"VerifyReplay","ended")
+print("REPLAY_SERVER_PASS",n)

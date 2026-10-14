@@ -1,0 +1,14 @@
+-- Isolated seeded UI freeze AFTER the ordinary ten-province/title demonstration.
+-- Run as a disposable Script in the running server (Command Bar requires use another VM).
+local S=game.ServerScriptService.Services
+local T,H,Title=require(S.TerritoryMapService),require(S.PoliticalHierarchyService),require(S.TitleProgressionService)
+local id=H.GetRulerIdForUserId(game.Players:GetPlayers()[1].UserId)
+assert(T.CountOwnedByRulers({id})==10,"seed fixture requires completed natural ten-province demonstration")
+local function row() for _,r in Title.GetSnapshot().rows do if r.rulerId==id then return r end end end
+local before=row().prestige
+assert(T.SetOwner("highmarch",id));assert(T.SetOwner("sunbarrow",id))
+local final=row().prestige
+assert(row().matchEnded and row().prestigePerMinute==0 and final-before<.1,"no instant transfer reward and frozen rate")
+task.wait(2.3)
+assert(row().prestige==final,"cutoff remains exact across scheduler")
+print("PRESTIGE_FINAL_UI_SEED_FREEZE_PASS",final)

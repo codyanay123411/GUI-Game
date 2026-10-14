@@ -1,0 +1,7 @@
+-- Disposable client observation after seeded normal match-end gate.
+task.wait(.2)
+local g=game.Players.LocalPlayer.PlayerGui.HierarchyPrototypeGui;local m=g.MilitaryWorkflowPanel.Content
+assert(g:GetAttribute("MatchEnded"))
+assert(not m.RecruitButton.Active and not m.RecruitmentBar:GetAttribute("EditingEnabled"))
+assert(m.CostLabel.Text:find("Recruitment frozen",1,true))
+print("RECRUIT_FREEZE_CLIENT_PASS",true)

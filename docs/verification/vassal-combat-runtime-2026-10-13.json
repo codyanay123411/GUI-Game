@@ -1,0 +1,39 @@
+{
+  "date": "2026-10-13",
+  "environment": "Studio Solo; one actual client, synthetic rulers/ownership/troops",
+  "policyAssertions": 15,
+  "integration": [
+    "subject neutral offense",
+    "root personal-land defense",
+    "root defending subject-owned land excludes bonus",
+    "actual casualty ledgers"
+  ],
+  "nestedContinuationAssertions": 10,
+  "resolutionBoundaryAssertions": 3,
+  "layoutAssertions": {
+    "640x422": 8,
+    "1280x661": 8
+  },
+  "finalClientAssertions": 4,
+  "sourceParity": {
+    "baselineExisting": 5,
+    "final": 6,
+    "fixtures": "disabled in ServerStorage.VassalCombatRecovery_20261013"
+  },
+  "snapshot": {
+    "path": "docs/verification/vassal-combat-final-2026-10-13.rbxl",
+    "bytes": 828842,
+    "sha256": "71e4c308a7c3668a1e67096002d36095fbf7b8d9f9a661b65f36d91665861139",
+    "localOnly": true
+  },
+  "limitations": [
+    "synthetic setup is not ordinary play/balance acceptance",
+    "no new multi-client or published network test",
+    "human readability/balance pending"
+  ],
+  "fixtureCorrections": [
+    "post-war cooldown: wait then continuation, no gameplay timing changed",
+    "GUI name corrected in fixture",
+    "province result label exact replacement and affected rerun"
+  ]
+}

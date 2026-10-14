@@ -1,0 +1,29 @@
+-- Targeted measured council layout; uses existing settings, no gameplay mutations.
+local p=game.Players.LocalPlayer;local g=p.PlayerGui.HierarchyPrototypeGui
+local C=p.PlayerScripts.Controllers;local Settings=require(C.GameSettingsController);local Strategy=require(C.StrategyPresentationController)
+-- Match the final candidate alignment in this already-running controller instance.
+g.Main.CouncilBody.TextXAlignment=Enum.TextXAlignment.Left;g.Main.CouncilBody.TextYAlignment=Enum.TextYAlignment.Top
+g.Main.CouncilHeader.TextXAlignment=Enum.TextXAlignment.Left;g.Main.CouncilHeader.TextYAlignment=Enum.TextYAlignment.Center
+local n=0;local function check(v,m)assert(v,m);n+=1 end
+local function bounds()
+ Strategy.OpenSystem("Realm");task.wait(.2)
+ local m=g.Main;local b=m.CouncilBody;local h=m.CouncilHeader
+ check(b.TextBounds.Y<=b.AbsoluteSize.Y+2,"council vertical text")
+ check(b.TextBounds.X<=b.AbsoluteSize.X+2,"council horizontal text")
+ check(h.TextBounds.Y<=h.AbsoluteSize.Y+2,"council heading height")
+ check(b.AbsolutePosition.X+b.AbsoluteSize.X<=m.AbsolutePosition.X+m.AbsoluteWindowSize.X,"scrollbar margin")
+ check(m.SelfInfo.TextBounds.Y<=m.SelfInfo.AbsoluteSize.Y+2,"self info height")
+ check(b.AbsolutePosition.Y>=m.SelfInfo.AbsolutePosition.Y+m.SelfInfo.AbsoluteSize.Y,"council follows ruler")
+ check(m.TreeHeader.AbsolutePosition.Y>=b.AbsolutePosition.Y+b.AbsoluteSize.Y,"tree follows council")
+ check(m.AutomaticCanvasSize==Enum.AutomaticSize.Y,"outer scroll")
+ check(b:GetAttribute("ThemeRole")=="Body" and h:GetAttribute("ThemeRole")=="Caption","theme role")
+ check(b.FontFace.Family==m.SelfInfo.FontFace.Family,"shared font")
+end
+local push=game.ReplicatedStorage.Remotes.CouncilServerEvent
+push.OnClientEvent:Connect(function(kind,tag)
+ if kind~="VerifyCouncilLayout"then return end
+ local ok,err=pcall(bounds)
+ if ok then print("COUNCIL_LAYOUT_CASE_PASS",p.Name,g.AbsoluteSize,tag,n)
+ else warn("COUNCIL_LAYOUT_CASE_FAIL",tag,err,n)end
+end)
+print("COUNCIL_LAYOUT_OBSERVER_READY",p.Name)

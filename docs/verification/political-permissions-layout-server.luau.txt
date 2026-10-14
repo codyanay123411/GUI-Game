@@ -1,0 +1,13 @@
+-- Focused final-source Solo layout fixture; mock subject, not multiplayer evidence.
+local S=game.ServerScriptService.Services
+local H,P,T,B=require(S.PoliticalHierarchyService),require(S.PoliticalPermissionsService),require(S.TerritoryMapService),require(S.AdminBridge)
+local Players=game:GetService("Players")
+local player=Players:GetPlayers()[1]or Players.PlayerAdded:Wait();local id
+repeat task.wait(.2);id=H.GetRulerIdForUserId(player.UserId)until id and S:FindFirstChild("PoliticalPermissionsService")
+task.wait(2)
+assert(H.SetTitleRank(id,4));local mock=H.DebugCreateMockRuler("Synthetic direct subject for layout",3)
+assert(B.Execute(nil,"SetOwner","westmere",id));assert(B.Execute(nil,"SetOwner","northvale",mock))
+local ok,req=H.OfferFealty(mock,id);assert(ok);assert(H.AcceptFealty(req,id))
+local config=require(S.GameSettingsService)
+for key,value in {Font="Arial",FontScale=1.1,UIScale=1.1,PanelOpacity=.8}do assert(config.Apply(player.UserId,"Set",key,value))end
+print("POLITICS_FINAL_LAYOUT_SETUP_PASS",mock)

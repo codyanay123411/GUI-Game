@@ -15,6 +15,7 @@ local ServerScriptService = game:GetService("ServerScriptService")
 
 local MilitaryConfig = require(ReplicatedStorage.Shared.Config.MilitaryConfig)
 local MilitaryCombat = require(ReplicatedStorage.Shared.Util.MilitaryCombat)
+local VassalCombat = require(ReplicatedStorage.Shared.Util.VassalCombat)
 local Hierarchy = require(ServerScriptService.Services.PoliticalHierarchyService)
 local Territory = require(ServerScriptService.Services.TerritoryMapService)
 local Economy = require(ServerScriptService.Services.EconomyService)
@@ -42,6 +43,8 @@ type Engagement = {
 	mechanicallyResolved: boolean,
 	presentationUntil: number?,
 	battle: MilitaryCombat.BattleResult?,
+	attackerStrengthMultiplier: number?,
+	defenderStrengthMultiplier: number?,
 	concluded: boolean,
 	targetKind: string,
 	targetRevision: number,
@@ -49,6 +52,18 @@ type Engagement = {
 
 local started = false
 local totalByRuler: { [string]: number } = {}
+local councilTotalChanged: ((string) -> ())? = nil
+function MilitaryService.SetCouncilTotalChanged(callback: (string) -> ())
+	assert(councilTotalChanged == nil, "Council troop observer already installed")
+	councilTotalChanged = callback
+end
+local function notifyTotal(rulerId: string)
+	if councilTotalChanged then councilTotalChanged(rulerId) end
+end
+
+function MilitaryService.GetTotalTroops(rulerId: string): number
+	return totalByRuler[rulerId] or 0
+end
 local reserved: { [string]: { [string]: number } } = {} -- warId -> rulerId -> amount
 local engagements: { [string]: Engagement } = {}
 local clientIntent: RemoteEvent
@@ -91,6 +106,7 @@ end
 local function ensurePool(rulerId: string)
 	if totalByRuler[rulerId] == nil then
 		totalByRuler[rulerId] = MilitaryConfig.StartingTroops
+		notifyTotal(rulerId)
 	end
 end
 
@@ -180,6 +196,7 @@ local function playerPayload(rulerId: string)
 				targetTerritoryId = eng.targetTerritoryId,
 				targetDisplayName = territoryName(eng.targetTerritoryId),
 				role = role,
+				ownResolvedStrengthMultiplier = if role == "Attacker" then eng.attackerStrengthMultiplier else eng.defenderStrengthMultiplier,
 				targetKind = eng.targetKind,
 				neutralDefenders = if eng.targetKind == "Unclaimed" then eng.defender.lockedAmount else nil,
 				intended = if mine.interacted then mine.intended else nil,
@@ -207,6 +224,7 @@ local function playerPayload(rulerId: string)
 		total = total,
 		available = availableOf(rulerId),
 		committed = committed,
+		combatBonuses = VassalCombat.Bonuses(rulerId, Hierarchy.GetSnapshot().rulers),
 		troopsPerGold = MilitaryConfig.TroopsPerGold,
 		wars = wars,
 	}
@@ -302,6 +320,7 @@ local function applyCasualties(eng: Engagement, battle: MilitaryCombat.BattleRes
 		end
 		local survivors = math.max(0, committed - casualties)
 		totalByRuler[rulerId] = math.max(0, totalByRuler[rulerId] - casualties)
+		notifyTotal(rulerId)
 		setReserved(eng.warId, rulerId, survivors)
 	end
 	apply(eng.attackerRootId, battle.attackerCommitted, battle.attackerCasualties)
@@ -404,11 +423,17 @@ local function resolveBattle(eng: Engagement)
 		noticeRulerId(eng.attackerRootId, "Attack cancelled: you committed 0 Troops.")
 		return
 	end
-	if eng.targetKind == "Unclaimed" and (not Warfare.IsTargetCurrent(eng.warId) or not (findRuler(eng.attackerRootId) and findRuler(eng.attackerRootId).independent)) then
+	if not Warfare.IsTargetCurrent(eng.warId) or not Warfare.IsActorCurrent(eng.warId) then
 		cancelEngagement(eng, "stale target")
 		return
 	end
-	local battle = MilitaryCombat.Resolve(atk, def, makeRng())
+	local rulers = Hierarchy.GetSnapshot().rulers
+	local attackerBonus = VassalCombat.Bonuses(eng.attackerRootId, rulers)
+	local defenderBonus = VassalCombat.Bonuses(eng.defenderRootId, rulers)
+	eng.attackerStrengthMultiplier = VassalCombat.Multiplier(attackerBonus, false, false)
+	eng.defenderStrengthMultiplier = VassalCombat.Multiplier(defenderBonus, true,
+		Territory.GetOwnerRulerId(eng.targetTerritoryId) == eng.defenderRootId)
+	local battle = MilitaryCombat.Resolve(atk, def, makeRng(), eng.attackerStrengthMultiplier, eng.defenderStrengthMultiplier)
 	eng.battle = battle
 	eng.mechanicallyResolved = true
 	eng.presentationUntil = now() + MilitaryConfig.PresentationSeconds
@@ -518,6 +543,7 @@ function MilitaryService.Recruit(rulerId: string, troopAmount: any): (boolean, s
 		return false, err
 	end
 	totalByRuler[rulerId] += troopAmount
+	notifyTotal(rulerId)
 	pushAllPlayers()
 	return true, string.format("Recruited %d Troops for %d Gold.", troopAmount, goldCost)
 end
@@ -536,6 +562,22 @@ function MilitaryService.RecruitMax(rulerId: string): (boolean, string)
 		return false, "Insufficient Gold."
 	end
 	return MilitaryService.Recruit(rulerId, wholeGold * MilitaryConfig.TroopsPerGold)
+end
+
+-- Transfer existing unreserved personal troops only. No additive grant or debug
+-- override. Betrayal coordinates staging without yielding before publication.
+function MilitaryService.StageTroopTransfer(fromId: string, toId: string, amount: number): (boolean, string)
+	if MatchState.IsEnded() then return false, "Match ended." end
+	if fromId == toId or totalByRuler[fromId] == nil or totalByRuler[toId] == nil then return false, "Invalid troop owners." end
+	if amount ~= amount or math.abs(amount) == math.huge or amount < 0 or amount % 1 ~= 0 then return false, "Invalid transfer amount." end
+	if availableOf(fromId) < amount then return false, "Transfer would take reserved troops." end
+	totalByRuler[fromId] -= amount
+	totalByRuler[toId] += amount
+	return true, ""
+end
+function MilitaryService.PublishTroopTransfer(fromId: string, toId: string)
+	notifyTotal(fromId); notifyTotal(toId)
+	pushAllPlayers()
 end
 
 function MilitaryService.SetCommit(rulerId: string, warId: string, amountAny: any): (boolean, string)
@@ -659,6 +701,7 @@ function MilitaryService.DebugSetTroops(rulerId: string, value: number): (boolea
 		return false, "Cannot set Total below currently committed Troops."
 	end
 	totalByRuler[rulerId] = value
+	notifyTotal(rulerId)
 	pushAllPlayers()
 	return true, string.format("Troops set to %d.", value)
 end
@@ -679,6 +722,7 @@ function MilitaryService.DebugAddTroops(rulerId: string, value: number): (boolea
 		return false, "Troops cannot be negative."
 	end
 	totalByRuler[rulerId] = nextTotal
+	notifyTotal(rulerId)
 	pushAllPlayers()
 	return true, string.format("Troops now %d.", nextTotal)
 end
@@ -751,6 +795,14 @@ function MilitaryService.DebugAdvance(seconds: number): (boolean, string)
 	return true, "Advanced military timers."
 end
 
+-- Optional correlated recruitment receipts. Legacy server/admin calls retain their API.
+local lastRecruitReceipt: { [Player]: any } = {}
+local function sendRecruitReceipt(player: Player, requestId: any, amount: any, ok: boolean, message: string)
+	local receipt = { requestId = requestId, amount = amount, accepted = ok, message = message }
+	serverPush:FireClient(player, "RecruitResult", HttpService:JSONEncode(receipt))
+	return receipt
+end
+
 local function onClientIntent(player: Player, action: any, a: any, b: any)
 	if typeof(action) ~= "string" then
 		noticePlayer(player, "Invalid request.")
@@ -762,11 +814,30 @@ local function onClientIntent(player: Player, action: any, a: any, b: any)
 	end
 	local fromId = Hierarchy.GetRulerIdForUserId(player.UserId)
 	if not fromId then
+		if action == "Recruit" and typeof(b) == "number" and b == b and b >= 1 and b <= 2147483647 and b % 1 == 0 then sendRecruitReceipt(player, b, nil, false, "No ruler record.") end
 		noticePlayer(player, "No ruler record.")
 		return
 	end
 	if action == "Recruit" then
+		if b ~= nil then
+			if typeof(b) ~= "number" or b ~= b or b < 1 or b > 2147483647 or b % 1 ~= 0 then
+				noticePlayer(player, "Invalid recruitment request.")
+				return
+			end
+			local previous = lastRecruitReceipt[player]
+			if previous and b <= previous.requestId then
+				if b == previous.requestId then
+					serverPush:FireClient(player, "RecruitResult", HttpService:JSONEncode(previous))
+				else
+					sendRecruitReceipt(player, b, nil, false, "Outdated recruitment request. Try again.")
+				end
+				return
+			end
+		end
 		local ok, result = MilitaryService.Recruit(fromId, a)
+		if b ~= nil then
+			lastRecruitReceipt[player] = sendRecruitReceipt(player, b, if typeof(a) == "number" and a == a and math.abs(a) < math.huge then a else nil, ok, result)
+		end
 		noticePlayer(player, result)
 		if not ok then
 			return
@@ -784,6 +855,10 @@ local function onClientIntent(player: Player, action: any, a: any, b: any)
 			return
 		end
 		local ok, result = MilitaryService.SetCommit(fromId, a, b)
+		-- Receipt only: existing validated integer intent remains the sole mutation path.
+		serverPush:FireClient(player, "CommitResult", HttpService:JSONEncode({
+			warId = a, amount = if typeof(b) == "number" and b == b and math.abs(b) < math.huge then b else nil, accepted = ok, message = result,
+		}))
 		if not ok then
 			noticePlayer(player, result)
 		end
@@ -811,6 +886,7 @@ function MilitaryService.Start()
 	clientIntent = remotesFolder:WaitForChild("MilitaryClientEvent") :: RemoteEvent
 	serverPush = remotesFolder:WaitForChild("MilitaryServerEvent") :: RemoteEvent
 	clientIntent.OnServerEvent:Connect(onClientIntent)
+	Players.PlayerRemoving:Connect(function(player) lastRecruitReceipt[player] = nil end)
 
 	for _, ruler in Hierarchy.GetSnapshot().rulers do
 		ensurePool(ruler.rulerId)
@@ -898,6 +974,7 @@ function MilitaryService.Start()
 	end)
 	Hierarchy.RulerRemoving:Connect(function(rulerId: string)
 		totalByRuler[rulerId] = nil
+		notifyTotal(rulerId)
 		for warId, byRuler in reserved do
 			byRuler[rulerId] = nil
 			if next(byRuler) == nil then
@@ -907,6 +984,7 @@ function MilitaryService.Start()
 		pushAllPlayers()
 	end)
 
+	Hierarchy.StateChanged:Connect(pushAllPlayers)
 	RunService.Heartbeat:Connect(tickEngagements)
 
 	Players.PlayerAdded:Connect(function(player)

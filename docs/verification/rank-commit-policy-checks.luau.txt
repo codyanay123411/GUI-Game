@@ -1,0 +1,44 @@
+--!strict
+local E = require("./EconomyPayoutCLI")
+local C = require("../../ReplicatedStorage/Shared/Util/CommitmentPolicy")
+local count=0
+local function check(v,m) assert(v,m);count+=1 end
+local function near(a,b) check(math.abs(a-b)<1e-9,"arithmetic") end
+for rank,bonus in {0,.5,1,2} do
+ near(E.RankBonusPercent(rank),bonus)
+ near(E.IncomeWithRank(10,rank),10*(1+bonus/100))
+ local paid,remainder=0,0
+ for _=1,200 do local g,r=E.CreditWithRank(1,rank,remainder);paid+=g;remainder=r end
+ near(paid,200*(1+bonus/100));check(remainder==0,"exact carry")
+end
+local paid,r=E.CreditWithRank(1,2,0);check(paid==1 and r==50,"Duke fraction carried")
+paid,r=E.CreditWithRank(0,4,r);check(paid==0 and r==50,"land loss retains carry")
+paid,r=E.CreditWithRank(1,4,9950);check(paid==2 and r==150,"promotion uses current nonstacking rank")
+check(E.GoldPerTick(10)==1 and E.GoldPerTick(3)==nil,"base timing/config preserved")
+-- Start/grants are integer additions outside payout conversion, unchanged by rank.
+local balance=150;balance+=100;near(balance,250)
+for pool=0,1000 do
+ for _,percent in C.Stops do check(C.Amount(pool,percent)==math.floor(pool*percent/100),"floor percentage") end
+end
+check(C.Pool(600,100)==700,"own reservation included, other wars excluded from available")
+check(C.Pool(600,nil)==600,"new declaration available only")
+for i,percent in C.Stops do check(C.Snap((i-1)/4)==percent,"stop position") end
+for i=-10,110 do check(C.IsStop(C.Snap(i/100)),"drag never continuous") end
+for _,bad in {0,11,100} do check(not pcall(C.Amount,100,bad),"only approved stops") end
+local e=C.New();check(C.CanReady(e,137),"offstop authoritative reservation can lock unchanged")
+check(not C.CanReady(e,nil),"nothing accepted")
+C.Choose(e,25,250);check(not C.CanReady(e,137),"debounce edit blocks Ready")
+local f=C.Begin(e);check(f.amount==250 and not C.Begin(e),"one flight")
+C.Choose(e,75,750);check(not C.CanReady(e,250),"new drag selection blocks old accepted amount")
+check(not C.Acknowledge(e,123,true),"unrelated receipt ignored")
+check(C.Acknowledge(e,250,true),"old edit receipt");check(not C.CanReady(e,250),"queued latest remains pending")
+f=C.Begin(e);check(f.amount==750,"final dragged selection submits")
+check(C.Acknowledge(e,750,false),"reject latest");check(not C.CanReady(e,250) and not C.Begin(e),"reject never locks old/resubmits")
+C.Choose(e,35,350);check(C.Begin(e).amount==350,"deliberate retry")
+check(C.Acknowledge(e,350,true) and C.CanReady(e,350),"accepted latest permits Ready")
+check(not C.CanReady(e,351),"authoritative mismatch not locked")
+local preview=C.Amount(C.Pool(1400,350),35);check(preview==612 and e.amount==350 and C.CanReady(e,350),"passive force refresh cannot resubmit/increase accepted")
+local tiny=C.Amount(1,10);check(tiny==0,"tiny pool zero preserved")
+C.Choose(e,10,0);C.Begin(e);C.Acknowledge(e,0,true);check(C.CanReady(e,0),"server zero handling preserved")
+local other=C.New();check(C.CanReady(other,91) and not C.CanReady(e,91),"per-war edits independent")
+print("RANK_COMMIT_POLICY_PASS",count)

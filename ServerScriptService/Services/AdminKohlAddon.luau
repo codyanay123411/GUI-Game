@@ -13,6 +13,7 @@ return function(_K)
 	local Players = game:GetService("Players")
 	local RunService = game:GetService("RunService")
 	local ServerScriptService = game:GetService("ServerScriptService")
+	local CommandPolicy = require(game:GetService("ReplicatedStorage").Shared.Config.AdminCommandPolicy)
 
 	-- Suggestion-only types: Kohl must not validate/resolve targets.
 	-- AdminBridge remains the resolver for player names, rulerIds, and special tokens.
@@ -112,6 +113,38 @@ return function(_K)
 			end
 			local rank = _K.Auth.getRank(userId)
 			return math.max(rank, 1)
+		end
+	end
+	-- Supported definition overrides; no vendor Source edits or role changes.
+	-- Role config alone cannot deny the installed Kohl creator fast path.
+	if not _K._strategyCommandPolicy then
+		local state = { archive = {}, originalRegister = _K.Registry.registerCommand, originalAuth = _K.Auth.hasCommand }
+		_K._strategyCommandPolicy = state
+		local function restricted(def)
+			local reason = CommandPolicy.Disabled[string.lower(def.name)]
+			if not reason then return def end
+			state.archive[def.name] = table.clone(def)
+			local replacement = table.clone(def)
+			replacement.description = "Disabled for this strategy game: " .. reason
+			local function deny() return replacement.description end
+			replacement.run, replacement.runClient = deny, deny
+			-- Preserve initialized environments for dependent retained commands;
+			-- do not install duplicate client remote handlers on replacement.
+			replacement.envClient = nil
+			return replacement
+		end
+		_K.Registry.registerCommand = function(interface, def)
+			return state.originalRegister(interface, restricted(def))
+		end
+		_K.Auth.hasCommand = function(userId, command)
+			local def = if typeof(command) == "string" then _K.Registry.commands[string.lower(command)] else command
+			if typeof(def) == "table" and CommandPolicy.Disabled[string.lower(def.name)] then return false end
+			return state.originalAuth(userId, command)
+		end
+		for _, def in table.clone(_K.Registry.commandsList) do
+			if CommandPolicy.Disabled[string.lower(def.name)] then
+				_K.Registry.registerCommand(_K, def)
+			end
 		end
 	end
 	local function register(def)
@@ -298,7 +331,7 @@ return function(_K)
 	register({
 		name = "resolvewar",
 		aliases = { "warresolve" },
-		description = "Resolve a war via WarfareService.DebugResolveWar.",
+		description = "DEBUG OVERRIDE: force unresolved war outcome; bypasses combat, unwinds commitments. Rejected after mechanical resolution or match end.",
 		args = {
 			{ type = "rawString", name = "warId", description = "warId from inspectwars" },
 			{ type = "rawString", name = "outcome", description = "attacker or defender" },
@@ -313,4 +346,7 @@ return function(_K)
 	end
 	register({ name = "inspectneutral", description = "Inspect Unclaimed defense.", args = { { type = "rawString", name = "territoryId" } }, run = function(context, id) runOp(context, "InspectNeutral", id) end })
 	register({ name = "setneutraldefense", description = "Set uncontested neutral defense within maximum.", args = { { type = "rawString", name = "territoryId" }, { type = "number", name = "defenders" } }, run = function(context, id, amount) runOp(context, "SetNeutralDefense", id, amount) end })
+	register({ name = "inspectrealm", description = "Read personal vs greater-realm holdings, members and Domination progress; no mutation.", args = { { type = "adminRulerToken", name = "who", description = "Player or rulerId; resolves their greater realm" } }, run = function(context, who) runOp(context, "InspectRealm", who) end })
+	register({ name = "checkledgers", description = "Read-only troop reservation and territory-index invariants for all current rulers; reports concrete failures.", args = {}, run = function(context) runOp(context, "CheckLedgers") end })
+	register({ name = "seedbattle", description = "DEBUG: deterministic Military battle seed (integer 0..2147483647 or clear). Future rolls only; match end blocks changes.", args = { { type = "rawString", name = "seed", description = "Integer 0..2147483647 or clear to restore normal randomness" } }, run = function(context, seed) runOp(context, "SeedBattle", seed) end })
 end

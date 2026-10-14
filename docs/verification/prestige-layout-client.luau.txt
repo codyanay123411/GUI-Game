@@ -1,0 +1,37 @@
+-- Disposable client layout/settings regression after natural progression; no gameplay mutations.
+local p=game.Players.LocalPlayer;local g=p.PlayerGui:WaitForChild("HierarchyPrototypeGui")
+local C=p.PlayerScripts.Controllers;local Settings=require(C.GameSettingsController);local Strategy=require(C.StrategyPresentationController)
+local Theme=require(game.ReplicatedStorage.Shared.Util.PrototypeGuiTheme)
+local Text=game:GetService("TextService");local count=0
+local function check(v,m) assert(v,m);count+=1 end
+local function fits(label)
+ check(label.TextBounds.Y<=label.AbsoluteSize.Y+2,label.Name.." rendered overflow "..label.TextBounds.Y.."/"..label.AbsoluteSize.Y)
+end
+local function set(key,value)
+ Settings.Request(key,value);local deadline=os.clock()+5
+ repeat task.wait(.1) until Settings.GetSnapshot().values[key]==value or os.clock()>deadline
+ check(Settings.GetSnapshot().values[key]==value,"authorized setting "..key)
+end
+local function layout()
+ Strategy.OpenSystem("Titles");task.wait(.35)
+ fits(g.TitlePanel.Body);fits(g.StrategyTopbar.Gold)
+ check(g.TitlePanel.Body.AbsolutePosition.X+g.TitlePanel.Body.AbsoluteSize.X<=g.TitlePanel.AbsolutePosition.X+g.TitlePanel.AbsoluteSize.X-6,"Title content within bounds")
+ check(g.TitlePanel.CanvasSize.Y.Offset>=g.TitlePanel.EstablishButton.Position.Y.Offset+g.TitlePanel.EstablishButton.Size.Y.Offset,"Establish scroll reachable")
+ check(g.TitlePanel.Body.Text:find("Prestige:",1,true) and not g.TitlePanel.Body.Text:find("Test Prestige",1,true),"actual resource wording")
+ check(g.StrategyTopbar.Gold.Text:find("P ",1,true),"resource summary")
+ check(g.TitlePanel.EstablishButton:GetAttribute("ThemeRole")=="Primary","shared action")
+ if not g.TitlePanel.EstablishButton.Active then check(g.TitlePanel.EstablishButton.BackgroundColor3==Theme.Colors.disabled,"disabled token") end
+ check(not g.ContextRadialPanel.Active,"decorative radial inactive")
+end
+local function run()
+ check(Settings.GetSnapshot().canConfigure,"owner settings permission")
+ for _,font in {"GothamSSm","SourceSansPro","Roboto","Arial"} do set("Font",font);layout() end
+ set("Font","GothamSSm")
+ for _,scale in {.9,1.1} do
+  set("UIScale",scale);set("FontScale",scale);set("Padding",if scale<1 then 6 else 12);set("CornerRadius",if scale<1 then 0 else 16);set("PanelOpacity",.8);layout()
+ end
+ print("PRESTIGE_LAYOUT_PASS",g.AbsoluteSize,count)
+end
+local ok,err=pcall(run);Settings.Reset("Game UI");task.wait(2)
+if not ok then warn("PRESTIGE_LAYOUT_FAIL",err) end
+print("PRESTIGE_LAYOUT_RESET",Settings.GetSnapshot().values.Font,Settings.GetSnapshot().values.UIScale)

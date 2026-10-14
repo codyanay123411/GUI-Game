@@ -1,0 +1,33 @@
+-- Actual client remote authorization checks; no client admin mutation channel.
+local Players,R,J=game:GetService("Players"),game:GetService("ReplicatedStorage"),game:GetService("HttpService")
+local player=Players.LocalPlayer;local control=R:WaitForChild("PoliticsVerification",90);assert(control)
+local state,results={},{}
+R.Remotes:WaitForChild("PermissionsServerEvent").OnClientEvent:Connect(function(kind,payload)
+ local ok,data=pcall(J.JSONDecode,J,payload);if ok then if kind=="State"then state=data elseif kind=="PermissionResult"then table.insert(results,data)end end
+end)
+R.Remotes.PermissionsClientEvent:FireServer("Ready")
+local function execute(name)
+ local ok,message=pcall(function()
+  local index=player:GetAttribute("PoliticsIndex");while not index do task.wait(.1);index=player:GetAttribute("PoliticsIndex")end
+  local subject=control:GetAttribute("Ruler2")
+  if name=="Unauthorized"and index~=1 then
+   local before=#results;R.Remotes.PermissionsClientEvent:FireServer("Set",subject,"War",true,1);task.wait(.35)
+   assert(#results>before and not results[#results].accepted,"unauthorized grant denied")
+  elseif name=="GrantWar"and index==1 then
+   local row;for _,s in state.subjects or {}do if s.rulerId==subject then row=s end end;assert(row,"direct subject visible")
+   local before=#results;R.Remotes.PermissionsClientEvent:FireServer("Set",subject,"War",true,row.revision);task.wait(.35)
+   assert(#results>before and results[#results].accepted,"liege grant receipt")
+  elseif name=="Privacy"then
+   R.Remotes.PermissionsClientEvent:FireServer("Ready");task.wait(.35)
+   local allowed={war=true,warReason=true,diplomacy=true,diplomacyReason=true,autonomy=true,betrayal=true,independent=true}
+   for k in state.self do assert(allowed[k],"private self allowlist:"..k)end
+   for _,s in state.subjects or {}do for k in s do assert(({rulerId=true,displayName=true,titleName=true,warGranted=true,diplomacyGranted=true,revision=true})[k],"subject projection allowlist:"..k)end end
+   local gui=player.PlayerGui:WaitForChild("HierarchyPrototypeGui");assert(gui.Main:FindFirstChild("PermissionsSection"),"existing Realm integration")
+   assert(index==1 or #state.subjects==0,"no non-direct grant disclosure")
+  end
+ end)
+ control.Ack:FireServer(name,ok,1,tostring(message or "pass"))
+end
+local seen={}
+local function changed()local name=control:GetAttribute("Phase");if name and name~="Visual"and not seen[name]then seen[name]=true;task.spawn(execute,name)end end
+control:GetAttributeChangedSignal("Phase"):Connect(changed);changed()
