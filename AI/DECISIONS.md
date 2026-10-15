@@ -1,5 +1,9 @@
 # Decisions
 
+## Political/AI expansion direction — 2026-10-15
+
+Record Director directions and approval boundaries in the [single political expansion plan](POLITICAL_EXPANSION_PLAN.md). Forced-vassalage defeat replaces elimination in future intent; grants, compensated acquisition, automatic 1.5× government transitions and personal allowances need the plan's unresolved lifecycle/approval rules before implementation. AI delegation must precede domain penalties. Existing authority, council seat powers (none), title progression and current gameplay remain unchanged. Proposed valuation, rounding, penalties, direct-subject government comparison and AI appointment/events are not blanket-approved. Documentation only; no new implementation acceptance.
+
 ## Building purchase-price revision — 2026-10-14
 
 Director-approved: Farm/Town/Castle individual transitions10/15/20/30/40 Gold (115 total each); Capital15/25/35/45/60 (180 total). Repair remains exact half-current-level price, including fractional Gold. Earlier dated purchase-price approvals/recommendations and their verification amounts are superseded; preserve historical evidence. Effects, income, recruitment prices/capacity, support, placement/relocation, damage and elimination rules stay intact. This approves new initial pricing, not tested balance or Director acceptance of implementation. [Current tables/evidence](BUILDINGS_BALANCE_PROPOSAL.md#purchase-price-revision--2026-10-14).

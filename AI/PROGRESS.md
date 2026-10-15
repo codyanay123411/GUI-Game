@@ -1,5 +1,9 @@
 # Progress
 
+## Political/AI expansion plan — 2026-10-15
+
+Documentation only: [single expansion specification](POLITICAL_EXPANSION_PLAN.md) records Director requirements, unapproved recommendations, worked current-config examples and blocking decisions; Design/Decisions/Roadmap link to it. Forced-vassalage defeat supersedes elimination in future intent, not live code. Relevant disk contracts/configuration, arithmetic, links and whitespace checked; no Studio/runtime/gameplay or acceptance claim. Recommended first implementation milestone after decisions: non-player ruler identity plus functioning province delegation/AI appointment. Commit scope excludes accumulated moderation/source/evidence work and recovery assets.
+
 ## Completed implementation finalization — 2026-10-14
 
 Director-authorized main commit/push includes completed Vale32/naval/shared restart, all four buildings/Build drawer, Capital/damage/Repair/elimination/reset, passive markers, current prices, staff/current-server browser and Shift Lock configuration. [Finalization scope, checks, local exclusions and Studio limits](FINALIZATION.md#2026-10-14--completed-local-implementation-finalization); [source/evidence manifest](../docs/verification/completed-implementation-finalization-2026-10-14.json).61 changed/new sources syntax-compile and match live normalized source fingerprints; no new match/runtime acceptance. Old Capital scaffold/stage-price/replay reports are historical and superseded by their implementation reports. Moderation /report/Players/warnings remain planned. Published/multiplayer/human limitations are retained; no Director acceptance or Roblox publication. Disposable fixtures/adapters/recovery and ignored snapshots/tooling remain local by request.

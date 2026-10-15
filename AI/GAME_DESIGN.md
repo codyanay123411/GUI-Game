@@ -1,5 +1,9 @@
 # Game Design
 
+## Political/AI expansion direction — 2026-10-15 (planning only)
+
+[Political expansion plan](POLITICAL_EXPANSION_PLAN.md) is the single specification for forced-vassalage defeat, province grants/acquisition, authority-driven government, territorial titles, personal-domain allowances and AI rulers. It distinguishes Director requirements, unapproved recommendations and unresolved lifecycle/voting decisions. Forced vassalage supersedes elimination as the intended future defeat outcome; current implemented elimination and other gameplay remain active until authorized replacement. No implementation, balance/configuration change or acceptance is implied.
+
 ## Building purchase-price revision — 2026-10-14
 
 Director-approved: Farm/Town/Castle individual transitions10/15/20/30/40 Gold (115 total each); Capital15/25/35/45/60 (180 total). Repair remains exact half-current-level price, including fractional Gold. Earlier dated purchase-price approvals/recommendations and their verification amounts are superseded; preserve historical evidence. Effects, income, recruitment prices/capacity, support, placement/relocation, damage and elimination rules stay intact. This approves new initial pricing, not tested balance or Director acceptance of implementation. [Current tables/evidence](BUILDINGS_BALANCE_PROPOSAL.md#purchase-price-revision--2026-10-14).

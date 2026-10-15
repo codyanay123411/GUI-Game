@@ -1,5 +1,9 @@
 # Roadmap
 
+## Political/AI expansion dependencies — 2026-10-15 (planning only)
+
+[Authoritative expansion plan](POLITICAL_EXPANSION_PLAN.md#dependencies-and-recommended-delivery): resolve defeat/grants/identity → AI foundation and usable province delegation → forced-vassalage lifecycle → domain penalties only after Solo delegation works → compensated acquisition and actual democracy rules → territorial titles/random AI events. Recommended sequencing, not frozen delivery or implementation approval. Existing gameplay stays active; unresolved voting/lifecycle/balance decisions are listed once in the plan.
+
 **GUI redundancy migration (2026-10-10): IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Context is now the primary territory interface; old Territory/Diplomacy/Military destinations and duplicate assets are retired. Source parity, responsive/input, three-client and Victory checks passed. Next: Director usability/readability acceptance and the previously outstanding actual-account Communications verification. See AI/GUI_REDUNDANCY_CLEANUP.md. No new gameplay phase started.
 
 **Contextual map UX and attention milestone (2026-10-10): IMPLEMENTED — AGENT-VERIFIED — NOT DIRECTOR-ACCEPTED.** Explicitly authorized presentation milestone; existing gameplay remains authoritative. Targeted evidence and remaining human/real-account checks: `AI/CONTEXTUAL_MAP_INTERACTION.md`. Next: Director usability playtesting and actual-account Communications checks before serious multiplayer playtesting.
